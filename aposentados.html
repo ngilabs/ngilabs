@@ -278,11 +278,11 @@
       <div class="rubricas-list" id="rubricas-disponiveis-list"></div>        
   </div>
 
-  <div class="rubricas-menu-box" style="border-color: #fca5a5; background: #ffffbfa;">            
+  <div class="rubricas-menu-box" style="border-color: #fca5a5; background: #fffbfa;">            
       <div class="rubricas-menu-title" style="color: #c62828;">Adicionar Descontos/Débitos:</div>            
       <div class="rubricas-list">
           <button class="rubrica-item-btn" style="border-color:#fca5a5;" onclick="adicionarDescontoAoContracheque()">
-              <span class="plus-icon" style="color:#c62828;">+</span> Desconto Extra
+              <span class="plus-icon" style="color:#c62828;">+</span> Adicionar Descontos
           </button>
       </div>        
   </div>
@@ -449,7 +449,7 @@
 
  function atualizarNomeDescontoInline(id, inputElement) {
      if (descontosAdicionados[id]) {
-         descontosAdicionados[id].label = inputElement.value.trim().toUpperCase() || "DESCONTO EXTRA";
+         descontosAdicionados[id].label = inputElement.value.trim().toUpperCase();
          updateContracheque(false);
      }
  }
@@ -510,10 +510,11 @@
     
     let valorTexto = item.valor > 0 ? formatarParaMoeda(item.valor) : "";
     
+    // CAMPO EDITÁVEL DO DESCONTO COM BORDA TRACEJADA
     div.innerHTML = `
       <div class="item-top-row">
-         <input type="text" class="edit-name" value="${item.label}" placeholder="Ex: Empréstimo Consignado" oninput="atualizarNomeDescontoInline('${key}', this)" style="flex:1; border:none; background:transparent; font-size:11px; font-weight:600; color:#c62828; height:auto; padding:0;">
-         <button class="btn-del-rubrica" onclick="removerDesconto('${key}')">X</button>
+         <input type="text" class="edit-name" value="${item.label}" placeholder="Ex: Empréstimo Consignado" oninput="atualizarNomeDescontoInline('${key}', this)" style="flex:1; border: 1px dashed #ef9a9a; background:#fff; border-radius:4px; font-size:11px; font-weight:600; color:#c62828; padding:4px 6px;">
+         <button class="btn-del-rubrica" onclick="removerDesconto('${key}')" style="margin-left:8px;">X</button>
       </div>
       <div class="item-input-row">
          <span style="font-size:11px; color:#475569;">Valor (R$):</span>
@@ -671,7 +672,7 @@
   let descRows = `<tr><td>PREVIDÊNCIA (14%)</td><td class="td-valor">${f(prevBase)}</td></tr><tr><td>I.R.R.F.</td><td class="td-valor">${f(irF)}</td></tr>`;
   Object.keys(descontosAdicionados).forEach(key => {
      const desc = descontosAdicionados[key];
-     let labelDescFinal = desc.label || "DESCONTO EXTRA";
+     let labelDescFinal = desc.label || "DESCONTO DIVERSO";
      descRows += `<tr><td>${labelDescFinal}</td><td class="td-valor">${f(desc.valor)}</td></tr>`;
   });
   descRows += `<tr class="row-total"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr><tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(liqFinal)}</td></tr>`;
