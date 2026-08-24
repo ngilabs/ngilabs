@@ -61,6 +61,7 @@
             margin-top: 40px;
         }
 
+        /* Container Central Azul Petróleo */
         .container-projetos {
             background-color: rgba(0, 77, 97, 0.92);
             backdrop-filter: blur(10px);
@@ -89,18 +90,6 @@
             gap: 20px;
         }
 
-        /* --- WRAPPER PARA O SUBMENU --- */
-        .card-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card-wrapper .card-link {
-            height: 100%;
-            width: 100%;
-        }
-
         .card-link {
             background-color: #ffffff;
             color: #004d61;
@@ -115,6 +104,7 @@
             gap: 15px;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
         }
 
         .card-link:hover {
@@ -126,53 +116,119 @@
             font-size: 2.5rem;
         }
 
-        /* --- ESTILOS DO MENU SUSPENSO (DROPDOWN) --- */
-        .submenu {
-            display: none;
-            position: absolute;
-            top: calc(100% + 10px); /* Fica 10px abaixo do card principal */
-            left: 0;
-            width: 100%;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            flex-direction: column;
+        /* ========================================================
+           SISTEMA DE SEÇÕES RETRÁTEIS (ACCORDION - DASHBOARDS) 
+           ======================================================== */
+        
+        /* Painel Oculto Geral (Desliza para baixo) */
+        .painel-dashboards {
+            max-height: 0;
             overflow: hidden;
-            z-index: 20;
+            opacity: 0;
+            transition: max-height 0.5s ease, opacity 0.5s ease, margin-top 0.5s ease;
+            text-align: left; /* Corrige alinhamento para o acordeão */
         }
 
-        .submenu.active {
-            display: flex;
-            animation: slideDown 0.3s ease;
+        .painel-dashboards.ativo {
+            max-height: 2500px; /* Espaço suficiente para expandir as categorias */
+            opacity: 1;
+            margin-top: 35px;
         }
 
-        .submenu a {
-            padding: 12px 15px;
-            text-decoration: none;
+        /* Divisória visual entre os botões principais e o painel de dashboards */
+        .divisor-painel {
+            border: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.2);
+            margin-bottom: 25px;
+        }
+
+        .secao-retratil {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .secao-toggle {
+            display: none;
+        }
+
+        .secao-header {
+            background-color: #ffffff;
             color: #004d61;
+            padding: 18px 20px;
+            font-weight: bold;
+            font-size: 1.15rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+        .secao-header:hover {
+            background-color: #f8fafc;
+        }
+
+        .secao-header::after {
+            content: '▼';
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+            color: #004d61;
+        }
+
+        .secao-conteudo {
+            max-height: 0;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.05);
+            transition: max-height 0.3s ease-out, padding 0.3s ease;
+            padding: 0 20px;
+        }
+
+        .grid-dashboards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        .card-dashboard {
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #004d61;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 6px;
             font-weight: 600;
             font-size: 0.95rem;
-            border-bottom: 1px solid #e2e8f0;
-            transition: background-color 0.2s;
-            text-align: left;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .submenu a:last-child {
-            border-bottom: none;
+        .card-dashboard:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            background-color: #ffffff;
         }
 
-        .submenu a:hover {
-            background-color: #f0f7f9;
+        .dash-icon {
+            font-size: 1.4rem;
         }
 
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Animações dos Inputs Checkbox */
+        .secao-toggle:checked ~ .secao-conteudo {
+            max-height: 1000px;
         }
 
+        .secao-toggle:checked ~ .secao-header::after {
+            transform: rotate(180deg);
+        }
+
+        /* Rodapé Institucional */
         footer {
             margin-top: 30px;
             margin-bottom: 20px;
@@ -221,6 +277,7 @@
 </head>
 <body>
 
+    <!-- Botão Área Restrita -->
     <button class="btn-restrito" onclick="acessarAreaRestrita()">🔒 Área Restrita</button>
 
     <header>
@@ -230,6 +287,7 @@
     <main class="container-projetos">
         <h1>Projetos</h1>
          
+        <!-- GRID PRINCIPAL DE BOTÕES -->
         <div class="grid-links">           
             <a href="organomaker.html" class="card-link">
                 <span class="icon">🧑‍💼</span>
@@ -241,25 +299,102 @@
                 <span>Fluxomaker</span>
             </a>       
 
-            <!-- Novo Botão Dashboards com Submenu -->
-            <div class="card-wrapper">
-                <a href="#" class="card-link" onclick="toggleSubmenu(event, 'submenu-dash')">
-                    <span class="icon">📶</span>
-                    <span>Dashboards</span>
-                </a>
-                
-                <div id="submenu-dash" class="submenu">
-                    <a href="dash1.html">📊 Dashboard 1</a>
-                    <a href="dash2.html">📈 Dashboard 2</a>
-                    <a href="dash3.html">📑 Dashboard 3</a>
-                </div>
-            </div>
+            <!-- Botão Dashboards (Aciona o JavaScript ao clicar) -->
+            <a onclick="abrirPainelDashboards(event)" class="card-link">
+                <span class="icon">📶</span>
+                <span>Dashboards</span>
+            </a> 
 
             <a href="https://drive.google.com/file/d/1DvvFcZNtRu1w9sGBYhRnQv4-UisYZzPl/view?usp=sharing" class="card-link" target="_blank">
                 <span class="icon">⏬</span>
                 <span>Download<br>PSAL 1994 - 1998</span>
             </a> 
         </div>
+
+        <!-- PAINEL DE DASHBOARDS (Oculto inicialmente) -->
+        <div id="painel-dash" class="painel-dashboards">
+            
+            <hr class="divisor-painel">
+            <h2 style="color: white; margin-bottom: 20px; text-align: center; font-size: 1.5rem;">Menu de Dashboards</h2>
+
+            <!-- Seção 1 -->
+            <div class="secao-retratil">
+                <input type="checkbox" id="secao-gestao" class="secao-toggle" checked> 
+                <label for="secao-gestao" class="secao-header">📊 Gestão Estratégica</label>
+                <div class="secao-conteudo">
+                    <div class="grid-dashboards">
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiOTNmNGU3NTEtMjM2NS00MWFhLWFjOTAtMzMzMzI1MjRmYmYyIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">📈</span>
+                            <span>Diretoria</span>
+                        </a>
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiMGI1ZjJmYWMtNWRkOS00YWJlLWFjMTctM2VkNjk5Yzg2N2U5IiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">📋</span>
+                            <span>Distribuição do Quadro de pessoal</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 2 -->
+            <div class="secao-retratil">
+                <input type="checkbox" id="secao-rh" class="secao-toggle">
+                <label for="secao-rh" class="secao-header">💲 Folha de Pagamento e Financeiro</label>
+                <div class="secao-conteudo">
+                    <div class="grid-dashboards">
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiZTI1ODc2YjItNDRjMi00MjUwLTg3MWEtOTQyN2UwMGI2M2U1IiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">💰</span>
+                            <span>Geral e Tabelas</span>
+                        </a>
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiZDExODQzMjEtYjg4Zi00ZjJmLWFjN2QtNzk2YzViYTgwZGUwIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">✅️</span>
+                            <span>Eventos da folha</span>
+                        </a>
+                       <a href="https://app.powerbi.com/view?r=eyJrIjoiMDk0ODRhZDItYzdkOS00MjQyLWFhNWQtOTY2MjIwNWZiZmIzIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">⚕️</span>
+                            <span>Extrato Aux. Saúde</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 3 -->
+            <div class="secao-retratil">
+                <input type="checkbox" id="secao-Orcamento" class="secao-toggle">
+                <label for="secao-Orcamento" class="secao-header">👩🏻‍💻 Funções</label>
+                <div class="secao-conteudo">
+                    <div class="grid-dashboards">
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiNzBlMGYxMzctZmQzYi00ZWRmLWE0MmUtZTQxODZiNDI2NjEwIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">🏢</span>
+                            <span>Funções SGP</span>
+                        </a>
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiMzliOThjOWEtYWQwMy00YzYzLWI1ZDEtYTk0ODIzMGFkMzEyIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">📝</span>
+                            <span>Saldo das Funçoes</span>
+                        </a>
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiMWM4NjIxZTgtZWZkNC00NWVhLThmNzctMjFmYzQxNjY2Yjg1IiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">👨🏻‍💻</span>
+                            <span>Geral das Funções</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 4 -->
+            <div class="secao-retratil">
+                <input type="checkbox" id="secao-outros" class="secao-toggle">
+                <label for="secao-outros" class="secao-header">📚 Outros</label>
+                <div class="secao-conteudo">
+                    <div class="grid-dashboards">
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiOTU1N2E4YWQtMTYxNi00ZjQ5LWFjZTktMmZkNTEyNGQ3ODU0IiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                            <span class="dash-icon">📅</span>
+                            <span>Afastados por data</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- Fim Painel Dashboards -->
+
     </main>
 
     <footer>
@@ -270,32 +405,19 @@
         <div class="footer-text">DGF • NUGOV • TJPE</div>
     </footer>
 
+    <!-- SCRIPT DE INTERAÇÃO -->
     <script>
         function acessarAreaRestrita() {
             alert("Redirecionando para a Área Restrita...");
         }
 
-        // Função para abrir/fechar o submenu de dashboards
-        function toggleSubmenu(event, submenuId) {
-            event.preventDefault(); // Impede a página de pular pro topo ao clicar
-            const submenu = document.getElementById(submenuId);
+        function abrirPainelDashboards(event) {
+            event.preventDefault(); // Impede que a tela pule
+            const painel = document.getElementById("painel-dash");
             
-            if (submenu.classList.contains('active')) {
-                submenu.classList.remove('active');
-            } else {
-                // Fecha outros menus se houver, e abre este
-                document.querySelectorAll('.submenu').forEach(menu => menu.classList.remove('active'));
-                submenu.classList.add('active');
-            }
+            // Ativa ou desativa a classe que mostra o painel
+            painel.classList.toggle("ativo");
         }
-
-        // Fecha o menu automaticamente se clicar fora da caixinha
-        document.addEventListener('click', function(event) {
-            const isClickInside = event.target.closest('.card-wrapper');
-            if (!isClickInside) {
-                document.querySelectorAll('.submenu').forEach(menu => menu.classList.remove('active'));
-            }
-        });
     </script>
 </body>
 </html>
