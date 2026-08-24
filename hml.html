@@ -13,7 +13,6 @@
         }
 
         body {
-            /* Fundo 5% mais escuro que o branco original */
             background-color: #f2f2f2;
             display: flex;
             flex-direction: column;
@@ -46,7 +45,6 @@
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
         }
 
-        /* Topo Centralizado com o meio */
         header {
             width: 100%;
             display: flex;
@@ -63,7 +61,6 @@
             margin-top: 40px;
         }
 
-        /* Container Central Azul Petróleo */
         .container-projetos {
             background-color: rgba(0, 77, 97, 0.92);
             backdrop-filter: blur(10px);
@@ -86,14 +83,24 @@
             font-weight: 600;
         }
 
-        /* Grid das Caixinhas */
         .grid-links {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
 
-        /* Caixinhas Brancas com Letras Azuis */
+        /* --- WRAPPER PARA O SUBMENU --- */
+        .card-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-wrapper .card-link {
+            height: 100%;
+            width: 100%;
+        }
+
         .card-link {
             background-color: #ffffff;
             color: #004d61;
@@ -115,12 +122,57 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
-        /* Estilização dos Ícones/Figurinhas */
         .icon {
             font-size: 2.5rem;
         }
 
-        /* Rodapé Institucional */
+        /* --- ESTILOS DO MENU SUSPENSO (DROPDOWN) --- */
+        .submenu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 10px); /* Fica 10px abaixo do card principal */
+            left: 0;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 20;
+        }
+
+        .submenu.active {
+            display: flex;
+            animation: slideDown 0.3s ease;
+        }
+
+        .submenu a {
+            padding: 12px 15px;
+            text-decoration: none;
+            color: #004d61;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .submenu a:last-child {
+            border-bottom: none;
+        }
+
+        .submenu a:hover {
+            background-color: #f0f7f9;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         footer {
             margin-top: 30px;
             margin-bottom: 20px;
@@ -157,7 +209,6 @@
             letter-spacing: 1.5px;
         }
         
-        /* Ajuste para mobile no botão */
         @media (max-width: 600px) {
             .btn-restrito {
                 top: 10px;
@@ -170,7 +221,6 @@
 </head>
 <body>
 
-    <!-- Botão Área Restrita -->
     <button class="btn-restrito" onclick="acessarAreaRestrita()">🔒 Área Restrita</button>
 
     <header>
@@ -191,10 +241,19 @@
                 <span>Fluxomaker</span>
             </a>       
 
-            <a href="dash.html" class="card-link">
-                <span class="icon">📶</span>
-                <span>Dashboards</span>
-            </a> 
+            <!-- Novo Botão Dashboards com Submenu -->
+            <div class="card-wrapper">
+                <a href="#" class="card-link" onclick="toggleSubmenu(event, 'submenu-dash')">
+                    <span class="icon">📶</span>
+                    <span>Dashboards</span>
+                </a>
+                
+                <div id="submenu-dash" class="submenu">
+                    <a href="dash1.html">📊 Dashboard 1</a>
+                    <a href="dash2.html">📈 Dashboard 2</a>
+                    <a href="dash3.html">📑 Dashboard 3</a>
+                </div>
+            </div>
 
             <a href="https://drive.google.com/file/d/1DvvFcZNtRu1w9sGBYhRnQv4-UisYZzPl/view?usp=sharing" class="card-link" target="_blank">
                 <span class="icon">⏬</span>
@@ -211,13 +270,32 @@
         <div class="footer-text">DGF • NUGOV • TJPE</div>
     </footer>
 
-    <!-- Script adicionado para o botão funcionar -->
     <script>
         function acessarAreaRestrita() {
-            // Substitua 'login.html' pelo link correto da sua área restrita
             alert("Redirecionando para a Área Restrita...");
-            // window.location.href = "login.html"; 
         }
+
+        // Função para abrir/fechar o submenu de dashboards
+        function toggleSubmenu(event, submenuId) {
+            event.preventDefault(); // Impede a página de pular pro topo ao clicar
+            const submenu = document.getElementById(submenuId);
+            
+            if (submenu.classList.contains('active')) {
+                submenu.classList.remove('active');
+            } else {
+                // Fecha outros menus se houver, e abre este
+                document.querySelectorAll('.submenu').forEach(menu => menu.classList.remove('active'));
+                submenu.classList.add('active');
+            }
+        }
+
+        // Fecha o menu automaticamente se clicar fora da caixinha
+        document.addEventListener('click', function(event) {
+            const isClickInside = event.target.closest('.card-wrapper');
+            if (!isClickInside) {
+                document.querySelectorAll('.submenu').forEach(menu => menu.classList.remove('active'));
+            }
+        });
     </script>
 </body>
 </html>
