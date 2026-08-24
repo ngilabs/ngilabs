@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calcdata - Calculadora de Datas</title>
+    <style>
+        /* Manual Visual: Cores sóbrias, foco em acessibilidade e legibilidade */
+        :root {
+            --primary-color: #003366; /* Azul Institucional / Tribunal */
+            --primary-hover: #002244;
+            --secondary-color: #4682B4; /* Azul Secundário */
+            --bg-body: #F4F6F9;
+            --bg-card: #FFFFFF;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #DDE2E5;
+            --result-bg: #EBF3FC;
+            --result-border: #A9CBEF;
+            --alert-color: #D9383A;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.4;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Wrapper principal para empurrar o footer para o final */
+        .wrapper {
+            flex: 1 0 auto;
+            padding: 15px 20px;
+        }
+
+        /* Layout em duas colunas otimizado para caber em uma tela */
+        .main-layout {
+            display: flex;
+            max-width: 1100px;
+            margin: 0 auto;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        /* Coluna da Esquerda: Calculadora */
+        .container {
+            flex: 1;
+            background: var(--bg-card);
+            padding: 20px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid var(--primary-color);
+        }
+
+        /* Coluna da Direita: Calendário de Feriados sem limitação de altura */
+        .sidebar-feriados {
+            width: 310px;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-top: 5px solid var(--secondary-color);
+            box-sizing: border-box;
+        }
+
+        .lista-feriados-scroll {
+            max-height: none; 
+            overflow-y: visible; 
+            padding-right: 5px;
+        }
+
+        /* Customização da barra de rolagem do calendário */
+        .lista-feriados-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+        .lista-feriados-scroll::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 4px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin: 0 0 2px 0;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        /* Aviso D+0 Institucional em Vermelho */
+        .aviso-contagem {
+            color: var(--alert-color);
+            font-size: 11.5px;
+            font-weight: 700;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* Menu de Botões Interativos (Abas) */
+        .menu-tabs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 6px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background-color: #F0F2F5;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12.5px;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .tab-btn:hover {
+            background-color: var(--border-color);
+        }
+
+        .tab-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        /* Seções de Cálculo */
+        .section {
+            display: none;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(3px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 18px;
+            margin: 0 0 10px 0;
+            border-left: 4px solid var(--secondary-color);
+            padding-left: 8px;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            font-size: 15px;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sub-titulo-sidebar {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            margin-top: -8px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+            font-size: 13.5px;
+            color: var(--text-main);
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 8px 10px;
+            margin-top: 4px;
+            box-sizing: border-box;
+            border-radius: 5px;
+            font-size: 13.5px;
+        }
+
+        input[type="date"], input[type="number"], select {
+            border: 1px solid var(--border-color);
+            background-color: #FAFAFA;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            background-color: #FFF;
+        }
+
+        .btn-action {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            letter-spacing: 0.5px;
+            transition: background 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .resultado {
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--result-bg);
+            border-left: 4px solid var(--secondary-color);
+            border-top: 1px solid var(--result-border);
+            border-right: 1px solid var(--result-border);
+            border-bottom: 1px solid var(--result-border);
+            border-radius: 0 4px 4px 0;
+            font-weight: 600;
+            color: var(--primary-color);
+            white-space: pre-line;
+            font-size: 13.5px;
+        }
+
+        .checkbox-group {
+            margin-top: 10px;
+            background: #FAFAFA;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px dashed var(--border-color);
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+            margin-top: 0;
+            margin-bottom: 6px;
+            cursor: pointer;
+            color: var(--text-main);
+            font-size: 13px;
+        }
+
+        .checkbox-group label:last-child {
+            margin-bottom: 0;
+        }
+
+        .checkbox-group input {
+            width: auto;
+            margin: 0 8px 0 0;
+            transform: scale(1.05);
+        }
+
+        /* Lista de Feriados */
+        .lista-feriados {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .lista-feriados li {
+            padding: 6px 0;
+            border-bottom: 1px solid #F0F2F5;
+            font-size: 12.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .lista-feriados li:last-child {
+            border-bottom: none;
+        }
+
+        .feriado-data {
+            font-weight: 700;
+            color: var(--secondary-color);
+            background: #EBF3FC;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 10.5px;
+            white-space: nowrap;
+        }
+
+        .feriado-regional {
+            color: #D9383A;
+            background: #FDF2F2;
+        }
+
+        /* Estilo do Alerta de Próximo Evento */
+        .banner-evento {
+            background: #FFF2F2;
+            border: 1px solid #FADBD8;
+            border-left: 4px solid var(--alert-color);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #78281F;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        /* Estilização do Footer compactada */
+        footer {
+            flex-shrink: 0;
+            background-color: var(--bg-body);
+            border-top: 1px solid var(--border-color);
+            padding: 12px 20px;
+            text-align: center;
+        }
+
+        .footer-logos {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 4px;
+        }
+
+        .footer-logo {
+            height: 35px;
+            object-fit: contain;
+        }
+
+        .footer-text {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        /* Responsividade Total */
+        @media (max-width: 850px) {
+            .main-layout {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .sidebar-feriados {
+                width: 100%;
+            }
+            .lista-feriados-scroll {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="main-layout">
+        
+        <div class="container">
+            <h1>Calcdata</h1>
+            <div class="subtitle">Sua calculadora de datas completa. Selecione a operação desejada abaixo:</div>
+
+            <div class="menu-tabs">
+                <button class="tab-btn active" onclick="switchTab('dias-entre-datas', this)">Diferença</button>
+                <button class="tab-btn" onclick="switchTab('somar-dias', this)">Somar Dias</button>
+                <button class="tab-btn" onclick="switchTab('subtrair-dias', this)">Subtrair Dias</button>
+                <button class="tab-btn" onclick="switchTab('dias-uteis', this)">Dias Úteis</button>
+                <button class="tab-btn" onclick="switchTab('dia-semana', this)">Dia da Semana</button>
+            </div>
+
+            <div class="section active" id="dias-entre-datas">
+                <h2>Diferença entre Datas</h2>
+                <div class="aviso-contagem"></div>
+                
+                <label>Data Inicial:</label>
+                <input type="date" id="dif-data1">
+                
+                <label>Data Final:</label>
+                <input type="date" id="dif-data2">
+                
+                <button class="btn-action" onclick="calcularDiferenca()">Calcular Diferença</button>
+                <div class="resultado" id="res-diferenca">Resultado: -</div>
+            </div>
+
+            <div class="section" id="somar-dias">
+                <h2>Somar Dias à Data</h2>
+                <div class="aviso-contagem"></div>
+
+                <label>Data Base:</label>
+                <input type="date" id="soma-data">
+                
+                <label>Quantidade de Dias a Somar:</label>
+                <input type="number" id="soma-qtd" min="0">
+                
+                <button class="btn-action" onclick="calcularSoma()">Somar</button>
+                <div class="resultado" id="res-soma">Resultado: -</div>
+            </div>
+
+            <div class="section" id="subtrair-dias">
+                <h2>Subtrair Dias da Data</h2>
+                <div class="aviso-contagem"></div>
+
+                <label>Data Base:</label>
+                <input type="date" id="sub-data">
+                
+                <label>Quantidade de Dias a Subtrair:</label>
+                <input type="number" id="sub-qtd" min="0">
+                
+                <button class="btn-action" onclick="calcularSubtracao()">Subtrair</button>
+                <div class="resultado" id="res-subtracao">Resultado: -</div>
+            </div>
+
+            <div class="section" id="dias-uteis">
+                <h2>Cálculo de Dias Úteis</h2>
+                <div class="aviso-contagem"></div>
+
+                <label>Data Inicial:</label>
+                <input type="date" id="util-data1">
+                
+                <label>Data Final:</label>
+                <input type="date" id="util-data2">
+                
+                <div class="checkbox-group">
+                    <label><input type="checkbox" id="descontar-feriados"> Descontar Feriados Nacionais (Brasil)</label>
+                    <label><input type="checkbox" id="descontar-recife"> Descontar Feriados Municipais (Recife/PE)</label>
+                </div>
+                
+                <button class="btn-action" onclick="calcularDiasUteis()">Calcular Dias Úteis</button>
+                <div class="resultado" id="res-uteis">Resultado: -</div>
+            </div>
+
+            <div class="section" id="dia-semana">
+                <h2>Descobrir o Dia da Semana</h2>
+                <label>Escolha uma Data:</label>
+                <input type="date" id="semana-data">
+                
+                <button class="btn-action" onclick="descobrirDiaSemana()">Descobrir Dia</button>
+                <div class="resultado" id="res-semana">Resultado: -</div>
+            </div>
+        </div>
+
+        <div class="sidebar-feriados">
+            <h3>Calendário TJPE 2026</h3>
+            <div class="sub-titulo-sidebar">Ato Conjunto nº 304/2025</div>
+            
+            <div class="banner-evento" id="proximo-evento-banner">
+                Carregando próximo recesso...
+            </div>
+
+            <div class="lista-feriados-scroll">
+                <ul class="lista-feriados">
+                    <li><span>Confraternização Universal (Qui)</span> <span class="feriado-data">01/01</span></li>
+                    <li><span>Recesso de Janeiro (Sex a Ter)</span> <span class="feriado-data feriado-regional">02 a 06/01</span></li>
+                    <li><span>Carnaval & Cinzas (Seg a Qua)</span> <span class="feriado-data">16 a 18/02</span></li>
+                    <li><span>Data Magna de PE (Sex)</span> <span class="feriado-data feriado-regional">06/03</span></li>
+                    <li><span>Semana Santa & Páscoa (Qui a Dom)</span> <span class="feriado-data">02 a 05/04</span></li>
+                    <li><span>Tiradentes (Ter)</span> <span class="feriado-data">21/04</span></li>
+                    <li><span>Dia do Trabalho (Sex)</span> <span class="feriado-data">01/05</span></li>
+                    <li><span>Corpus Christi Transf. (Seg)</span> <span class="feriado-data">22/06</span></li>
+                    <li><span>Recesso Junino & São João (Ter a Ter)</span> <span class="feriado-data feriado-regional">23 a 30/06</span></li>
+                    <li><span>N. Sra. do Carmo - Recife (Qui)</span> <span class="feriado-data feriado-regional">16/07</span></li>
+                    <li><span>Cursos Jurídicos Antecip. (Seg)</span> <span class="feriado-data feriado-regional">10/08</span></li>
+                    <li><span>Independência do Brasil (Seg)</span> <span class="feriado-data">07/09</span></li>
+                    <li><span>Nossa Sra. Aparecida (Seg)</span> <span class="feriado-data">12/10</span></li>
+                    <li><span>Servidor Público Transf. (Sex)</span> <span class="feriado-data feriado-regional">30/10</span></li>
+                    <li><span>Finados (Seg)</span> <span class="feriado-data">02/11</span></li>
+                    <li><span>Proclamação da República (Dom)</span> <span class="feriado-data">15/11</span></li>
+                    <li><span>Consciência Negra (Sex)</span> <span class="feriado-data">20/11</span></li>
+                    <li><span>N. Sra. da Conceição / Justiça (Ter)</span> <span class="feriado-data feriado-regional">08/12</span></li>
+                    <li><span>Natal & Recesso Forense (Dom a Qui)</span> <span class="feriado-data feriado-regional">20 a 31/12</span></li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>
+    <div class="footer-logos">
+        <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo" alt="Logo 1"> 
+        <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo" alt="Logo DGF">
+    </div>
+    <div class="footer-text">DGF • NUGOV • TJPE</div>
+</footer>
+
+<script>
+    // =========================================================================
+    // 🌟 PAINEL DE ATUALIZAÇÃO DOS FERIADOS (FÁCIL DE MUDAR NO ANO QUE VEM)
+    // =========================================================================
+    const FERIADOS_E_RECESSOS_GERAIS = [
+        "01-01", "02-16", "02-17", "02-18", "03-06", "04-02", "04-03", "04-05", 
+        "04-21", "05-01", "06-22", "06-24", "08-10", "09-07", "10-12", "10-30", 
+        "11-02", "11-15", "11-20", "12-08", "12-25",
+        "01-02", "01-03", "01-04", "01-05", "01-06", 
+        "06-23", "06-25", "06-26", "06-27", "06-28", "06-29", "06-30", 
+        "12-20", "12-21", "12-22", "12-23", "12-24", "12-26", "12-27", "12-28", "12-29", "12-30", "12-31" 
+    ];
+
+    const FERIADOS_EXCLUSIVOS_RECIFE = [
+        "07-16"
+    ];
+
+    const MAPA_NOMES_FERIADOS = [
+        { data: "01-01", nome: "Confraternização Universal (Quinta-feira)" },
+        { data: "01-02", nome: "Recesso do Judiciário (Sexta-feira)" },
+        { data: "01-03", nome: "Recesso do Judiciário (Sábado)" },
+        { data: "01-04", nome: "Recesso do Judiciário (Domingo)" },
+        { data: "01-05", nome: "Recesso do Judiciário (Segunda-feira)" },
+        { data: "01-06", nome: "Recesso do Judiciário (Terça-feira)" },
+        { data: "02-16", nome: "Carnaval (Segunda-feira)" },
+        { data: "02-17", nome: "Carnaval (Terça-feira)" },
+        { data: "02-18", nome: "Quarta-feira de Cinzas" },
+        { data: "03-06", nome: "Data Magna de Pernambuco (Sexta-feira)" },
+        { data: "04-02", nome: "Semana Santa (Quinta-Feira)" },
+        { data: "04-03", nome: "Semana Santa (Sexta-Feira da Paixão)" },
+        { data: "04-05", nome: "Páscoa (Domingo)" },
+        { data: "04-21", nome: "Dia de Tiradentes (Terça-feira)" },
+        { data: "05-01", nome: "Dia do Trabalho (Sexta-feira)" },
+        { data: "06-22", nome: "Corpus Christi - Transferido (Segunda-feira)" },
+        { data: "06-23", nome: "Recesso Junino (Terça-feira)" },
+        { data: "06-24", nome: "Feriado de São João (Quarta-feira)" },
+        { data: "06-25", nome: "Recesso Junino (Quinta-feira)" },
+        { data: "06-26", nome: "Recesso Junino (Sexta-feira)" },
+        { data: "06-27", nome: "Recesso Junino (Sábado)" },
+        { data: "06-28", nome: "Recesso Junino (Domingo)" },
+        { data: "06-29", nome: "Recesso Junino (Segunda-feira)" },
+        { data: "06-30", nome: "Recesso Junino (Terça-feira)" },
+        { data: "07-16", nome: "N. Sra. do Carmo - Padroeira do Recife (Quinta-feira)" },
+        { data: "08-10", nome: "Dia dos Cursos Jurídicos - Antecipado (Segunda-feira)" },
+        { data: "09-07", nome: "Independência do Brasil (Segunda-feira)" },
+        { data: "10-12", nome: "Nossa Senhora Aparecida (Segunda-feira)" },
+        { data: "10-30", nome: "Dia do Servidor Público - Transferido (Sexta-feira)" },
+        { data: "11-02", nome: "Dia de Finados (Segunda-feira)" },
+        { data: "11-15", nome: "Proclamação da República (Domingo)" },
+        { data: "11-20", nome: "Dia Nacional de Zumbi e da Consciência Negra (Sexta-feira)" },
+        { data: "12-08", nome: "N. Sra. da Conceição / Dia da Justiça (Terça-feira)" },
+        { data: "12-20", nome: "Recesso Forense (Domingo)" },
+        { data: "12-21", nome: "Recesso Forense (Segunda-feira)" },
+        { data: "12-22", nome: "Recesso Forense (Terça-feira)" },
+        { data: "12-23", nome: "Recesso Forense (Quarta-feira)" },
+        { data: "12-24", nome: "Recesso Forense (Quinta-feira)" },
+        { data: "12-25", nome: "Natal (Sexta-feira)" },
+        { data: "12-26", nome: "Recesso Forense (Sábado)" },
+        { data: "12-27", nome: "Recesso Forense (Domingo)" },
+        { data: "12-28", nome: "Recesso Forense (Segunda-feira)" },
+        { data: "12-29", nome: "Recesso Forense (Terça-feira)" },
+        { data: "12-30", nome: "Recesso Forense (Quarta-feira)" },
+        { data: "12-31", nome: "Recesso Forense (Quinta-feira)" }
+    ];
+    // =========================================================================
+
+    window.onload = function() {
+        atualizarBannerProximoEvento();
+        vincularValidacaoInstantaneaFeriados();
+    };
+
+    function atualizarBannerProximoEvento() {
+        const hoje = new Date();
+        const anoAtual = hoje.getFullYear();
+        let proximoFeriado = null;
+        let menorDiferenca = Infinity;
+
+        const eventosPrincipaisBanner = [
+            { data: "01-01", nome: "Confraternização Universal" },
+            { data: "01-02", nome: "Recesso do Judiciário" },
+            { data: "02-16", nome: "Carnaval" },
+            { data: "03-06", nome: "Data Magna de Pernambuco" },
+            { data: "04-02", nome: "Semana Santa" },
+            { data: "04-21", nome: "Dia de Tiradentes" },
+            { data: "05-01", nome: "Dia do Trabalho" },
+            { data: "06-22", nome: "Corpus Christi (Transferido)" },
+            { data: "06-23", nome: "Recesso Junino / São João" },
+            { data: "07-16", nome: "N. Sra. do Carmo (Recife)" },
+            { data: "08-10", nome: "Dia dos Cursos Jurídicos" },
+            { data: "09-07", nome: "Independência do Brasil" },
+            { data: "10-12", nome: "Nossa Senhora Aparecida" },
+            { data: "10-30", nome: "Dia do Servidor Público" },
+            { data: "11-02", nome: "Dia de Finados" },
+            { data: "11-15", nome: "Proclamação da República" },
+            { data: "11-20", nome: "Consciência Negra" },
+            { data: "12-08", nome: "N. Sra. da Conceição / Dia da Justiça" },
+            { data: "12-20", nome: "Natal & Recesso Forense" }
+        ];
+
+        for (const item of eventosPrincipaisBanner) {
+            const [mes, dia] = item.data.split('-').map(Number);
+            const dataFeriado = new Date(anoAtual, mes - 1, dia, 0, 0, 0);
+            
+            if (dataFeriado < hoje && (hoje.getDate() !== dia || hoje.getMonth() !== mes - 1)) {
+                dataFeriado.setFullYear(anoAtual + 1);
+            }
+
+            const diffTempo = dataFeriado - hoje;
+            const diffDias = Math.ceil(diffTempo / (1000 * 60 * 60 * 24));
+
+            if (diffDias >= 0 && diffDias < menorDiferenca) {
+                menorDiferenca = diffDias;
+                proximoFeriado = { nome: item.nome, dias: diffDias };
+            }
+        }
+
+        const banner = document.getElementById('proximo-evento-banner');
+        if (proximoFeriado) {
+            if (proximoFeriado.dias === 0) {
+                banner.innerHTML = `📢 <b>Hoje é:</b> ${proximoFeriado.nome}!`;
+            } else {
+                banner.innerHTML = `⏳ <b>Próximo Evento:</b> ${proximoFeriado.nome}<br>Faltam <b>${proximoFeriado.dias} dias</b>.`;
+            }
+        } else {
+            banner.style.display = 'none';
+        }
+    }
+
+    function obterNotaSeFeriado(dataInputVal) {
+        if (!dataInputVal) return "";
+        const parts = dataInputVal.split('-');
+        if (parts.length !== 3) return "";
+        const mesDia = `${parts[1]}-${parts[2]}`;
+        
+        const correspondencia = MAPA_NOMES_FERIADOS.find(f => f.data === mesDia);
+        if (correspondencia) {
+            return `\nℹ️ Nota: A data (${parts[2]}/${parts[1]}) coincide com o expediente de: ${correspondencia.nome}.`;
+        }
+        return "";
+    }
+
+    function verificarTrabalhoRemotoAto(dataStr) {
+        if (dataStr && dataStr.endsWith("02-13")) {
+            return "\n⚠️ Nota (Art. 3º do Ato): O dia 13/02/2026 possui expediente com trabalho remoto compulsório nas unidades do Palácio da Justiça, Fórum Paula Batista e Fórum Thomaz de Aquino devido às restrições de acesso dos blocos carnavalescos.";
+        }
+        return "";
+    }
+
+    function vincularValidacaoInstantaneaFeriados() {
+        const inputsData = document.querySelectorAll('input[type="date"]');
+        inputsData.forEach(input => {
+            input.addEventListener('input', function() {
+                const containerSection = input.closest('.section');
+                const resultadoBox = containerSection.querySelector('.resultado');
+                
+                const notaFeriado = obterNotaSeFeriado(input.value);
+                const notaRemoto = verificarTrabalhoRemotoAto(input.value);
+                
+                if (notaFeriado || notaRemoto) {
+                    resultadoBox.innerText = `Análise da data informada:${notaFeriado}${notaRemoto}`;
+                }
+            });
+        });
+    }
+
+    function switchTab(sectionId, element) {
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        
+        document.getElementById(sectionId).classList.add('active');
+        element.classList.add('active');
+    }
+
+    function obterTempoDetalhadoExtenso(dataInicial, dataFinal) {
+        let d1 = new Date(dataInicial);
+        let d2 = new Date(dataFinal);
+        
+        if (d1 > d2) {
+            const temp = d1;
+            d1 = d2;
+            d2 = temp;
+        }
+
+        let anos = d2.getFullYear() - d1.getFullYear();
+        let meses = d2.getMonth() - d1.getMonth();
+        let dias = d2.getDate() - d1.getDate();
+
+        if (dias < 0) {
+            meses--;
+            const ultimoDiaMesAnterior = new Date(d2.getFullYear(), d2.getMonth(), 0).getDate();
+            dias += ultimoDiaMesAnterior;
+        }
+
+        if (meses < 0) {
+            anos--;
+            meses += 12;
+        }
+
+        return `Equivalente a: ${anos} ano(s), ${meses} mês(es) e ${dias} dia(s)`;
+    }
+
+    function obterDiaSemanaExtenso(data) {
+        const diasSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+        return diasSemana[data.getDay()];
+    }
+
+    // 1. DIAS ENTRE DATAS
+    function calcularDiferenca() {
+        const d1 = document.getElementById('dif-data1').value;
+        const d2 = document.getElementById('dif-data2').value;
+        const criterio = 0; // Travado em D+0 conforme pedido
+        
+        if (!d1 || !d2) {
+            document.getElementById('res-diferenca').innerText = "Por favor, preencha ambas as datas.";
+            return;
+        }
+
+        let dataInicial = new Date(d1 + 'T00:00:00');
+        let dataFinal = new Date(d2 + 'T00:00:00');
+        
+        let inverter = false;
+        if (dataInicial > dataFinal) {
+            const temp = dataInicial;
+            dataInicial = dataFinal;
+            dataFinal = temp;
+            inverter = true;
+        }
+
+        let dataCalculoInicial = new Date(dataInicial);
+        if (criterio === 1) {
+            dataCalculoInicial.setDate(dataCalculoInicial.getDate() + 1);
+        }
+
+        let diferencaTempo = dataFinal - dataCalculoInicial;
+        let diferencaDias = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
+        
+        if (criterio === 1 && dataInicial.getTime() === dataFinal.getTime()) {
+            diferencaDias = 0;
+        } else if (criterio === 0) {
+            diferencaDias += 1; 
+        }
+
+        const detalhe = obterTempoDetalhadoExtenso(dataInicial, dataFinal);
+        const diaSemanaFinal = obterDiaSemanaExtenso(dataFinal);
+        const notaRemoto = verificarTrabalhoRemotoAto(d1) || verificarTrabalhoRemotoAto(d2);
+        const notaFeriado1 = obterNotaSeFeriado(d1);
+        const notaFeriado2 = obterNotaSeFeriado(d2);
+        const sinal = inverter ? "-" : "";
+
+        document.getElementById('res-diferenca').innerText = `Resultado: ${sinal}${diferencaDias} dias de diferença obtidos\n${detalhe}\nA data final cai em um(a): ${diaSemanaFinal}${notaFeriado1}${notaFeriado2}${notaRemoto}`;
+    }
+
+    // 2. SOMAR DIAS À DATA
+    function calcularSoma() {
+        const dataBaseInput = document.getElementById('soma-data').value;
+        let diasParaSomar = parseInt(document.getElementById('soma-qtd').value);
+        const criterio = 1; // Travado em D+1 conforme pedido
+
+        if (!dataBaseInput || isNaN(diasParaSomar)) {
+            document.getElementById('res-soma').innerText = "Por favor, preencha a data e a quantidade de dias.";
+            return;
+        }
+
+        const dataBase = new Date(dataBaseInput + 'T00:00:00');
+        const novaData = new Date(dataBase);
+        
+        if (criterio === 0 && diasParaSomar > 0) {
+            diasParaSomar = diasParaSomar - 1;
+        }
+
+        novaData.setDate(novaData.getDate() + diasParaSomar);
+
+        const dataFormatada = novaData.toLocaleDateString('pt-BR');
+        const diaSemana = obterDiaSemanaExtenso(novaData);
+        const detalhe = obterTempoDetalhadoExtenso(dataBase, novaData);
+        
+        const yyyy = novaData.getFullYear();
+        const mm = String(novaData.getMonth() + 1).padStart(2, '0');
+        const dd = String(novaData.getDate()).padStart(2, '0');
+        
+        const notaFeriadoBase = obterNotaSeFeriado(dataBaseInput);
+        const notaFeriadoFinal = obterNotaSeFeriado(`${yyyy}-${mm}-${dd}`);
+        const notaRemoto = verificarTrabalhoRemotoAto(dataBaseInput) || verificarTrabalhoRemotoAto(`${yyyy}-${mm}-${dd}`);
+
+        document.getElementById('res-soma').innerText = `Resultado: Nova data é ${dataFormatada} (${diaSemana})\n${detalhe}\nA data final cai em um(a): ${diaSemana}${notaFeriadoBase}${notaFeriadoFinal}${notaRemoto}`;
+    }
+
+    // 3. SUBTRAIR DIAS DA DATA
+    function calcularSubtracao() {
+        const dataBaseInput = document.getElementById('sub-data').value;
+        let diasParaSubtrair = parseInt(document.getElementById('sub-qtd').value);
+        const criterio = 1; // Travado em D+1 conforme pedido
+
+        if (!dataBaseInput || isNaN(diasParaSubtrair)) {
+            document.getElementById('res-subtracao').innerText = "Por favor, preencha a data e a quantidade de dias.";
+            return;
+        }
+
+        const dataBase = new Date(dataBaseInput + 'T00:00:00');
+        const novaData = new Date(dataBase);
+
+        if (criterio === 0 && diasParaSubtrair > 0) {
+            diasParaSubtrair = diasParaSubtrair - 1;
+        }
+
+        novaData.setDate(novaData.getDate() - diasParaSubtrair);
+
+        const dataFormatada = novaData.toLocaleDateString('pt-BR');
+        const diaSemana = obterDiaSemanaExtenso(novaData);
+        const detalhe = obterTempoDetalhadoExtenso(dataBase, novaData);
+        
+        const yyyy = novaData.getFullYear();
+        const mm = String(novaData.getMonth() + 1).padStart(2, '0');
+        const dd = String(novaData.getDate()).padStart(2, '0');
+        
+        const notaFeriadoBase = obterNotaSeFeriado(dataBaseInput);
+        const notaFeriadoFinal = obterNotaSeFeriado(`${yyyy}-${mm}-${dd}`);
+        const notaRemoto = verificarTrabalhoRemotoAto(dataBaseInput) || verificarTrabalhoRemotoAto(`${yyyy}-${mm}-${dd}`);
+
+        document.getElementById('res-subtracao').innerText = `Resultado: Nova data é ${dataFormatada} (${diaSemana})\n${detalhe}\nA data final cai em um(a): ${diaSemana}${notaFeriadoBase}${notaFeriadoFinal}${notaRemoto}`;
+    }
+
+    // 4. CÁLCULO DE DIAS ÚTEIS
+    function calcularDiasUteis() {
+        const d1 = document.getElementById('util-data1').value;
+        const d2 = document.getElementById('util-data2').value;
+        const considerarSabado = false; // Travado para sempre considerar Sábado como NÃO útil conforme pedido
+        const descontarFeriados = document.getElementById('descontar-feriados').checked;
+        const descontarRecife = document.getElementById('descontar-recife').checked;
+        const criterio = 0; 
+
+        if (!d1 || !d2) {
+            document.getElementById('res-uteis').innerText = "Por favor, preencha ambas as datas.";
+            return;
+        }
+
+        let dataInicial = new Date(d1 + 'T00:00:00');
+        let dataFinal = new Date(d2 + 'T00:00:00');
+
+        let inverter = false;
+        if (dataInicial > dataFinal) {
+            const temp = dataInicial;
+            dataInicial = dataFinal;
+            dataFinal = temp;
+            inverter = true;
+        }
+
+        let diasUteis = 0;
+        let dataCorrente = new Date(dataInicial);
+        
+        if (criterio === 1) {
+            dataCorrente.setDate(dataCorrente.getDate() + 1);
+        }
+
+        let passouPeloDiaRemoto = false;
+
+        while (dataCorrente <= dataFinal) {
+            const diaSemana = dataCorrente.getDay();
+            let ehUtil = true;
+
+            if (diaSemana === 0) {
+                ehUtil = false;
+            } else if (diaSemana === 6 && !considerarSabado) {
+                ehUtil = false;
+            }
+
+            const mesDia = String(dataCorrente.getMonth() + 1).padStart(2, '0') + '-' + String(dataCorrente.getDate()).padStart(2, '0');
+
+            if (mesDia === "02-13") {
+                passouPeloDiaRemoto = true;
+            }
+
+            if (ehUtil && descontarFeriados) {
+                if (FERIADOS_E_RECESSOS_GERAIS.includes(mesDia)) {
+                    ehUtil = false;
+                }
+            }
+
+            if (ehUtil && descontarRecife) {
+                if (FERIADOS_EXCLUSIVOS_RECIFE.includes(mesDia)) {
+                    ehUtil = false;
+                }
+            }
+
+            if (ehUtil) diasUteis++;
+            dataCorrente.setDate(dataCorrente.getDate() + 1);
+        }
+
+        const sinal = inverter ? "-" : "";
+        const detalhe = obterTempoDetalhadoExtenso(dataInicial, dataFinal);
+        const diaSemanaFinal = obterDiaSemanaExtenso(dataFinal);
+        const notaFeriado1 = obterNotaSeFeriado(d1);
+        const notaFeriado2 = obterNotaSeFeriado(d2);
+        const notaRemoto = passouPeloDiaRemoto ? "\n⚠️ Nota (Art. 3º do Ato): O período informado abrange o dia 13/02/2026, data de expediente com trabalho remoto compulsório nas unidades do Palácio da Justiça, Fórum Paula Batista e Fórum Thomaz de Aquino." : "";
+        
+        document.getElementById('res-uteis').innerText = `Resultado: ${sinal}${diasUteis} dias úteis obtidos\n${detalhe} no período total.\nA data final cai em um(a): ${diaSemanaFinal}${notaFeriado1}${notaFeriado2}${notaRemoto}`;
+    }
+
+    // 5. DESCOBRIR DIA DA SEMANA
+    function descobrirDiaSemana() {
+        const dataInput = document.getElementById('semana-data').value;
+
+        if (!dataInput) {
+            document.getElementById('res-semana').innerText = "Por favor, selecione uma data.";
+            return;
+        }
+
+        const data = new Date(dataInput + 'T00:00:00');
+        const diaExtenso = obterDiaSemanaExtenso(data);
+        const notaFeriado = obterNotaSeFeriado(dataInput);
+        const notaRemoto = verificarTrabalhoRemotoAto(dataInput);
+        
+        document.getElementById('res-semana').innerText = `Resultado: Esta data cairá em um(a) ${diaExtenso}${notaFeriado}${notaRemoto}`;
+    }
+
+    // =========================================================================
+    // 🔒 TRAVA DE SEGURANÇA: BLOQUEIO DE INSPEÇÃO E CÓDIGO FONTE (CLIENT-SIDE)
+    // =========================================================================
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.keyCode === 123) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && e.keyCode === 85) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+            e.preventDefault();
+            return false;
+        }
+    });
+</script>
+
+</body>
+</html>

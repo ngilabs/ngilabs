@@ -1,0 +1,1381 @@
+<<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendário Corporativo - DGF</title>
+    <!-- Biblioteca html2canvas para tirar o screenshot -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            /* Padrão Azul (Light) */
+            --primary-color: #0056b3;
+            --secondary-color: #f4f7f6;
+            --navy-blue: #001f3f;
+            --top-bg-color: #eaf4fb; 
+            --text-color: #333;
+            
+            /* Variáveis Estruturais Dinâmicas (Essenciais para Modo Escuro) */
+            --container-bg: #ffffff;
+            --border-color: #dddddd;
+            --day-bg: #fafafa;
+            --day-hover: #f0f0f0;
+            --day-weekend: #e6e6e6;
+            --day-weekend-hover: #dcdcdc;
+            --text-muted: #666666;
+            --input-bg: #ffffff;
+            --input-border: #dddddd;
+            --item-hover-bg: #eaf2f8;
+            --day-has-event-bg: #fff9f9;
+            --day-has-recesso-bg: #fbf9ff;
+            --anotacao-item-bg: #f9f9f9;
+            --btn-cancel-bg: #e0e0e0;
+            --btn-cancel-color: #333333;
+            --btn-text-color: #ffffff;
+            --scrollbar-color: #cccccc;
+            --shadow-color: rgba(0,0,0,0.1);
+
+            /* Elementos Novos: Post-it */
+            --postit-bg: #fff5b8;
+            --postit-color: #333333;
+
+            /* Cores Nativas */
+            --event-color: #e74c3c;
+            --event-bg: #fadbd8;
+            --recess-color: #8e44ad;
+            --recess-bg: #ebdef0;
+            --pagamento-color: #059669; 
+            --pagamento-bg: #d1fae5;
+            
+            /* Cores Personalizadas */
+            --pers-blue-color: #2980b9;    --pers-blue-bg: #d6eaf8;
+            --pers-green-color: #27ae60;   --pers-green-bg: #d5f5e3;
+            --pers-orange-color: #d35400;  --pers-orange-bg: #fae5d3;
+            --pers-yellow-color: #b7950b;  --pers-yellow-bg: #fcf3cf;
+            --pers-teal-color: #16a085;    --pers-teal-bg: #d1f2eb;
+            --pers-pink-color: #d81b60;    --pers-pink-bg: #f8bbd0;
+        }
+
+        * {
+            font-family: 'Segoe UI', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; 
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- Layout Flexível para as TRÊS colunas --- */
+        .main-wrapper {
+            width: 100%;
+            max-width: 1400px; 
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            width: 100%;
+        }
+
+        /* Caixas principais */
+        .calendar-container, .summary-container {
+            background: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            padding: 20px;
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+
+        .calendar-container {
+            flex: 2.5; 
+            overflow: hidden;
+            min-width: 0; 
+            order: 2; 
+        }
+
+        .summary-container {
+            flex: 1; 
+            min-width: 240px;
+            max-height: 85vh; 
+            overflow-y: auto; 
+            position: sticky;
+            top: 20px;
+        }
+        
+        #summaryLeft { order: 1; }  
+        #summaryRight { order: 3; } 
+        
+        .summary-container::-webkit-scrollbar { width: 6px; }
+        .summary-container::-webkit-scrollbar-thumb { background-color: var(--scrollbar-color); border-radius: 10px; }
+
+        .summary-title {
+            color: var(--navy-blue);
+            font-size: 18px;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        .summary-month-header {
+            color: var(--primary-color);
+            font-size: 14px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            padding-bottom: 3px;
+            border-bottom: 1px solid var(--border-color);
+            transition: color 0.3s, border-color 0.3s;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .summary-item.clickable-summary {
+            cursor: pointer;
+            padding: 4px;
+            margin-left: -4px;
+            margin-right: -4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .summary-item.clickable-summary:hover {
+            background-color: var(--item-hover-bg); 
+        }
+
+        .summary-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .footer-text {
+            text-align: center;
+            color: var(--navy-blue);
+            font-size: 13px;
+            font-weight: bold; 
+            margin-top: 15px;
+        }
+
+        /* --- Elemento Topo (Título e Botões) --- */
+        .top-highlight {
+            background-color: var(--top-bg-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: background-color 0.3s;
+            position: relative; /* Base para o post-it */
+        }
+
+        /* Post-it Note */
+        .post-it {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: var(--postit-bg);
+            color: var(--postit-color);
+            padding: 8px 15px;
+            border-radius: 2px 2px 15px 2px;
+            box-shadow: 2px 4px 6px var(--shadow-color);
+            font-size: 13px;
+            font-weight: bold;
+            transform: rotate(-3deg);
+            z-index: 10;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* Taxinha Vermelha do Post-it */
+        .post-it::before {
+            content: '';
+            position: absolute;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 12px;
+            background-color: #e74c3c; 
+            border-radius: 50%;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3), 1px 2px 3px rgba(0,0,0,0.4);
+        }
+
+        .main-title {
+            font-size: 36px; 
+            color: var(--navy-blue);
+            text-align: center;
+            margin: 0; 
+            font-weight: normal;
+            transition: color 0.3s;
+        }
+
+        .main-title strong { font-weight: bold; }
+        
+        #customNameDisplay {
+            font-size: 24px;
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-left: 8px;
+            transition: color 0.3s;
+        }
+
+        /* Barra de Ações */
+        .action-toolbar {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn-action {
+            background-color: var(--container-bg);
+            color: var(--navy-blue);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 5px var(--shadow-color);
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: var(--navy-blue);
+            color: var(--container-bg);
+            border-color: var(--navy-blue);
+        }
+
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; }
+
+        .calendar-header h2 {
+            margin: 0; color: var(--primary-color); font-size: 24px; text-transform: uppercase; text-align: center; flex: 1; transition: color 0.3s;
+        }
+
+        .header-divider { border: none; height: 2px; background-color: var(--border-color); margin: 15px 0; } 
+
+        .btn {
+            background-color: var(--primary-color); color: var(--btn-text-color); border: none; padding: 8px 15px;
+            min-width: 120px; border-radius: 4px; cursor: pointer; font-size: 16px; transition: filter 0.3s;
+        }
+        .btn:hover { filter: brightness(0.85); }
+        
+        .legenda {
+            display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-bottom: 15px; font-size: 13px; font-weight: bold;
+        }
+        
+        .legenda-item { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; }
+        .legenda-cor { width: 14px; height: 14px; border-radius: 3px; }
+
+        .legenda-multicolor {
+            background: linear-gradient(135deg, 
+                var(--pers-blue-color) 0%, var(--pers-blue-color) 16.6%, 
+                var(--pers-green-color) 16.6%, var(--pers-green-color) 33.3%, 
+                var(--pers-orange-color) 33.3%, var(--pers-orange-color) 50%, 
+                var(--pers-yellow-color) 50%, var(--pers-yellow-color) 66.6%, 
+                var(--pers-teal-color) 66.6%, var(--pers-teal-color) 83.3%, 
+                var(--pers-pink-color) 83.3%, var(--pers-pink-color) 100%);
+        }
+
+        .instrucao-ctrl { font-size: 12px; color: var(--text-muted); font-style: italic; font-weight: normal; margin-left: 5px; }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+
+        .day-name { text-align: center; font-weight: bold; color: var(--primary-color); padding: 5px 0; border-bottom: 1px solid var(--border-color); transition: color 0.3s, border-color 0.3s; }
+
+        .day {
+            height: 90px; border: 1px solid var(--border-color); border-radius: 4px; padding: 4px;
+            display: flex; flex-direction: column; background: var(--day-bg); transition: all 0.2s; cursor: pointer; overflow-y: auto; position: relative;
+        }
+        
+        .day::-webkit-scrollbar { display: none; }
+        .day:hover { background: var(--day-hover); }
+        .day.weekend { background: var(--day-weekend); }
+        .day.weekend:hover { background: var(--day-weekend-hover); }
+
+        .day.empty { background: transparent !important; border: 1px solid transparent !important; cursor: default; box-shadow: none !important; }
+        .day.selected-day { box-shadow: inset 0 0 0 3px var(--navy-blue) !important; background-color: var(--item-hover-bg) !important; }
+        .day-number { font-weight: bold; font-size: 14px; margin-bottom: 3px; pointer-events: none; }
+
+        /* --- Destaque e Efeito do Dia de Hoje --- */
+        .day.today {
+            border: 2px solid var(--primary-color) !important;
+        }
+
+        /* Animação do número pulsando (30x por minuto = 1 pulso a cada 2 segundos) */
+        .day.today .day-number {
+            color: var(--primary-color); 
+            transform-origin: left center; 
+            animation: pulse-number 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse-number {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.15); opacity: 0.6; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* --- Estilo da Bolinha de Pagamento (R$) --- */
+        .pagamento-badge {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background-color: var(--pagamento-bg);
+            color: var(--pagamento-color);
+            border: 1px solid var(--pagamento-color);
+            border-radius: 50%;
+            font-size: 8px;
+            font-weight: 900;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none; /* Impede que a bolinha bloqueie seu clique */
+            z-index: 5;
+        }
+
+        .event-label {
+            background-color: var(--event-bg); color: var(--event-color); font-size: 11px; padding: 3px 4px; 
+            border-radius: 3px; margin-top: 2px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+        }
+
+        .event-label.recesso { background-color: var(--recess-bg); color: var(--recess-color); }
+        
+        .day.has-event { border-color: var(--event-color) !important; background-color: var(--day-has-event-bg) !important; }
+        .day.has-recesso { border-color: var(--recess-color) !important; background-color: var(--day-has-recesso-bg) !important; }
+
+        .label-blue { background-color: var(--pers-blue-bg); color: var(--pers-blue-color); }
+        .label-green { background-color: var(--pers-green-bg); color: var(--pers-green-color); }
+        .label-orange { background-color: var(--pers-orange-bg); color: var(--pers-orange-color); }
+        .label-yellow { background-color: var(--pers-yellow-bg); color: var(--pers-yellow-color); }
+        .label-teal { background-color: var(--pers-teal-bg); color: var(--pers-teal-color); }
+        .label-pink { background-color: var(--pers-pink-bg); color: var(--pers-pink-color); }
+
+        .day.has-pers-blue { border-color: var(--pers-blue-color) !important; }
+        .day.has-pers-green { border-color: var(--pers-green-color) !important; }
+        .day.has-pers-orange { border-color: var(--pers-orange-color) !important; }
+        .day.has-pers-yellow { border-color: var(--pers-yellow-color) !important; }
+        .day.has-pers-teal { border-color: var(--pers-teal-color) !important; }
+        .day.has-pers-pink { border-color: var(--pers-pink-color) !important; }
+
+        /* Estilos dos Modais */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); justify-content: center; align-items: center; z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--container-bg); padding: 25px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 5px 20px var(--shadow-color); text-align: center;
+        }
+
+        .modal-content h3 { margin-top: 0; color: var(--navy-blue); font-size: 20px; margin-bottom: 15px;}
+        .lista-anotacoes { margin-bottom: 15px; text-align: left; max-height: 120px; overflow-y: auto; }
+        .anotacao-item {
+            display: flex; justify-content: space-between; align-items: center; background: var(--anotacao-item-bg); padding: 6px 10px; margin-bottom: 5px; border-radius: 4px; border-left: 4px solid var(--border-color);
+        }
+        .anotacao-acoes button { background: none; border: none; cursor: pointer; font-size: 12px; font-weight: bold; margin-left: 5px; padding: 2px 5px; }
+        .btn-editar-item { color: var(--primary-color); }
+        .btn-apagar-item { color: var(--event-color); }
+
+        .form-divisor { border-top: 1px dashed var(--border-color); margin: 15px 0; display: none; }
+
+        .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+        .modal-input { width: 100%; padding: 10px; background: var(--input-bg); color: var(--text-color); border: 1px solid var(--input-border); border-radius: 4px; font-size: 14px; margin-bottom: 0; }
+        
+        .modal-label { display: block; text-align: left; font-size: 13px; font-weight: bold; color: var(--navy-blue); margin-bottom: 5px; }
+
+        .color-picker { display: flex; justify-content: space-between; margin-bottom: 20px; padding: 0 10px; }
+        .color-option { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.2s; }
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.selected { border-color: var(--text-color); transform: scale(1.1); }
+
+        .modal-actions { display: flex; justify-content: space-between; gap: 10px; }
+        .modal-actions button { flex: 1; padding: 10px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: filter 0.3s; }
+        .btn-cancel { background: var(--btn-cancel-bg); color: var(--btn-cancel-color); }
+        .btn-cancel:hover { filter: brightness(0.85); }
+        .btn-save { background: var(--primary-color); color: var(--btn-text-color); }
+        .btn-save:hover { filter: brightness(0.85); }
+
+        .btn-apagar-massa {
+            width: 100%; background: var(--event-color); color: var(--btn-text-color); border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-bottom: 15px; display: none;
+        }
+        .btn-apagar-massa:hover { filter: brightness(0.85); }
+
+        #btnFlutuante {
+            display: none; position: fixed; bottom: 30px; right: 30px; background: var(--navy-blue); color: var(--btn-text-color); border: none;
+            padding: 15px 25px; border-radius: 50px; font-size: 16px; font-weight: bold; box-shadow: 0 4px 10px var(--shadow-color); cursor: pointer; z-index: 900; transition: transform 0.2s;
+        }
+        #btnFlutuante:hover { transform: scale(1.05); }
+
+        /* ================================================= */
+        /* MEDIA QUERIES - RESPONSIVIDADE PARA TELAS MENORES */
+        /* ================================================= */
+        @media (max-width: 1100px) {
+            .content-wrapper { flex-direction: column; }
+            .calendar-container { order: 1; width: 100%; } 
+            #summaryLeft { order: 2; width: 100%; position: static; max-height: none; }
+            #summaryRight { order: 3; width: 100%; position: static; max-height: none; }
+        }
+
+        @media (max-width: 768px) {
+            .post-it {
+                position: relative;
+                top: auto; left: auto;
+                transform: none;
+                margin: 0 auto 15px auto;
+                width: fit-content;
+                display: block;
+                padding: 6px 15px;
+            }
+            .post-it::before { display: none; }
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 15px 10px; }
+            .calendar-container, .summary-container { padding: 15px 10px; }
+            .top-highlight { padding: 15px 10px; } 
+            .main-title { font-size: 28px; margin-bottom: 0; }
+            #customNameDisplay { font-size: 18px; display: block; margin-left: 0; margin-top: 5px; }
+            .calendar-header h2 { font-size: 18px; }
+            .btn { min-width: 80px; padding: 6px 10px; font-size: 14px; }
+            .legenda { font-size: 11px; gap: 8px; }
+            .legenda-cor { width: 12px; height: 12px; }
+            .instrucao-ctrl { font-size: 10px; width: 100%; text-align: center; margin-left: 0; margin-top: 3px; }
+            .legenda-item:last-child { justify-content: center; }
+            .day-name { font-size: 12px; padding: 4px 0; }
+            .day { height: 75px; padding: 2px; } 
+            .day-number { font-size: 12px; margin-bottom: 2px; }
+            .event-label { font-size: 9px; padding: 2px; margin-top: 1px; }
+            .calendar-grid { gap: 3px; }
+            #btnFlutuante { bottom: 20px; right: 20px; padding: 12px 20px; font-size: 14px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-wrapper" id="captureArea">
+        <div class="top-highlight">
+            <!-- Post-it do dia de hoje -->
+            <div class="post-it" id="postItHoje">
+                <span id="postItText">Carregando data...</span>
+            </div>
+
+            <h1 class="main-title">Calendário <strong>DGF</strong> <span id="customNameDisplay"></span></h1>
+            <!-- Barra de Ações com Screenshot, Personalização e Backup -->
+            <div class="action-toolbar">
+                <button class="btn-action" onclick="abrirModalConfig()">⚙️ Personalizar</button>
+                <button class="btn-action" onclick="tirarScreenshot()">📸 Baixar Imagem</button>
+                <button class="btn-action" onclick="exportarDados()">💾 Exportar Backup</button>
+                <button class="btn-action" onclick="document.getElementById('fileInput').click()">📂 Importar</button>
+                <input type="file" id="fileInput" style="display: none;" accept=".json,.txt" onchange="importarDados(event)">
+            </div>
+        </div>
+
+        <div class="content-wrapper">
+            
+            <!-- ESQUERDA: Sumário de Feriados, Recessos e Pagamentos -->
+            <div class="summary-container" id="summaryLeft">
+                <h3 class="summary-title" id="summaryTitleLeft">Feriados, Recessos e Pagamentos</h3>
+                <div id="summaryContentLeft">
+                    <!-- Gerado via JS -->
+                </div>
+            </div>
+
+            <!-- CENTRO: Calendário Principal -->
+            <div class="calendar-container">
+                
+                <div class="calendar-header">
+                    <button class="btn" id="prevBtn">&laquo; Anterior</button>
+                    <h2 id="monthYearTitle">Carregando...</h2>
+                    <button class="btn" id="nextBtn">Próximo &raquo;</button>
+                </div>
+                
+                <hr class="header-divider">
+                
+			<div class="legenda">
+                    <div class="legenda-item"><div class="legenda-cor" style="background-color: var(--event-color);"></div> Feriado</div>
+                    <div class="legenda-item"><div class="legenda-cor" style="background-color: var(--recess-color);"></div> Recesso</div>
+                    
+                    <!-- Nova legenda de Pagamento (Bolinha com R$) -->
+                    <div class="legenda-item">
+                        <div style="background-color: var(--pagamento-bg); color: var(--pagamento-color); border: 1px solid var(--pagamento-color); border-radius: 50%; font-size: 8px; font-weight: 900; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center;">R$</div> 
+                        Pagamento
+                    </div>
+                    
+                    <div class="legenda-item">
+                        <div class="legenda-cor legenda-multicolor"></div> Suas Anotações 
+                        <span class="instrucao-ctrl">| 💡 Segure <strong>CTRL</strong> e clique nos dias para multi-seleção.</span>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid" id="calendarDays"></div>
+            </div>
+
+            <!-- DIREITA: Sumário de Anotações Pessoais -->
+            <div class="summary-container" id="summaryRight">
+                <h3 class="summary-title" id="summaryTitleRight">Suas Anotações</h3>
+                <div id="summaryContentRight">
+                    <!-- Gerado via JS -->
+                </div>
+            </div>
+            
+        </div> 
+
+        <div class="footer-text">NGI Labs - DGF</div>
+    </div> 
+
+    <button id="btnFlutuante">Gerenciar X datas</button>
+
+    <!-- Modal Eventos -->
+    <div class="modal-overlay" id="eventoModal">
+        <div class="modal-content">
+            <h3 id="modalDateTitle">Adicionar Anotação</h3>
+            <div id="areaAnotacoesAntigas">
+                <div class="lista-anotacoes" id="listaAnotacoesHTML"></div>
+                <div class="form-divisor" id="modalDivisor"></div>
+            </div>
+            <button id="btnApagarMassa" class="btn-apagar-massa">🗑️ Apagar anotações das X datas</button>
+            
+            <div class="input-group">
+                <input type="text" id="eventoTexto" class="modal-input" maxlength="22" placeholder="Digite aqui (máx. 22 letras)" autocomplete="off" style="flex: 2;">
+                <select id="eventoHorario" class="modal-input" style="flex: 1; padding: 10px 5px;">
+                    <option value="">Sem horário</option>
+                </select>
+            </div>
+            
+            <div class="color-picker">
+                <div class="color-option selected" data-color="blue" style="background-color: var(--pers-blue-color);"></div>
+                <div class="color-option" data-color="green" style="background-color: var(--pers-green-color);"></div>
+                <div class="color-option" data-color="orange" style="background-color: var(--pers-orange-color);"></div>
+                <div class="color-option" data-color="yellow" style="background-color: var(--pers-yellow-color);"></div>
+                <div class="color-option" data-color="teal" style="background-color: var(--pers-teal-color);"></div>
+                <div class="color-option" data-color="pink" style="background-color: var(--pers-pink-color);"></div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" id="btnCancelar">Cancelar</button>
+                <button class="btn-save" id="btnSalvar">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Configurações -->
+    <div class="modal-overlay" id="configModal">
+        <div class="modal-content">
+            <h3>Configurações do Calendário</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <label class="modal-label">Nome de Identificação (Opcional):</label>
+                <input type="text" id="configNomeInput" class="modal-input" maxlength="30" placeholder="Ex: Sede, Meu Time, Pessoal..." autocomplete="off">
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label class="modal-label">Tema de Cores:</label>
+                <select id="configTemaSelect" class="modal-input">
+                    <option value="azul">🔵 Tons de Azul (Padrão)</option>
+                    <option value="rosa">💖 Tons de Rosa</option>
+                    <option value="verde">🌲 Tons de Verde</option>
+                    <option value="roxo">💜 Tons de Roxo</option>
+                    <option value="mono">📓 Monocromático (Cinza)</option>
+                    <option value="pb">♟️ Preto e Branco (Alto Contraste)</option>
+                    <option value="escuro">🌙 Modo Escuro</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('configModal').style.display='none'">Cancelar</button>
+                <button class="btn-save" onclick="salvarConfiguracoes()">Aplicar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === GERAÇÃO DA DATA DE HOJE (Post-it) ===
+        function configurarDataHoje() {
+            const diasSemanaNomes = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
+            const mesesNomes = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+            
+            const hojeObj = new Date();
+            const diaSemana = diasSemanaNomes[hojeObj.getDay()];
+            const diaTexto = String(hojeObj.getDate()).padStart(2, '0');
+            const mesTexto = mesesNomes[hojeObj.getMonth()];
+            
+            const textoHoje = `Hoje é ${diaSemana}, ${diaTexto} de ${mesTexto}`;
+            document.getElementById('postItText').innerText = textoHoje;
+        }
+
+        // Chama a função logo no início
+        configurarDataHoje();
+
+
+        // === TEMAS E CUSTOMIZAÇÕES ===
+        const baseLight = {
+            '--container-bg': '#ffffff', '--border-color': '#dddddd', '--day-bg': '#fafafa', '--day-hover': '#f0f0f0',
+            '--day-weekend': '#e6e6e6', '--day-weekend-hover': '#dcdcdc', '--text-muted': '#666666', '--input-bg': '#ffffff',
+            '--input-border': '#dddddd', '--item-hover-bg': '#eaf2f8', '--day-has-event-bg': '#fff9f9', '--day-has-recesso-bg': '#fbf9ff',
+            '--anotacao-item-bg': '#f9f9f9', '--btn-cancel-bg': '#e0e0e0', '--btn-cancel-color': '#333333',
+            '--btn-text-color': '#ffffff', '--scrollbar-color': '#cccccc', '--shadow-color': 'rgba(0,0,0,0.1)',
+            '--postit-bg': '#fff5b8', '--postit-color': '#333333',
+            '--event-color': '#e74c3c', '--event-bg': '#fadbd8', '--recess-color': '#8e44ad', '--recess-bg': '#ebdef0',
+            '--pagamento-color': '#059669', '--pagamento-bg': '#d1fae5', '--pers-blue-color': '#2980b9', '--pers-blue-bg': '#d6eaf8',
+            '--pers-green-color': '#27ae60', '--pers-green-bg': '#d5f5e3', '--pers-orange-color': '#d35400', '--pers-orange-bg': '#fae5d3',
+            '--pers-yellow-color': '#b7950b', '--pers-yellow-bg': '#fcf3cf', '--pers-teal-color': '#16a085', '--pers-teal-bg': '#d1f2eb',
+            '--pers-pink-color': '#d81b60', '--pers-pink-bg': '#f8bbd0'
+        };
+
+        const baseDark = {
+            '--container-bg': '#1e1e24', '--border-color': '#333333', '--day-bg': '#2a2a30', '--day-hover': '#35353d',
+            '--day-weekend': '#242429', '--day-weekend-hover': '#2f2f35', '--text-muted': '#aaaaaa', '--input-bg': '#2a2a30',
+            '--input-border': '#444444', '--item-hover-bg': '#333333', '--day-has-event-bg': '#3a2626', '--day-has-recesso-bg': '#2d2436',
+            '--anotacao-item-bg': '#2a2a30', '--btn-cancel-bg': '#444444', '--btn-cancel-color': '#ffffff',
+            '--btn-text-color': '#121212', '--scrollbar-color': '#555555', '--shadow-color': 'rgba(0,0,0,0.4)',
+            '--postit-bg': '#4a452a', '--postit-color': '#fde68a',
+            '--event-color': '#ffb4ab', '--event-bg': '#690005', '--recess-color': '#e9b3ff', '--recess-bg': '#4d1e66',
+            '--pagamento-color': '#6ee7b7', '--pagamento-bg': '#064e3b', '--pers-blue-color': '#a3c2fa', '--pers-blue-bg': '#112240',
+            '--pers-green-color': '#81c784', '--pers-green-bg': '#1b3e20', '--pers-orange-color': '#ffcc80', '--pers-orange-bg': '#4e2a0e',
+            '--pers-yellow-color': '#fff59d', '--pers-yellow-bg': '#4d4613', '--pers-teal-color': '#80cbc4', '--pers-teal-bg': '#133a36',
+            '--pers-pink-color': '#f48fb1', '--pers-pink-bg': '#52132b'
+        };
+
+        const temasCore = {
+            azul: { ...baseLight, '--primary-color': '#0056b3', '--secondary-color': '#f4f7f6', '--navy-blue': '#001f3f', '--top-bg-color': '#eaf4fb', '--text-color': '#333' },
+            rosa: { ...baseLight, '--primary-color': '#d81b60', '--secondary-color': '#fdf4f7', '--navy-blue': '#880e4f', '--top-bg-color': '#fce4ec', '--text-color': '#333' },
+            verde: { ...baseLight, '--primary-color': '#0f766e', '--secondary-color': '#f0fdf4', '--navy-blue': '#134e4a', '--top-bg-color': '#d1fae5', '--text-color': '#333' },
+            roxo: { ...baseLight, '--primary-color': '#6d28d9', '--secondary-color': '#f5f3ff', '--navy-blue': '#4c1d95', '--top-bg-color': '#ede9fe', '--text-color': '#333' },
+            mono: { ...baseLight, '--primary-color': '#555555', '--secondary-color': '#f0f0f0', '--navy-blue': '#222222', '--top-bg-color': '#e0e0e0', '--text-color': '#222' },
+            pb:   { ...baseLight, '--primary-color': '#000000', '--secondary-color': '#ffffff', '--navy-blue': '#000000', '--top-bg-color': '#f2f2f2', '--text-color': '#000' },
+            escuro: { ...baseDark, '--primary-color': '#60a5fa', '--secondary-color': '#121212', '--navy-blue': '#93c5fd', '--top-bg-color': '#1e293b', '--text-color': '#e2e8f0' }
+        };
+
+        function aplicarTemaENome() {
+            const config = JSON.parse(localStorage.getItem('dgfConfig')) || { nome: '', tema: 'azul' };
+            
+            // Aplica as cores via CSS Variables
+            const temaSelecionado = temasCore[config.tema] || temasCore['azul'];
+            for (let variavel in temaSelecionado) {
+                document.documentElement.style.setProperty(variavel, temaSelecionado[variavel]);
+            }
+
+            // Aplica o Nome customizado
+            const spanNome = document.getElementById('customNameDisplay');
+            if (config.nome && config.nome.trim() !== '') {
+                spanNome.innerText = `(${config.nome.trim()})`;
+            } else {
+                spanNome.innerText = '';
+            }
+        }
+
+        function abrirModalConfig() {
+            const config = JSON.parse(localStorage.getItem('dgfConfig')) || { nome: '', tema: 'azul' };
+            document.getElementById('configNomeInput').value = config.nome;
+            document.getElementById('configTemaSelect').value = config.tema;
+            document.getElementById('configModal').style.display = 'flex';
+        }
+
+        function salvarConfiguracoes() {
+            const novoNome = document.getElementById('configNomeInput').value;
+            const novoTema = document.getElementById('configTemaSelect').value;
+            
+            const configObj = { nome: novoNome, tema: novoTema };
+            localStorage.setItem('dgfConfig', JSON.stringify(configObj));
+            
+            aplicarTemaENome();
+            document.getElementById('configModal').style.display = 'none';
+        }
+
+        // Aplica as configurações assim que a página é carregada
+        aplicarTemaENome();
+
+        // === PREENCHER O SELECT DE HORÁRIOS ===
+        const inputHorario = document.getElementById('eventoHorario');
+        for (let h = 0; h < 24; h++) {
+            for (let m of ['00', '30']) {
+                let time = `${String(h).padStart(2, '0')}:${m}`;
+                let opt = document.createElement('option');
+                opt.value = time;
+                opt.innerText = time;
+                inputHorario.appendChild(opt);
+            }
+        }
+
+        // === FUNÇÃO DE SCREENSHOT (html2canvas) ===
+        function tirarScreenshot() {
+            const elemento = document.getElementById('captureArea');
+            
+            const btnFlutuanteEl = document.getElementById('btnFlutuante');
+            const displayOriginal = btnFlutuanteEl.style.display;
+            btnFlutuanteEl.style.display = 'none';
+
+            html2canvas(elemento, { 
+                scale: 2, 
+                useCORS: true,
+                backgroundColor: getComputedStyle(document.body).getPropertyValue('background-color')
+            }).then(canvas => {
+                btnFlutuanteEl.style.display = displayOriginal;
+                
+                const link = document.createElement('a');
+                const mesNome = meses[mesAtual].toLowerCase();
+                const config = JSON.parse(localStorage.getItem('dgfConfig')) || { nome: '' };
+                const sufixoNome = config.nome ? `-${config.nome.replace(/\s+/g, '-').toLowerCase()}` : '';
+                
+                link.download = `calendario-dgf${sufixoNome}-${mesNome}-${anoAtual}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                btnFlutuanteEl.style.display = displayOriginal;
+                alert('Erro ao gerar a imagem. Tente novamente.');
+                console.error(err);
+            });
+        }
+
+        // === FUNÇÕES DE EXPORTAR E IMPORTAR DADOS (BACKUP V2) ===
+        function exportarDados() {
+            const anotacoes = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+            const configuracoes = JSON.parse(localStorage.getItem('dgfConfig')) || { nome: '', tema: 'azul' };
+            
+            const payload = { versao: 2, anotacoes: anotacoes, config: configuracoes };
+
+            const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            const dataHoje = new Date().toISOString().slice(0, 10);
+            link.download = `backup-dgf-${dataHoje}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importarDados(event) {
+            const arquivo = event.target.files[0];
+            if (!arquivo) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dadosImportados = JSON.parse(e.target.result);
+                    let anotacoesParaSalvar = [];
+                    let configsParaSalvar = null;
+
+                    if (Array.isArray(dadosImportados)) {
+                        anotacoesParaSalvar = dadosImportados;
+                    } else if (dadosImportados.versao === 2) {
+                        anotacoesParaSalvar = dadosImportados.anotacoes;
+                        configsParaSalvar = dadosImportados.config;
+                    } else {
+                        throw new Error("Formato desconhecido");
+                    }
+
+                    if (confirm(`Deseja importar o backup e substituir os dados atuais do seu calendário?`)) {
+                        localStorage.setItem('dgfAnotacoes', JSON.stringify(anotacoesParaSalvar));
+                        if (configsParaSalvar) {
+                            localStorage.setItem('dgfConfig', JSON.stringify(configsParaSalvar));
+                            aplicarTemaENome();
+                        }
+                        renderizarCalendario(mesAtual, anoAtual);
+                        alert('Backup importado com sucesso!');
+                    }
+                } catch (err) {
+                    alert('Erro ao ler o arquivo. Certifique-se de que é um arquivo de backup JSON válido gerado pelo sistema.');
+                }
+                event.target.value = ''; 
+            };
+            reader.readAsText(arquivo);
+        }
+
+        // === DADOS CORPORATIVOS FIXOS ===
+        const eventosCorporativos = [
+            /* Feriados 2026 */
+            { data: '2026-01-01', titulo: 'Confraternização Universal', tipo: 'feriado' },
+            { data: '2026-02-16', titulo: 'Carnaval', tipo: 'feriado' },
+            { data: '2026-02-17', titulo: 'Carnaval', tipo: 'feriado' },
+            { data: '2026-02-18', titulo: 'Cinzas', tipo: 'feriado' },
+            { data: '2026-03-06', titulo: 'Data Magna de Pernambuco', tipo: 'feriado' },
+            { data: '2026-04-02', titulo: 'Semana Santa', tipo: 'feriado' },
+            { data: '2026-04-03', titulo: 'Paixão de Cristo', tipo: 'feriado' },
+            { data: '2026-04-05', titulo: 'Páscoa', tipo: 'feriado' },
+            { data: '2026-04-21', titulo: 'Tiradentes', tipo: 'feriado' },
+            { data: '2026-05-01', titulo: 'Dia do Trabalho', tipo: 'feriado' },
+            { data: '2026-06-22', titulo: 'Corpus Christi (Transferido)', tipo: 'feriado' },
+            { data: '2026-06-24', titulo: 'São João', tipo: 'feriado' },
+            { data: '2026-08-10', titulo: 'Dia dos Cursos Jurídicos (Antecipado)', tipo: 'feriado' },
+            { data: '2026-09-07', titulo: 'Independência do Brasil', tipo: 'feriado' },
+            { data: '2026-10-12', titulo: 'Nossa Senhora Aparecida', tipo: 'feriado' },
+            { data: '2026-10-30', titulo: 'Dia do Servidor Público (Transferido)', tipo: 'feriado' },
+            { data: '2026-11-02', titulo: 'Finados', tipo: 'feriado' },
+            { data: '2026-11-15', titulo: 'Proclamação da República', tipo: 'feriado' },
+            { data: '2026-11-20', titulo: 'Consciência Negra', tipo: 'feriado' },
+            { data: '2026-12-08', titulo: 'Nossa Sra. da Conceição / Dia da Justiça', tipo: 'feriado' },
+            { data: '2026-12-25', titulo: 'Natal', tipo: 'feriado' },
+            
+            /* Recessos 2026 */
+            { data: '2026-01-01', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-01-02', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-01-03', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-01-04', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-01-05', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-01-06', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-06-23', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-06-24', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-06-25', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-06-26', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-06-27', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-06-28', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-06-29', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-06-30', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-20', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-21', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-22', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-23', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-24', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-25', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-26', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-27', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-28', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-29', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-30', titulo: 'Recesso', tipo: 'recesso' },
+            { data: '2026-12-31', titulo: 'Recesso', tipo: 'recesso' },
+            
+            /* Pagamentos 2026 */
+            { data: '2026-01-23', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-02-25', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-03-25', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-04-24', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-05-25', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-06-19', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-07-24', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-08-25', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-09-25', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-10-23', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-11-25', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+            { data: '2026-12-18', titulo: 'Data do Pagamento', tipo: 'pagamento' },
+        ];
+
+        let dadosLocais = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+        let migrou = false;
+        dadosLocais.forEach((a, i) => { if (!a.id) { a.id = Date.now().toString() + '_' + i; migrou = true; } });
+        if (migrou) localStorage.setItem('dgfAnotacoes', JSON.stringify(dadosLocais));
+
+        const dataAtual = new Date();
+        let anoAtual = dataAtual.getFullYear();
+        let mesAtual = dataAtual.getMonth();
+
+        const monthYearTitle = document.getElementById('monthYearTitle');
+        const calendarDays = document.getElementById('calendarDays');
+        const summaryTitleLeft = document.getElementById('summaryTitleLeft');
+        const summaryContentLeft = document.getElementById('summaryContentLeft');
+        const summaryTitleRight = document.getElementById('summaryTitleRight');
+        const summaryContentRight = document.getElementById('summaryContentRight');
+        
+        const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        const diasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+
+        const modal = document.getElementById('eventoModal');
+        const btnSalvar = document.getElementById('btnSalvar');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const btnFlutuante = document.getElementById('btnFlutuante');
+        const btnApagarMassa = document.getElementById('btnApagarMassa');
+        const inputTexto = document.getElementById('eventoTexto');
+        const modalDateTitle = document.getElementById('modalDateTitle');
+        const colorOptions = document.querySelectorAll('.color-option');
+        
+        let datasSelecionadas = []; 
+        let corSelecionada = 'blue';
+        let eventoEmEdicaoId = null;
+
+        colorOptions.forEach(opt => {
+            opt.addEventListener('click', function() {
+                colorOptions.forEach(o => o.classList.remove('selected'));
+                this.classList.add('selected');
+                corSelecionada = this.getAttribute('data-color');
+            });
+        });
+
+        btnCancelar.addEventListener('click', () => modal.style.display = 'none');
+
+        function atualizarBotaoFlutuante() {
+            if (datasSelecionadas.length > 1) {
+                btnFlutuante.innerText = `Gerenciar ${datasSelecionadas.length} datas`;
+                btnFlutuante.style.display = 'block';
+            } else {
+                btnFlutuante.style.display = 'none';
+            }
+        }
+
+        function abrirModalParaAdicionarOuEditar() {
+            eventoEmEdicaoId = null;
+            inputTexto.value = ''; 
+            inputHorario.value = ''; 
+            btnSalvar.innerText = 'Salvar';
+            
+            corSelecionada = 'blue';
+            colorOptions.forEach(o => o.classList.toggle('selected', o.getAttribute('data-color') === 'blue'));
+            
+            const areaAnotacoes = document.getElementById('areaAnotacoesAntigas');
+            const listaHTML = document.getElementById('listaAnotacoesHTML');
+            const divisor = document.getElementById('modalDivisor');
+
+            areaAnotacoes.style.display = 'none';
+            listaHTML.innerHTML = '';
+            divisor.style.display = 'none';
+
+            let anotacoes = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+
+            if (datasSelecionadas.length === 1) {
+                btnApagarMassa.style.display = 'none'; 
+                const dataStr = datasSelecionadas[0];
+                const [ano, mes, dia] = dataStr.split('-');
+                modalDateTitle.innerText = `Data: ${dia}/${mes}/${ano}`;
+
+                const eventosDesteDia = anotacoes.filter(a => a.data === dataStr);
+                
+                if (eventosDesteDia.length > 0) {
+                    areaAnotacoes.style.display = 'block';
+                    divisor.style.display = 'block';
+                    
+                    let html = '<div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">Anotações Existentes:</div>';
+                    eventosDesteDia.forEach(e => {
+                        let borderColor = `var(--pers-${e.cor}-color)`;
+                        
+                        let tituloLista = e.titulo;
+                        if (e.horario) tituloLista += ` (${e.horario})`;
+
+                        html += `
+                            <div class="anotacao-item" style="border-left-color: ${borderColor}">
+                                <span style="font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px;">${tituloLista}</span>
+                                <div class="anotacao-acoes">
+                                    <button type="button" class="btn-editar-item" onclick="prepararEdicao('${e.id}')">Editar</button>
+                                    <button type="button" class="btn-apagar-item" onclick="apagarEvento('${e.id}')">Apagar</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    listaHTML.innerHTML = html;
+                }
+            } else {
+                modalDateTitle.innerText = `Gerenciar ${datasSelecionadas.length} datas`;
+                btnApagarMassa.innerText = `🗑️ Apagar anotações das ${datasSelecionadas.length} datas`;
+                btnApagarMassa.style.display = 'block'; 
+            }
+
+            modal.style.display = 'flex';
+            inputTexto.focus();
+        }
+
+        btnFlutuante.addEventListener('click', abrirModalParaAdicionarOuEditar);
+        
+        btnApagarMassa.addEventListener('click', () => {
+            if (confirm(`Tem certeza que deseja APAGAR TODAS as suas anotações das ${datasSelecionadas.length} datas selecionadas?`)) {
+                let anotacoes = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+                anotacoes = anotacoes.filter(a => !datasSelecionadas.includes(a.data));
+                localStorage.setItem('dgfAnotacoes', JSON.stringify(anotacoes));
+                
+                datasSelecionadas = [];
+                atualizarBotaoFlutuante();
+                modal.style.display = 'none';
+                renderizarCalendario(mesAtual, anoAtual); 
+            }
+        });
+
+        btnSalvar.addEventListener('click', () => {
+            const texto = inputTexto.value.trim();
+            const horario = inputHorario.value;
+
+            if (texto !== '') {
+                let anotacoes = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+                
+                if (eventoEmEdicaoId) {
+                    const index = anotacoes.findIndex(a => a.id === eventoEmEdicaoId);
+                    if (index > -1) {
+                        anotacoes[index].titulo = texto;
+                        anotacoes[index].horario = horario;
+                        anotacoes[index].cor = corSelecionada;
+                    }
+                } else {
+                    datasSelecionadas.forEach((dataAlvo, i) => {
+                        anotacoes.push({
+                            id: Date.now().toString() + '_' + i,
+                            data: dataAlvo,
+                            titulo: texto,
+                            tipo: 'pessoal',
+                            horario: horario,
+                            cor: corSelecionada
+                        });
+                    });
+                }
+                
+                localStorage.setItem('dgfAnotacoes', JSON.stringify(anotacoes));
+                
+                datasSelecionadas = [];
+                atualizarBotaoFlutuante();
+                modal.style.display = 'none';
+                renderizarCalendario(mesAtual, anoAtual); 
+            }
+        });
+
+        window.prepararEdicao = function(id) {
+            let anotacoes = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+            const evento = anotacoes.find(a => a.id === id);
+            
+            if (evento) {
+                eventoEmEdicaoId = id;
+                inputTexto.value = evento.titulo;
+                inputHorario.value = evento.horario || '';
+                
+                corSelecionada = evento.cor;
+                colorOptions.forEach(o => { o.classList.toggle('selected', o.getAttribute('data-color') === corSelecionada); });
+                
+                btnSalvar.innerText = 'Atualizar Anotação';
+                inputTexto.focus();
+            }
+        };
+
+        window.apagarEvento = function(id) {
+            if (confirm("Tem certeza que deseja apagar esta anotação?")) {
+                let anotacoes = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+                anotacoes = anotacoes.filter(a => a.id !== id);
+                localStorage.setItem('dgfAnotacoes', JSON.stringify(anotacoes));
+                renderizarCalendario(mesAtual, anoAtual);
+                abrirModalParaAdicionarOuEditar(); 
+            }
+        };
+
+        function renderizarSumarioEspecifico(eventos, containerElement, mensagemVazio, ano, isClicavel = false) {
+            containerElement.innerHTML = ''; 
+
+            if (eventos.length === 0) {
+                containerElement.innerHTML = `<p style="text-align: center; color: var(--text-muted); font-size: 13px; margin-top: 30px;">${mensagemVazio}</p>`;
+                return;
+            }
+
+            const eventosPorMes = {};
+            eventos.forEach(evento => {
+                const parts = evento.data.split('-');
+                const mesIdx = parseInt(parts[1], 10) - 1; 
+                const dia = parts[2];
+                
+                if (!eventosPorMes[mesIdx]) eventosPorMes[mesIdx] = [];
+                
+                let tituloCompleto = evento.titulo;
+                if (evento.data === '2026-06-22' && evento.tipo !== 'pessoal') tituloCompleto = 'Corpus Christi (Transferido)';
+                if (evento.data === '2026-08-10' && evento.tipo !== 'pessoal') tituloCompleto = 'Dia dos Cursos Jurídicos';
+                if (evento.data === '2026-10-30' && evento.tipo !== 'pessoal') tituloCompleto = 'Dia do Servidor (Transferido)';
+                if (evento.data === '2026-12-08' && evento.tipo !== 'pessoal') tituloCompleto = 'Nossa Sra. Conceição/Justiça';
+                
+                if (evento.tipo === 'pessoal' && evento.horario) {
+                    tituloCompleto += ` (${evento.horario})`;
+                }
+                
+                eventosPorMes[mesIdx].push({ ...evento, diaStr: dia, tituloDisplay: tituloCompleto });
+            });
+
+            for (let i = 0; i < 12; i++) {
+                if (eventosPorMes[i] && eventosPorMes[i].length > 0) {
+                    
+                    const mesDiv = document.createElement('div');
+                    const mesHeader = document.createElement('div');
+                    mesHeader.classList.add('summary-month-header');
+                    mesHeader.innerText = meses[i];
+                    mesDiv.appendChild(mesHeader);
+
+                    let sequencias = [];
+
+                    eventosPorMes[i].forEach(evento => {
+                        let diaNum = parseInt(evento.diaStr, 10);
+                        
+                        let corPonto = '';
+                        if (evento.tipo === 'feriado') corPonto = 'var(--event-color)';
+                        else if (evento.tipo === 'recesso') corPonto = 'var(--recess-color)';
+                        else if (evento.tipo === 'pagamento') corPonto = 'var(--pagamento-color)';
+                        else if (evento.tipo === 'pessoal') corPonto = `var(--pers-${evento.cor}-color)`;
+
+                        let seqExistente = sequencias.find(s => 
+                            s.tituloDisplay === evento.tituloDisplay && 
+                            s.corPonto === corPonto && 
+                            s.fim === diaNum - 1
+                        );
+
+                        if (seqExistente) {
+                            seqExistente.fim = diaNum; 
+                        } else {
+                            let seqMesmoDia = sequencias.find(s => 
+                                s.tituloDisplay === evento.tituloDisplay && 
+                                s.corPonto === corPonto && 
+                                s.fim === diaNum
+                            );
+                            
+                            if (!seqMesmoDia) {
+                                sequencias.push({
+                                    inicio: diaNum,
+                                    fim: diaNum,
+                                    tituloDisplay: evento.tituloDisplay,
+                                    corPonto: corPonto
+                                });
+                            }
+                        }
+                    });
+
+                    sequencias.sort((a, b) => a.inicio - b.inicio);
+
+                    sequencias.forEach(seq => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.classList.add('summary-item');
+
+                        let strDias = String(seq.inicio).padStart(2, '0');
+                        if (seq.inicio !== seq.fim) {
+                            strDias = `${String(seq.inicio).padStart(2, '0')} a ${String(seq.fim).padStart(2, '0')}`;
+                        }
+
+                        itemDiv.innerHTML = `
+                            <div class="summary-color-dot" style="background-color: ${seq.corPonto};"></div>
+                            <div style="flex: 1; color: var(--text-color);">
+                                <strong>${strDias}</strong> - ${seq.tituloDisplay}
+                            </div>
+                        `;
+
+                        if (isClicavel) {
+                            itemDiv.classList.add('clickable-summary');
+                            itemDiv.title = 'Clique para gerenciar esta anotação';
+                            
+                            let arrDates = [];
+                            for(let d = seq.inicio; d <= seq.fim; d++) {
+                                let m = String(i + 1).padStart(2, '0');
+                                let day = String(d).padStart(2, '0');
+                                arrDates.push(`${ano}-${m}-${day}`);
+                            }
+                            
+                            itemDiv.addEventListener('click', () => {
+                                datasSelecionadas = arrDates;
+                                
+                                document.querySelectorAll('.day').forEach(el => {
+                                    if(el.hasAttribute('data-date')) {
+                                        if(datasSelecionadas.includes(el.getAttribute('data-date'))) {
+                                            el.classList.add('selected-day');
+                                        } else {
+                                            el.classList.remove('selected-day');
+                                        }
+                                    }
+                                });
+                                
+                                atualizarBotaoFlutuante();
+                                abrirModalParaAdicionarOuEditar();
+                            });
+                        }
+
+                        mesDiv.appendChild(itemDiv);
+                    });
+
+                    containerElement.appendChild(mesDiv);
+                }
+            }
+        }
+
+        function renderizarResumosAno(ano) {
+            summaryTitleLeft.innerText = `Feriados, Recessos e Pagamentos (${ano})`;
+            summaryTitleRight.innerText = `Suas Anotações (${ano})`;
+
+            const anotacoesPessoais = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+            
+            const corporativosDoAno = eventosCorporativos.filter(e => e.data.startsWith(ano.toString()));
+            const pessoaisDoAno = anotacoesPessoais.filter(e => e.data.startsWith(ano.toString()));
+
+            corporativosDoAno.sort((a, b) => a.data.localeCompare(b.data));
+            pessoaisDoAno.sort((a, b) => a.data.localeCompare(b.data));
+
+            renderizarSumarioEspecifico(corporativosDoAno, summaryContentLeft, `Nenhum feriado, recesso ou pagamento registrado em ${ano}.`, ano, false);
+            renderizarSumarioEspecifico(pessoaisDoAno, summaryContentRight, `Nenhuma anotação registrada em ${ano}.`, ano, true);
+        }
+
+        function renderizarCalendario(mes, ano) {
+            calendarDays.innerHTML = '';
+            monthYearTitle.innerText = `${meses[mes]} ${ano}`;
+            
+            renderizarResumosAno(ano);
+
+            diasSemana.forEach(dia => {
+                const dayNameDiv = document.createElement('div');
+                dayNameDiv.classList.add('day-name');
+                dayNameDiv.innerText = dia;
+                calendarDays.appendChild(dayNameDiv);
+            });
+
+            const primeiroDia = new Date(ano, mes, 1).getDay();
+            const diasNoMes = new Date(ano, mes + 1, 0).getDate();
+
+            const anotacoesPessoais = JSON.parse(localStorage.getItem('dgfAnotacoes')) || [];
+            const todosOsEventos = [...eventosCorporativos, ...anotacoesPessoais];
+            
+            // Obtém a data exata de hoje em formato compatível
+            const hojeReal = new Date();
+            const strHojeReal = `${hojeReal.getFullYear()}-${String(hojeReal.getMonth() + 1).padStart(2, '0')}-${String(hojeReal.getDate()).padStart(2, '0')}`;
+
+            for (let i = 0; i < primeiroDia; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.classList.add('day', 'empty');
+                calendarDays.appendChild(emptyDiv);
+            }
+
+            for (let dia = 1; dia <= diasNoMes; dia++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('day');
+
+                const diaDaSemana = new Date(ano, mes, dia).getDay();
+                if (diaDaSemana === 0 || diaDaSemana === 6) dayDiv.classList.add('weekend');
+
+                const dayNum = document.createElement('div');
+                dayNum.classList.add('day-number');
+                dayNum.innerText = dia;
+                dayDiv.appendChild(dayNum);
+
+                const mesFormatado = String(mes + 1).padStart(2, '0');
+                const diaFormatado = String(dia).padStart(2, '0');
+                const dataString = `${ano}-${mesFormatado}-${diaFormatado}`;
+                
+                dayDiv.setAttribute('data-date', dataString);
+                
+                // Marca se este quadrado for exatamente o dia de hoje
+                if (dataString === strHojeReal) {
+                    dayDiv.classList.add('today');
+                }
+                
+                if (datasSelecionadas.includes(dataString)) {
+                    dayDiv.classList.add('selected-day');
+                }
+
+                dayDiv.addEventListener('click', (e) => {
+                    if (e.ctrlKey || e.metaKey) {
+                        if (datasSelecionadas.includes(dataString)) {
+                            datasSelecionadas = datasSelecionadas.filter(d => d !== dataString);
+                            dayDiv.classList.remove('selected-day');
+                        } else {
+                            datasSelecionadas.push(dataString);
+                            dayDiv.classList.add('selected-day');
+                        }
+                        atualizarBotaoFlutuante();
+                    } else {
+                        datasSelecionadas = [dataString];
+                        document.querySelectorAll('.day').forEach(d => d.classList.remove('selected-day'));
+                        dayDiv.classList.add('selected-day');
+                        atualizarBotaoFlutuante(); 
+                        abrirModalParaAdicionarOuEditar();
+                    }
+                });
+
+                const eventosDoDia = todosOsEventos.filter(evento => evento.data === dataString);
+                
+                if (eventosDoDia.length > 0) {
+                    
+                    const temRecesso = eventosDoDia.some(e => e.tipo === 'recesso');
+                    const temFeriado = eventosDoDia.some(e => e.tipo === 'feriado');
+                    const temPagamento = eventosDoDia.some(e => e.tipo === 'pagamento');
+                    
+                    // Coloca as cores de fundo. Note que o Pagamento não pinta mais o fundo inteiro.
+                    if (temRecesso) {
+                        dayDiv.classList.add('has-recesso'); 
+                    } else if (temFeriado) {
+                        dayDiv.classList.add('has-event'); 
+                    } else {
+                        const ultimaAnotacao = eventosDoDia.slice().reverse().find(e => e.tipo === 'pessoal');
+                        if (ultimaAnotacao) {
+                            dayDiv.classList.add(`has-pers-${ultimaAnotacao.cor}`);
+                        }
+                    }
+
+                    // Insere a bolinha de R$ no canto se for dia de pagamento
+                    if (temPagamento) {
+                        const pagBadge = document.createElement('div');
+                        pagBadge.classList.add('pagamento-badge');
+                        pagBadge.innerText = 'R$';
+                        pagBadge.title = 'Data do Pagamento';
+                        dayDiv.appendChild(pagBadge);
+                    }
+
+                    eventosDoDia.forEach(evento => {
+                        // Pula a criação da faixinha de texto se for pagamento
+                        if (evento.tipo === 'pagamento') return; 
+                        
+                        const eventLabel = document.createElement('div');
+                        eventLabel.classList.add('event-label');
+                        
+                        if (evento.tipo === 'recesso') {
+                            eventLabel.classList.add('recesso');
+                        } else if (evento.tipo === 'pessoal') {
+                            eventLabel.classList.add(`label-${evento.cor}`); 
+                        }
+                        
+                        let tituloLabel = evento.titulo;
+                        if (evento.tipo === 'pessoal' && evento.horario) {
+                            tituloLabel += ` (${evento.horario})`;
+                        }
+                        eventLabel.innerText = tituloLabel;
+                        
+                        let tituloCompleto = evento.titulo;
+                        if (dataString === '2026-06-22') tituloCompleto = 'Corpus Christi (transferido do dia 04 de junho)';
+                        if (dataString === '2026-08-10') tituloCompleto = 'Dia dos Cursos Jurídicos (antecipado do dia 11 de agosto)';
+                        if (dataString === '2026-10-30') tituloCompleto = 'Dia do Servidor Público (transferido do dia 28 de outubro)';
+                        if (dataString === '2026-12-08') tituloCompleto = 'Nossa Senhora da Conceição e Dia da Justiça';
+                        
+                        if (evento.tipo === 'pessoal' && evento.horario) {
+                            tituloCompleto += ` (${evento.horario})`;
+                        }
+                        
+                        eventLabel.title = tituloCompleto; 
+                        dayDiv.appendChild(eventLabel);
+                    });
+                }
+
+                calendarDays.appendChild(dayDiv);
+            }
+
+            const blocosUtilizados = primeiroDia + diasNoMes;
+            const blocosRestantes = 42 - blocosUtilizados;
+
+            for (let i = 0; i < blocosRestantes; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.classList.add('day', 'empty');
+                calendarDays.appendChild(emptyDiv);
+            }
+        }
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            mesAtual--;
+            if (mesAtual < 0) { mesAtual = 11; anoAtual--; }
+            renderizarCalendario(mesAtual, anoAtual);
+        });
+
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            mesAtual++;
+            if (mesAtual > 11) { mesAtual = 0; anoAtual++; }
+            renderizarCalendario(mesAtual, anoAtual);
+        });
+
+        renderizarCalendario(mesAtual, anoAtual);
+    </script>
+</body>
+</html>
