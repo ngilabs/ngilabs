@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Guia de Simulação - PAI TJPE</title>
+        
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #0d9488;
+            --accent: #d97706; 
+            --bg: #f1f5f9;
+            --text: #1e293b;
+            --card-bg: #ffffff;
+            --border: #94a3b8; 
+            --danger: #dc2626;
+            --success: #16a34a;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .header-main-logo {
+            width: 100%;
+            max-width: 320px;
+            height: auto;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .wizard-container {
+            width: 100%;
+            max-width: 850px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 25px;
+            position: relative;
+            box-sizing: border-box;
+        }
+        .progress-bar-container {
+            width: 100%;
+            background-color: #e2e8f0;
+            height: 10px; 
+            border-radius: 10px;
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: var(--secondary);
+            width: 20%;             
+            transition: width 0.4s ease;
+        }
+        .wizard-page {
+            display: none;
+            animation: fadeIn 0.3s ease forwards;
+        }
+        .wizard-page.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        h2 {
+            color: var(--primary);
+            font-size: 24px;
+            margin-top: 0;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+        p {
+            line-height: 1.6;
+            color: #1e293b; 
+            font-size: 16px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 6px solid var(--primary);
+        }
+        .form-grid-minimal {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--primary);
+            font-size: 14px;
+        }
+        input[type="number"], select, input[type="text"] {
+            width: 100%;
+            padding: 14px; 
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 16px; 
+            box-sizing: border-box;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.25);
+        }
+        .rubricas-menu-box {
+            background: #f1f5f9;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        .rubricas-menu-title {
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .rubricas-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .rubrica-item-btn {
+            background: #fff;
+            border: 2px solid var(--border);
+            padding: 12px 16px; 
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .rubrica-item-btn:hover {
+            border-color: var(--secondary);
+            background: #f0fdfa;
+            color: var(--secondary);
+        }
+        .rubrica-item-btn .plus-icon {
+            color: var(--success);
+            font-weight: 900;
+            font-size: 16px;
+        }
+        .contracheque-mount-area {
+            margin-top: 25px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .table-responsive-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .cc-mount-header {
+            background: var(--primary);
+            color: #fff;
+            padding: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        .cc-mount-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 500px;
+        }
+        .cc-mount-table th {
+            background: #e2e8f0;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 13px;
+            padding: 12px 10px;
+            text-align: left;
+        }
+        .cc-mount-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #cbd5e1;
+            vertical-align: middle;
+            font-size: 15px;
+        }
+        .cc-total-row {
+            background-color: #f8fafc;
+            border-top: 2px solid var(--primary);
+        }
+        .cc-total-row td {
+            padding: 16px 10px;
+        }
+        .cc-total-label {
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 15px;
+            text-transform: uppercase;
+        }
+        .cc-total-value {
+            font-size: 19px;
+            font-weight: 800;
+            color: #1e3a8a;
+            font-family: monospace;
+        }
+        .btn-remove-rubrica {
+            background: #fee2e2;
+            border: 1px solid #fca5a5;
+            color: var(--danger);
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        .btn-remove-rubrica:hover {
+            background: #fca5a5;
+        }
+        .contracheque-mount-area.minimal-30 {
+            border: 1px solid #cbd5e1;
+        }
+        .contracheque-mount-area.minimal-30 .cc-mount-header {
+            background: #f8fafc;
+            border-bottom: 1px solid #cbd5e1;
+            font-weight: 700;
+        }
+        .contracheque-mount-area.minimal-30 th {
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .contracheque-mount-area.minimal-30 td {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .result-section-box {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+        .result-section-title {
+            font-weight: 800;
+            font-size: 14px;
+            color: var(--primary);
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed rgba(0, 0, 0, 0.15);
+            padding-bottom: 6px;
+            letter-spacing: 0.5px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 16px;
+            gap: 10px;
+        }
+        .result-section-box .result-item:last-of-type {
+            border-bottom: none;
+        }
+        .result-total {
+            font-size: 22px;
+            font-weight: 800;
+            color: #166534;
+            border-top: 2px solid #86efac;
+            padding-top: 15px;
+            margin-top: 5px;
+        }
+        .alert-box {
+            background-color: #fef3c7; 
+            border-left: 6px solid var(--accent);
+            color: #78350f;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        .nav-buttons-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 35px;
+            border-top: 2px solid #e2e8f0;
+            padding-top: 20px;
+            gap: 15px;
+        }
+        .btn-wizard {
+            padding: 16px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            text-transform: uppercase;
+            flex: 1;
+            max-width: 260px;
+        }
+        .btn-wizard-prev { background-color: #cbd5e1; color: #334155; }        
+        .btn-wizard-next { background-color: var(--secondary); color: white; margin-left: auto; }        
+        .invisible-btn { visibility: hidden; pointer-events: none; }
+         
+        .resumo-valores-box {
+            margin-top: 25px;
+            background: #f8fafc;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .grid-resumo-valores {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            text-align: center;
+        }
+        .card-resumo-item {
+            padding: 10px;
+            border-radius: 6px;
+            background: #fff;
+            border: 1px solid #cbd5e1;
+        }
+        .card-resumo-item label {
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+            text-align: center;
+        }
+        .card-resumo-item span {
+            font-size: 18px;
+            font-weight: 800;
+            font-family: monospace;
+        }
+        .color-vantagens { color: #16a34a; }
+        .color-descontos { color: #dc2626; }
+        .color-liquido { color: #1e3a8a; }
+
+        .footer-main-container {
+            margin-top: 30px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+        .footer-images-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .footer-logo-img {
+            height: 40px;
+            width: auto;
+            max-width: 130px;
+        }
+        .footer-signature-text {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        @media (max-width: 650px) {            
+            body { padding: 8px; }            
+            .wizard-container { padding: 18px; border-radius: 8px; }            
+            h2 { font-size: 20px; }            
+            .form-grid-minimal { grid-template-columns: 1fr; gap: 10px; }            
+            .rubrica-item-btn { width: 100%; justify-content: flex-start; padding: 14px; }            
+            .result-item { flex-direction: column; align-items: flex-start; gap: 4px; border-bottom: 1px solid #e2e8f0; padding: 12px 0; }            
+            .result-item span:last-child { align-self: flex-end; font-weight: 700; }            
+            .result-total { font-size: 19px; flex-direction: column; align-items: flex-start; }  
+            .grid-resumo-valores { grid-template-columns: 1fr; gap: 10px; }      
+        }    
+    </style>
+</head>
+<body>
+
+<img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="header-main-logo" alt="Logo Principal TJPE">
+
+<div class="wizard-container">    
+    <div class="progress-bar-container">        
+        <div class="progress-bar" id="progressBar"></div>    
+    </div>
+    
+    <div class="wizard-page active" id="page-1">        
+        <h2>Bem-vindo ao Simulador PAI</h2>        
+        <p>Esta ferramenta funciona como um guia passo a passo estruturado para te auxiliar a simular os valores decorrentes da adesão ao <strong>Programa de Aposentadoria Incentivada (PAI)</strong>.</p>        
+        <p>Preencha os dados requisitados em cada tela e clique na seta <strong>PRÓXIMO</strong> abaixo para avançar no processo.</p>                
+        <div class="alert-box" style="background-color: #ffebee; border-left-color: #af1e1e; color: #af1e1e; margin-top: 30px;">            
+            <strong>⚠️Aviso Importante:⚠️</strong><br>            
+            O valor da indenização apresentado nesta simulação será calculado com base nos dados informados pelo próprio servidor e possui caráter meramente estimativo. Assim, o resultado não substitui o valor oficial da indenização.<br>                 
+        </div>    
+    </div>
+    
+    <div class="wizard-page" id="page-2">        
+        <h2>Passo 1: Saldo de Licenças-Prêmio</h2>        
+        <p>Acesse o extrato da sua ficha funcional para levantar o seu histórico de períodos adquiridos.</p>        
+        <div class="alert-box">            
+            <strong>Dica de Preenchimento:</strong><br>            
+            Selecione a quantidade de decênios concedidos de Licença Prêmio, clicando nessa setinha pequena ao lado.<br>            
+            Lembre-se que o decênio é o período de 10 anos de Efetivo Exercício.<br><br>            
+            <strong>Exemplo Prático:</strong><br>            
+            Se você tem 35 anos de serviço, você possui 3 Decênios.        
+        </div>        
+        <div class="form-group">            
+            <label for="decenios">QUANTIDADE DE DECÊNIOS COMPLETOS ADQUIRIDOS NO TJPE:</label>            
+            <select id="decenios">                
+                <option value="0">0 Decênios</option>                
+                <option value="1">1 Decênio (10 anos)</option>                
+                <option value="2">2 Decênios (20 anos)</option>                
+                <option value="3" selected>3 Decênios (30 anos)</option>                
+                <option value="4">4 Decênios (40 anos)</option>                
+                <option value="5">5 Decênios (50 anos)</option>            
+            </select>        
+        </div>        
+        <div class="form-group">            
+            <label for="lp_gozadas">DIGITE A QUANTIDADE DE DIAS DE LICENÇAS-PRÊMIO QUE VOCÊ GOZOU:</label>            
+            <input type="number" id="lp_gozadas" value="60" min="0">            
+            <small style="color: #1e293b; font-weight: 700; display: block; margin-top: 8px;">A quantidade preenchida precisa ser em DIAS. Caso não tenha gozado nenhum dia, digite 0.</small>        
+        </div>    
+    </div>
+    
+    <div class="wizard-page" id="page-3">        
+        <h2>Passo 2: Saldo de Férias Acumuladas</h2>        
+        <p>Informe o saldo acumulado total e os dias de abono regulamentares que serão computados.</p>        
+        <div class="form-group">            
+            <label for="ferias_nao_gozadas">DIGITE A QUANTIDADE DE DIAS DE FÉRIAS NÃO GOZADAS:</label>            
+            <input type="number" id="ferias_nao_gozadas" value="60" min="0">            
+            <small style="color: #1e293b; font-weight: 700; display: block; margin-top: 8px;">A quantidade preenchida deve ser informada em número de DIAS. Se não houver saldo, digite 0.</small>        
+        </div>        
+        <div class="form-group">            
+            <label for="abono_ferias">SELECIONE A QUANTIDADE DE ABONO DE FÉRIAS:</label>            
+            <select id="abono_ferias">                
+                <option value="0">0</option>                
+                <option value="1">1</option>                
+                <option value="2">2</option>                
+                <option value="3">3</option>                
+                <option value="4">4</option>                
+                <option value="5">5</option>                
+                <option value="6">6</option>                
+                <option value="7">7</option>                
+                <option value="8">8</option>                
+                <option value="9">9</option>                
+                <option value="10">10</option>            
+            </select>        
+        </div>    
+    </div>
+    
+    <div class="wizard-page" id="page-4">        
+        <h2>Passo 3: Monte seu Contracheque</h2>        
+        <p>Configure seus parâmetros bases e clique nos botões de <strong>(+)</strong> para incluir e liberar as verbas desejadas na montagem abaixo.</p>                        
+        <div class="form-group form-grid-minimal">            
+            <div>                
+                <label for="select-vinculo">VÍNCULO</label>                
+                <select id="select-vinculo" onchange="atualizarInterfaceFiltros()">                    
+                    <option value="EFETIVO" selected>Efetivo</option>                    
+                    <option value="ESTABILIZADO">Estabilizado</option>                
+                </select>            </div>            
+            <div id="wrapper-cargo">                
+                <label for="select-cargo">CARGO</label>                
+                <select id="select-cargo" onchange="obterVencimentoTabelaOriginal()">                    
+                    <option value="AUXILIAR">Auxiliar</option>                    
+                    <option value="TECNICO" selected>Técnico</option>                    
+                    <option value="OFICIAL_PJIII">Oficial PJIII</option>                    
+                    <option value="ANALISTA_OFICIAL">Analista / Oficial de Justiça</option>                
+                </select>            
+            </div>            
+            <div id="wrapper-padrao">                
+                <label for="select-padrao">PADRÃO SALARIAL</label>                
+                <select id="select-padrao" onchange="obterVencimentoTabelaOriginal()"></select>            
+            </div>        
+        </div>        
+        <div class="rubricas-menu-box">            
+            <div class="rubricas-menu-title">Clique para Adicionar Rubricas ao Contracheque:</div>            
+            <div class="rubricas-list" id="rubricas-disponiveis-list"></div>        
+        </div>        
+        <div class="contracheque-mount-area">            
+            <div class="cc-mount-header">Contracheque em Simulação</div>            
+            <div class="table-responsive-wrapper">                
+                <table class="cc-mount-table">                    
+                    <thead>                        
+                        <tr>                            
+                            <th style="width: 50%;">Descrição da Rubrica</th>                            
+                            <th style="width: 35%;">Valor (R$)</th>                            
+                            <th style="width: 15%; text-align: center;">Ação</th>                        
+                        </tr>                    
+                    </thead>                    
+                    <tbody id="cc-mount-tbody"></tbody>                    
+                    <tfoot>                        
+                        <tr class="cc-total-row">                            
+                            <td class="cc-total-label">Subtotal / Somatório</td>                            
+                            <td class="cc-total-value" id="cc-total-display">R$ 0,00</td>                            
+                            <td></td>                        
+                        </tr>                    
+                    </tfoot>                
+                </table>            
+            </div>        
+        </div>        
+        <span class="cc-total-notice">* Atenção: Este total acumulado representa o Valor Base para a Indenização do PAI.</span>    
+    </div>
+    
+    <div class="wizard-page" id="page-5">        
+        <h2>Resultado Final Consolidado</h2>        
+        <p>Confira abaixo o demonstrativo financeiro detalhado estruturado por eixos estratégicos de validação:</p>        
+        <div class="result-section-box">            
+            <div class="result-section-title">Controle de Dias (Licença-Prêmio)</div>            
+            <div class="result-item">                
+                <span>Total de Dias de Licença-Prêmio Adquiridos (Histórico):</span>                
+                <span id="res_dias_lp" style="font-weight: 600;">0 dias</span>            
+            </div>            
+            <div class="result-item">                
+                <span>(-) Dias de Licenças-Prêmio Gozadas:</span>                
+                <span id="res_gozadas_lp" style="font-weight: 600; color: var(--danger);">0 dias</span>            
+            </div>            
+            <div class="result-item">                
+                <span>Saldo Líquido de Dias Convertidos em Pecúnia:</span>                
+                <span id="res_saldo_lp" style="font-weight: 700; color: var(--secondary);">0 dias</span>            
+            </div>        
+        </div>        
+        <div class="result-section-box" style="border-color: #3b82f6; background-color: #eff6ff;">            
+            <div class="result-section-title" style="color: #1d4ed8; border-bottom-color: rgba(29, 78, 216, 0.2);">Valor Base Calculated</div>            
+            <div class="result-item" style="border-bottom: none;">                
+                <span>Montante do Contracheque Consolidado (Valor Base):</span>                
+                <span id="res_base_venc" style="font-weight: 700; color: #1e3a8a; font-size: 16px;">R$ 0,00</span>            
+            </div>        
+        </div>        
+        <div class="result-section-box" style="border-color: #10b981; background-color: #f0fdf4;">            
+            <div class="result-section-title" style="color: #047857; border-bottom-color: rgba(4, 120, 87, 0.2);">Demonstrativo das Indenizações</div>            
+            <div class="result-item">                
+                <span>( A ) Indenização por Licença-Prêmio:</span>                
+                <span id="res_valor_lp" style="font-weight: 600; color: #0d9488;">R$ 0,00</span>            
+            </div>            
+            <div class="result-item">                
+                <span>( B ) Indenização por Férias Não Gozadas:</span>                
+                <span id="res_valor_ferias" style="font-weight: 600; color: #0d9488;">R$ 0,00</span>            
+            </div>            
+            <div class="result-item">                
+                <span>( B.2 ) Abono de Férias:</span>                
+                <span id="res_valor_abono" style="font-weight: 600; color: #0d9488;">R$ 0,00</span>            
+            </div>            
+            <div class="result-item result-total">                
+                <span>TOTAL DA INDENIZAÇÃO DO PAI (A + B + B.2):</span>                
+                <span id="res_total_pai">R$ 0,00</span>            
+            </div>        
+        </div>        
+        <div class="alert-box" style="background-color: #ffebee; border-left-color: #3b82f6; color: #c62828; margin-top: 25px; margin-bottom: 5px;">            
+            <strong>Aviso Importante:</strong><br>            
+            O valor da indenização apresentado nesta simulação foi calculado com base nos dados informados pelo próprio servidor e possui caráter meramente estimativo. Assim, o resultado não substitui o valor oficial da indenização.<br>                  
+        </div>        
+        <div style="margin-top: 25px; text-align: center;">            
+            <button class="btn-wizard" style="background-color: var(--accent); color: white; max-width: 100%; width: 100%;" onclick="changePage(1)">                
+                SIMULE AQUI SEU CONTRACHEQUE DA APOSENTADORIA 🖥️            
+            </button>        
+        </div>    
+    </div>
+    
+    <div class="wizard-page" id="page-6">        
+        <h2>Simulação de Contracheque da Aposentadoria</h2>        
+        <p>Insira seus dados pessoais para avaliar os critérios de proventos da sua aposentadoria.</p>        
+        <div class="form-group form-grid-minimal" style="grid-template-columns: repeat(3, 1fr);">            
+            <div>                
+                <label for="apo_idade">IDADE DO SERVIDOR:</label>                
+                <input type="number" id="apo_idade" value="77" min="0" oninput="avaliarRegraIdadeAuxSaude(); recalcularDescontosAutomaticosAposentadoria();">            
+            </div>            
+            <div>                
+                <label for="apo_dependentes">QUANTIDADE DE DEPENDENTES:</label>                
+                <input type="number" id="apo_dependentes" value="1" min="0" oninput="recalcularDescontosAutomaticosAposentadoria()">            
+            </div>            
+            <div>                
+                <label for="apo_molestia">POSSUI MOLÉSTIA GRAVE?</label>                
+                <select id="apo_molestia" onchange="recalcularDescontosAutomaticosAposentadoria()">
+                    <option value="NAO" selected>Não</option>                    
+                    <option value="SIM">Sim</option>                
+                </select>            
+            </div>        
+        </div>        
+        <div class="contracheque-mount-area minimal-30">            
+            <div class="cc-mount-header" style="color: var(--secondary);">( + ) CRÉDITOS (VANTAGENS)</div>            
+            <div class="table-responsive-wrapper">                
+                <table class="cc-mount-table">                    
+                    <thead>                        
+                        <tr>                            
+                            <th style="width: 60%; color: var(--secondary);">Descrição da Rubrica</th>                            
+                            <th style="width: 40%; color: var(--secondary);">Valor (R$)</th>                        
+                        </tr>                    
+                    </thead>                    
+                    <tbody id="apo-creditos-tbody"></tbody>                
+                </table>            
+            </div>        
+        </div>        
+        <div class="contracheque-mount-area minimal-30" style="margin-top: 25px;">            
+            <div class="cc-mount-header" style="color: var(--danger);">( - ) DÉBITOS (DESCONTOS)</div>            
+            <div class="table-responsive-wrapper">                
+                <table class="cc-mount-table">                    
+                    <thead>                        
+                        <tr>                            
+                            <th style="width: 50%;">Descrição da Rubrica</th>                            
+                            <th style="width: 35%;">Valor (R$)</th>                            
+                            <th style="width: 15%; text-align: center; color: var(--danger);">Ação</th>                        
+                        </tr>                    
+                    </thead>                    
+                    <tbody id="apo-debitos-tbody"></tbody>                
+                </table>            
+            </div>        
+        </div>        
+        <div style="margin-top: 15px; text-align: right;">            
+            <button class="rubrica-item-btn" style="display: inline-flex;" onclick="adicionarDebitoLinha()">                
+                <span class="plus-icon" style="color: var(--danger);">+</span> Adicionar Desconto/Débito            
+            </button>        
+        </div>    
+
+        <div class="resumo-valores-box">
+            <div class="grid-resumo-valores">
+                <div class="card-resumo-item">
+                    <label>Total de Vantagens (Bruto)</label>
+                    <span id="resumo-total-bruto" class="color-vantagens">R$ 0,00</span>
+                </div>
+                <div class="card-resumo-item">
+                    <label>Total de Descontos</label>
+                    <span id="resumo-total-descontos" class="color-descontos">R$ 0,00</span>
+                </div>
+                <div class="card-resumo-item">
+                    <label>Valor Líquido</label>
+                    <span id="resumo-total-liquido" class="color-liquido">R$ 0,00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-buttons-container">        
+        <button class="btn-wizard btn-wizard-prev invisible-btn" id="btnPrev" onclick="changePage(-1)">            
+            &#8592; Anterior        
+        </button>        
+        <button class="btn-wizard btn-wizard-next" id="btnNext" onclick="changePage(1)">            
+            Próximo &#8594;        
+        </button>    
+    </div>
+</div>
+
+<div class="footer-main-container">    
+    <div class="footer-images-row">        
+        <img src="https://i.ibb.co/hxBBp3g6/image-Photoroom.png" class="footer-logo-img" alt="Logo DGF">        
+        <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo-img" alt="Logo Adicional">    
+    </div>    
+    <div class="footer-signature-text">SGP-DGF-2026</div>
+</div>
+
+<script>    
+    const AJUSTES_SALARIAIS = [1.053];     
+    const getFatorAcumulado = (lista) => lista.reduce((acc, curr) => acc * curr, 1);    
+    const fSal = getFatorAcumulado(AJUSTES_SALARIAIS);
+
+    // Tabela salarial atualizada com P00 e agrupamento analista_oficial
+    const tabelaSalarial = [        
+        {p: "P00", auxiliar: 5565.92, tecnico: 5858.86, oficial_pjIII: 7252.72, analista_oficial: 7634.45},
+        {p: "P01", auxiliar: 5705.07, tecnico: 6005.32, oficial_pjIII: 7434.03, analista_oficial: 7825.32},        
+        {p: "P02", auxiliar: 5856.24, tecnico: 6164.45, oficial_pjIII: 7631.04, analista_oficial: 8032.69},        
+        {p: "P03", auxiliar: 6020.23, tecnico: 6337.08, oficial_pjIII: 7844.72, analista_oficial: 8257.59},        
+        {p: "P04", auxiliar: 6197.83, tecnico: 6524.04, oficial_pjIII: 8076.13, analista_oficial: 8501.20},        
+        {p: "P05", auxiliar: 6389.93, tecnico: 6726.26, oficial_pjIII: 8326.49, analista_oficial: 8764.72},        
+        {p: "P06", auxiliar: 6597.61, tecnico: 6944.85, oficial_pjIII: 8597.11, analista_oficial: 9049.60},        
+        {p: "P07", auxiliar: 6821.91, tecnico: 7181.00, oficial_pjIII: 8889.42, analista_oficial: 9357.29},        
+        {p: "P08", auxiliar: 7064.12, tecnico: 7435.92, oficial_pjIII: 9204.99, analista_oficial: 9689.45},        
+        {p: "P09", auxiliar: 7325.47, tecnico: 7711.05, oficial_pjIII: 9545.58, analista_oficial: 10047.97},        
+        {p: "P10", auxiliar: 7607.51, tecnico: 8007.94, oficial_pjIII: 9913.07, analista_oficial: 10434.83},        
+        {p: "P11", auxiliar: 7911.82, tecnico: 8328.22, oficial_pjIII: 10309.59, analista_oficial: 10852.20},        
+        {p: "P12", auxiliar: 8386.53, tecnico: 8827.94, oficial_pjIII: 10928.18, analista_oficial: 11503.34},        
+        {p: "P13", auxiliar: 8973.59, tecnico: 9445.90, oficial_pjIII: 11693.13, analista_oficial: 12308.58},        
+        {p: "P14", auxiliar: 9691.46, tecnico: 10201.54, oficial_pjIII: 12628.60, analista_oficial: 13293.27},        
+        {p: "P15", auxiliar: 10563.73, tecnico: 11119.71, oficial_pjIII: 13765.15, analista_oficial: 14489.66},        
+        {p: "P16", auxiliar: 11620.08, tecnico: 12231.66, oficial_pjIII: 15141.69, analista_oficial: 15938.64},        
+        {p: "P17", auxiliar: 12898.30, tecnico: 13577.14, oficial_pjIII: 16807.28, analista_oficial: 17691.87},        
+        {p: "P18", auxiliar: 14446.06, tecnico: 15206.39, oficial_pjIII: 18824.14, analista_oficial: 19814.88},        
+        {p: "P19", auxiliar: 16324.07, tecnico: 17183.24, oficial_pjIII: 21271.28, analista_oficial: 22390.82},        
+        {p: "P20", auxiliar: 18609.46, tecnico: 19588.89, oficial_pjIII: 24249.28, analista_oficial: 25525.53},        
+        {p: "P21", auxiliar: 21400.86, tecnico: 22527.23, oficial_pjIII: 27886.68, analista_oficial: 29354.38}    
+    ];
+    
+    let rubricasContrachequeAtivas = {};    
+    let currentPage = 1;    
+    const totalPages = 6; 
+    let valorAuxSaudeDigitado = 0;    
+    let listaDebitosAposentadoria = [];
+    
+    window.onload = () => {        
+        const selectPadrao = document.getElementById('select-padrao');        
+        tabelaSalarial.forEach(item => selectPadrao.add(new Option(item.p, item.p)));        
+        atualizarInterfaceFiltros();    
+    };
+
+    // 💰 FUNÇÃO DE FORMATAÇÃO AUTOMÁTICA EM TEMPO REAL PARA IDOSOS (MÁSCARA DINÂMICA)
+    function aplicarMascaraMoeda(inputElement, callbackCalculo) {
+        let valorBruto = inputElement.value.replace(/\D/g, ""); // Remove tudo que não for número
+        if (valorBruto === "") {
+            inputElement.value = "";
+            callbackCalculo(0);
+            return;
+        }
+        let valorNumerico = parseFloat(valorBruto) / 100;
+        inputElement.value = valorNumerico.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        callbackCalculo(valorNumerico);
+    }
+
+    function atualizarInterfaceFiltros() {        
+        const vinculo = document.getElementById('select-vinculo').value;        
+        const wCargo = document.getElementById('wrapper-cargo');        
+        const wPadrao = document.getElementById('wrapper-padrao');
+        rubricasContrachequeAtivas = {};
+        if (vinculo === 'ESTABILIZADO') {            
+            wCargo.style.display = 'none';            
+            wPadrao.style.display = 'none';                        
+            rubricasContrachequeAtivas['salario_base'] = { label: 'Salário Base', valor: 0, manual: true };            
+            rubricasContrachequeAtivas['gratificacao_exercicio'] = { label: 'Gratificação de Exercício', valor: 0, manual: true };            
+            rubricasContrachequeAtivas['gratificacao_incentivo'] = { label: 'Gratificação de Incentivo à Produtividade', valor: 0, manual: true };        
+        } else {            
+            wCargo.style.display = 'block';            
+            wPadrao.style.display = 'block';                        
+            rubricasContrachequeAtivas['vencimento_base'] = { label: 'VENCIMENTO BASE', valor: 0, manual: false };        
+        }
+        renderizarMenuRubricasDisponiveis();        
+        obterVencimentoTabelaOriginal();    
+    }
+    function renderizarMenuRubricasDisponiveis() {        
+        const listContainer = document.getElementById('rubricas-disponiveis-list');        
+        listContainer.innerHTML = '';
+        const opcoesGerais = [            
+            { id: 'adicional_qualificacao', label: 'Adicional de Qualificação' },            
+            { id: 'quinquenios', label: 'Quinquênios' },            
+            { id: 'estabilidade_financeira', label: 'Estabilidade Financeira' },            
+            { id: 'parcela_autonoma', label: 'Parcela Autônoma' },            
+            { id: 'gip', label: 'GIP' },            
+            { id: 'gratificacoes_incorporadas', label: 'Gratificações Incorporadas' },            
+            { id: 'incentivo_informado', label: 'Incentivo Informado' },            
+            { id: 'incorporacoes', label: 'Incorporações' }        
+        ];
+        opcoesGerais.forEach(opt => {            
+            if (!rubricasContrachequeAtivas[opt.id]) {                
+                const btn = document.createElement('button');                
+                btn.className = 'rubrica-item-btn';                
+                btn.innerHTML = `<span class="plus-icon">+</span> ${opt.label}`;                
+                btn.onclick = () => adicionarRubricaAoContracheque(opt.id, opt.label);                
+                listContainer.appendChild(btn);            
+            }        
+        });    
+    }
+    function obterVencimentoTabelaOriginal() {        
+        const vinculo = document.getElementById('select-vinculo').value;        
+        if (vinculo === 'EFETIVO') {            
+            const cargo = document.getElementById('select-cargo').value;            
+            const padrao = document.getElementById('select-padrao').value;                        
+            if (!padrao) return;
+            const dP = tabelaSalarial.find(x => x.p === padrao);                        
+            let valorTab = 0;            
+            if (cargo === 'AUXILIAR') valorTab = dP.auxiliar * fSal;
+            else if (cargo === 'TECNICO') valorTab = dP.tecnico * fSal;            
+            else if (cargo === 'OFICIAL_PJIII') valorTab = dP.oficial_pjIII * fSal;            
+            else if (cargo === 'ANALISTA_OFICIAL') valorTab = dP.analista_oficial * fSal;
+            if (rubricasContrachequeAtivas['vencimento_base']) {                
+                rubricasContrachequeAtivas['vencimento_base'].valor = valorTab;            
+            }        
+        }        
+        reconstruirTabelaContracheque();    
+    }
+    function adicionarRubricaAoContracheque(id, label) {        
+        rubricasContrachequeAtivas[id] = { label: label, valor: 0, manual: true };        
+        renderizarMenuRubricasDisponiveis();        
+        reconstruirTabelaContracheque();    
+    }
+    function removerRubricaDoContracheque(id) {        
+        delete rubricasContrachequeAtivas[id];        
+        renderizarMenuRubricasDisponiveis();        
+        reconstruirTabelaContracheque();    
+    }
+    function atualizarValorRubrica(id, valorRealNum) {        
+        if (rubricasContrachequeAtivas[id]) {            
+            rubricasContrachequeAtivas[id].valor = valorRealNum;        
+        }        
+        atualizarSubtotalEmTempoReal();    
+    }
+    function obterSomatorioAcumulado() {        
+        let brutoMontadoAcumulado = 0;        
+        Object.keys(rubricasContrachequeAtivas).forEach(id => {            
+            brutoMontadoAcumulado += rubricasContrachequeAtivas[id].valor;        
+        });        
+        return brutoMontadoAcumulado;    
+    }
+    function atualizarSubtotalEmTempoReal() {        
+        const total = obterSomatorioAcumulado();        
+        document.getElementById('cc-total-display').innerText = total.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });    
+    }
+    function reconstruirTabelaContracheque() {        
+        const tbody = document.getElementById('cc-mount-tbody');        
+        tbody.innerHTML = '';
+        Object.keys(rubricasContrachequeAtivas).forEach(id => {            
+            const item = rubricasContrachequeAtivas[id];            
+            const tr = document.createElement('tr');
+            const tdLabel = document.createElement('td');            
+            tdLabel.innerHTML = `<strong>${item.label}</strong>`;            
+            tr.appendChild(tdLabel);
+            const tdValor = document.createElement('td');            
+            if (item.manual) {                
+                let valorTextoInicial = item.valor > 0 ? item.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+                tdValor.innerHTML = `<input type="text" value="${valorTextoInicial}" placeholder="0,00" oninput="aplicarMascaraMoeda(this, (v) => atualizarValorRubrica('${id}', v))">`;            
+            } else {                
+                tdValor.innerHTML = `<input type="text" value="${item.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2})}" readonly style="background:#e2e8f0; color:#334155;">`;            
+            }            
+            tr.appendChild(tdValor);
+            const tdAcao = document.createElement('td');            
+            tdAcao.style.textAlign = 'center';                        
+            const trFixas = ['vencimento_base', 'salario_base', 'gratificacao_exercicio', 'gratificacao_incentivo'];            
+            if (!trFixas.includes(id)) {                
+                tdAcao.innerHTML = `<button class="btn-remove-rubrica" onclick="removerRubricaDoContracheque('${id}')" title="Excluir Verba">🗑️ Excluir</button>`;            
+            } else {                
+                tdAcao.innerHTML = `-`;            
+            }            
+            tr.appendChild(tdAcao);
+            tbody.appendChild(tr);        
+        });
+        atualizarSubtotalEmTempoReal();    
+    }
+
+    function changePage(direction) {        
+        if (currentPage === 4 && direction === 1) {            
+            calcularResultados();        
+        }
+        if (currentPage === 5 && direction === 1) {            
+            montarEstruturaAposentadoriaUmaVez();        
+        }        
+        document.getElementById(`page-${currentPage}`).classList.remove('active');        
+        currentPage += direction;        
+        document.getElementById(`page-${currentPage}`).classList.add('active');        
+        if (currentPage === 1) {            
+            document.getElementById('btnPrev').classList.add('invisible-btn');        
+        } else {            
+            document.getElementById('btnPrev').classList.remove('invisible-btn');        
+        }                
+        if (currentPage === totalPages) {            
+            document.getElementById('btnNext').classList.add('invisible-btn');        
+        } else {            
+            document.getElementById('btnNext').classList.remove('invisible-btn');            
+            if (currentPage === totalPages - 1) {                
+                document.getElementById('btnNext').innerHTML = "AVANÇAR PARA APOSENTADORIA &#128187;";            
+            } else {                
+                document.getElementById('btnNext').innerHTML = "Próximo &#8594;";            
+            }        
+        }
+        const progressPercent = (currentPage / totalPages) * 100;        
+        document.getElementById('progressBar').style.width = `${progressPercent}%`;        
+        window.scrollTo({ top: 0, behavior: 'smooth' });    
+    }
+    function calcularResultados() {        
+        const decenios = parseInt(document.getElementById('decenios').value) || 0;        
+        const lpGozadas = parseFloat(document.getElementById('lp_gozadas').value) || 0;        
+        const feriasNaoGozadas = parseFloat(document.getElementById('ferias_nao_gozadas').value) || 0;        
+        const abonoFeriasDias = parseInt(document.getElementById('abono_ferias').value) || 0;
+        let brutoMontadoAcumulado = obterSomatorioAcumulado();        
+        const vinculo = document.getElementById('select-vinculo').value;        
+        let baseSalarialPura = 0;        
+        if (vinculo === 'ESTABILIZADO') {            
+            if (rubricasContrachequeAtivas['salario_base']) baseSalarialPura = rubricasContrachequeAtivas['salario_base'].valor;        
+        } else {            
+            if (rubricasContrachequeAtivas['vencimento_base']) baseSalarialPura = rubricasContrachequeAtivas['vencimento_base'].valor;        
+        }
+        const diasDevidosLP = decenios * 180;        
+        const saldoDiasLP = Math.max(0, diasDevidosLP - lpGozadas);                
+        const valorIndenizacaoLP = (brutoMontadoAcumulado / 30) * saldoDiasLP;        
+        const valorIndenizacaoFerias = (brutoMontadoAcumulado / 30) * feriasNaoGozadas;                
+        const valorAbonoFerias = abonoFeriasDias * (1 / 3) * baseSalarialPura;                
+        const totalPAI = valorIndenizacaoLP + valorIndenizacaoFerias + valorAbonoFerias;
+        document.getElementById('res_dias_lp').innerText = `${diasDevidosLP} dias`;        
+        document.getElementById('res_gozadas_lp').innerText = `${lpGozadas} dias`;        
+        document.getElementById('res_saldo_lp').innerText = `${saldoDiasLP} dias`;        
+        document.getElementById('res_base_venc').innerText = brutoMontadoAcumulado.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });        
+        document.getElementById('res_valor_lp').innerText = valorIndenizacaoLP.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });        
+        document.getElementById('res_valor_ferias').innerText = valorIndenizacaoFerias.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });        
+        document.getElementById('res_valor_abono').innerText = valorAbonoFerias.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });        
+        document.getElementById('res_total_pai').innerText = totalPAI.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });    
+    }
+
+    function montarEstruturaAposentadoriaUmaVez() {        
+        const tbodyCreditos = document.getElementById('apo-creditos-tbody');        
+        tbodyCreditos.innerHTML = '';
+        Object.keys(rubricasContrachequeAtivas).forEach(id => {            
+            if (id !== 'adicional_qualificacao') {
+                const item = rubricasContrachequeAtivas[id];            
+                const tr = document.createElement('tr');            
+                tr.innerHTML = `<td><strong>${item.label}</strong></td>                             <td>R$ ${item.valor.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>`;            
+                tbodyCreditos.appendChild(tr);            
+            }
+        });
+        const trAux = document.createElement('tr');        
+        let valorAuxTextoInicial = valorAuxSaudeDigitado > 0 ? valorAuxSaudeDigitado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+        trAux.innerHTML = `<td><strong>Auxílio Saúde</strong></td>                           <td><input type="text" id="apo_aux_saude" value="${valorAuxTextoInicial}" placeholder="0,00" oninput="aplicarMascaraMoeda(this, atualizarValorAuxSaudeDireto)"></td>`;        
+        tbodyCreditos.appendChild(trAux);
+        const trAdc = document.createElement('tr');        
+        trAdc.id = "linha_aux_adicional_50";        
+        trAdc.style.display = "none";         
+        trAdc.innerHTML = `<td><strong>Aux Saúde (adc 50%)</strong></td>                           <td><input type="text" id="apo_aux_saude_50_display" value="R$ 0,00" readonly style="background:#e2e8f0; color:#334155;"></td>`;        
+        tbodyCreditos.appendChild(trAdc);
+        avaliarRegraIdadeAuxSaude();                
+        recalcularDescontosAutomaticosAposentadoria();    
+    }
+    function atualizarValorAuxSaudeDireto(valNum) {        
+        valorAuxSaudeDigitado = valNum;        
+        avaliarRegraIdadeAuxSaude();    
+    }
+    function avaliarRegraIdadeAuxSaude() {        
+        const idade = parseInt(document.getElementById('apo_idade').value) || 0;        
+        const inlineAdicional = document.getElementById('linha_aux_adicional_50');        
+        const displayAdicional = document.getElementById('apo_aux_saude_50_display');
+        if (inlineAdicional && displayAdicional) {            
+            if (idade > 50) {                
+                const valorCalculadoAdicional = valorAuxSaudeDigitado * 0.5;                
+                displayAdicional.value = valorCalculadoAdicional.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });                
+                inlineAdicional.style.display = "";             
+            } else {                
+                inlineAdicional.style.display = "none";             
+            }        
+        }    
+        recalcularDescontosAutomaticosAposentadoria();
+    }
+    
+    function recalcularDescontosAutomaticosAposentadoria() {        
+        let brutoContrachequeAposentado = 0;        
+        Object.keys(rubricasContrachequeAtivas).forEach(id => {
+            if (id !== 'adicional_qualificacao') {
+                brutoContrachequeAposentado += rubricasContrachequeAtivas[id].valor;
+            }
+        });
+        const dependentesIR = parseInt(document.getElementById('apo_dependentes').value) || 0;
+        const idadeServer = parseInt(document.getElementById('apo_idade').value) || 0;
+        const possuiMolestia = document.getElementById('apo_molestia').value;
+        
+        let tetoPrevidenciario = 8475.56; 
+        if (possuiMolestia === 'SIM') {
+            tetoPrevidenciario = tetoPrevidenciario * 2; 
+        }
+        
+        let baseCalculoFunafin = Math.max(0, brutoContrachequeAposentado - tetoPrevidenciario);
+        let valorCalculadoFunafin = baseCalculoFunafin * 0.14;
+        
+        let valorCalculadoIRRF = 0;
+
+        // Se NÃO possuir moléstia grave, calcula o IRRF normalmente. Se possuir (SIM), pula o cálculo e o valor fica 0.
+        if (possuiMolestia !== 'SIM') {
+            let bIR = brutoContrachequeAposentado - valorCalculadoFunafin;
+            bIR -= (dependentesIR * 189.59);
+            
+            if (idadeServer > 65) {
+                bIR -= 1903.98;
+            }
+            
+            bIR = Math.max(0, bIR);
+            
+            if (bIR > 4664.68) {
+                valorCalculadoIRRF = (bIR * 0.275) - 908.73;
+            } else if (bIR > 3751.05) {
+                valorCalculadoIRRF = (bIR * 0.225) - 675.49;
+            } else if (bIR > 2826.65) {
+                valorCalculadoIRRF = (bIR * 0.15) - 394.16;
+            } else if (bIR > 2428.80) {
+                valorCalculadoIRRF = (bIR * 0.075) - 182.16;
+            } else {
+                valorCalculadoIRRF = 0;
+            }
+        }
+        
+        window.valoresAutomaticosDebitos = {            
+            funafin: valorCalculadoFunafin,            
+            irrf: Math.max(0, valorCalculadoIRRF)        
+        };
+        renderizarDebitosAposentadoria();    
+    }
+    function adicionarDebitoLinha() {        
+        listaDebitosAposentadoria.push({ label: '', valor: 0 });        
+        renderizarDebitosAposentadoria();    
+    }
+    function removerDebitoLinha(index) {        
+        listaDebitosAposentadoria.splice(index, 1);        
+        renderizarDebitosAposentadoria();    
+    }
+    function atualizarDadoDebito(index, campo, valorDigitadoTexto) {        
+        if (campo === 'label') {            
+            listaDebitosAposentadoria[index].label = valorDigitadoTexto;        
+        }     
+    }
+    function atualizarDadoDebitoValorPuro(index, valorNum) {
+        listaDebitosAposentadoria[index].valor = valorNum;
+        atualizarResumoGeralContracheque();
+    }
+    function renderizarDebitosAposentadoria() {        
+        const tbodyDebitos = document.getElementById('apo-debitos-tbody');        
+        tbodyDebitos.innerHTML = '';
+        if (!window.valoresAutomaticosDebitos) {            
+            window.valoresAutomaticosDebitos = { funafin: 0, irrf: 0 };        
+        }
+        const trFunafin = document.createElement('tr');        
+        trFunafin.innerHTML = `            
+            <td><strong>FUNAFIN (14% s/ excedente)</strong></td>            
+            <td><input type="text" value="R$ ${window.valoresAutomaticosDebitos.funafin.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}" readonly style="background:#e2e8f0; color:#334155; border: none;"></td>            
+            <td style="text-align: center;">-</td>        
+        `;        
+        tbodyDebitos.appendChild(trFunafin);
+        const trIRRF = document.createElement('tr');        
+        trIRRF.innerHTML = `            
+            <td><strong>I.R.R.F. da Aposentadoria</strong></td>            
+            <td><input type="text" value="R$ ${window.valoresAutomaticosDebitos.irrf.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}" readonly style="background:#e2e8f0; color:#334155; border: none;"></td>            
+            <td style="text-align: center;">-</td>        
+        `;        
+        tbodyDebitos.appendChild(trIRRF);
+        listaDebitosAposentadoria.forEach((deb, index) => {            
+            const tr = document.createElement('tr');            
+            let valorTextoInicial = deb.valor > 0 ? deb.valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+            tr.innerHTML = `                
+                <td><input type="text" value="${deb.label}" placeholder="Ex: Empréstimo Consignado" oninput="atualizarDadoDebito(${index}, 'label', this.value)"></td>                
+                <td><input type="text" value="${valorTextoInicial}" placeholder="0,00" oninput="aplicarMascaraMoeda(this, (v) => atualizarDadoDebitoValorPuro(${index}, v))"></td>                
+                <td style="text-align: center;"><button class="btn-remove-rubrica" onclick="removerDebitoLinha(${index})">🗑️ Remover</button></td>            
+            `;            
+            tbodyDebitos.appendChild(tr);        
+        });    
+        atualizarResumoGeralContracheque();
+    }
+
+    function atualizarResumoGeralContracheque() {
+        let totalCreditos = 0;
+        Object.keys(rubricasContrachequeAtivas).forEach(id => {
+            if (id !== 'adicional_qualificacao') {
+                totalCreditos += rubricasContrachequeAtivas[id].valor;
+            }
+        });
+        totalCreditos += valorAuxSaudeDigitado;
+        
+        const idade = parseInt(document.getElementById('apo_idade').value) || 0;
+        if (idade > 50) {
+            totalCreditos += (valorAuxSaudeDigitado * 0.5);
+        }
+
+        let totalDebitos = window.valoresAutomaticosDebitos.funafin + window.valoresAutomaticosDebitos.irrf;
+        listaDebitosAposentadoria.forEach(deb => {
+            totalDebitos += deb.valor;
+        });
+
+        let totalLiquido = totalCreditos - totalDebitos;
+
+        document.getElementById('resumo-total-bruto').innerText = totalCreditos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('resumo-total-descontos').innerText = totalDebitos.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('resumo-total-liquido').innerText = totalLiquido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+</script>
+</body>
+</html>
