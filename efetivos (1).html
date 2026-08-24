@@ -1,0 +1,511 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calculadora TJPE 2026 - Efetivos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 10px; display: flex; justify-content: center; transition: background 0.3s; color: #333; }
+        .container { width: 100%; max-width: 1200px; display: flex; gap: 20px; align-items: flex-start; }
+        .main-content { flex: 1; max-width: 800px; background: #fff; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius: 10px; }
+        
+        .dashboard-header { display: flex; flex-direction: column; gap: 15px; margin-bottom: 25px; }
+        .vinculo-selector { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #e0e0e0; background-color: #fdfdfd; box-shadow: inset 0 1px 3px rgba(0,0,0,0.02); }
+        
+        .radio-group-horizontal { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; align-items: center; }
+        .vinculo-btn { position: relative; cursor: pointer; }
+        .vinculo-btn input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+        .vinculo-btn .btn-content { display: inline-block; padding: 10px 16px; background: #fff; border: 2px solid #dee2e6; border-radius: 8px; font-size: 13px; font-weight: 600; color: #495057; transition: all 0.2s ease; text-align: center; user-select: none; }
+        .vinculo-btn:hover .btn-content { border-color: #2e7d32; color: #2e7d32; background: #f4fbf5; }
+        .vinculo-btn input[type="radio"]:checked + .btn-content { background: #2e7d32; color: #fff; border-color: #2e7d32; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.25); transform: translateY(-1px); }
+        
+        .btn-download-container { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 15px; border-top: 1px dashed #dee2e6; padding-top: 15px; }
+        .btn-download { padding: 12px 24px; background-color: #28a745; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s; box-shadow: 0 3px 6px rgba(40,167,69,0.15); }
+        .btn-download:hover { background-color: #218838; transform: translateY(-1px); box-shadow: 0 5px 12px rgba(40,167,69,0.25); }
+        .btn-download:active { transform: translateY(0); }
+
+        .variables-panel { background-color: #ffffff; padding: 20px; border-radius: 8px; border: 2px solid #adb5bd; margin-bottom: 25px; }
+        .variables-title { text-align: center; color: #2e7d32; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
+        
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; align-items: start; }
+        .input-item { display: flex; flex-direction: column; gap: 5px; }
+        .input-item label { font-size: 10px; font-weight: 700; color: #204b7b; text-transform: uppercase; }
+        .input-item input, .input-item select { padding: 10px; border: 1px solid #ced4da; border-radius: 6px; font-size: 13px; color: #333; }
+        .input-item input[readonly] { background-color: #e9ecef; }
+        #input-saude-mask.auto { background-color: #e9ecef; color: #6c757d; }
+        
+        .group-box { grid-column: 1 / -1; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; background: #f8f9fa; position: relative; margin-top: 10px; }
+        .group-title { position: absolute; top: -10px; left: 15px; background: #fff; padding: 0 8px; font-size: 10px; font-weight: bold; color: #2e7d32; text-transform: uppercase; border: 1px solid #dee2e6; border-radius: 4px; }
+        .group-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; align-items: flex-start; }
+        
+        .aq-options { display: flex; gap: 8px; align-items: center; padding: 10px 0; }
+        .aq-warning { font-size: 8px; color: #c62828; font-weight: bold; grid-column: 1 / -1; display: none; }
+
+        .contracheque-wrapper { width: 100%; overflow: hidden; border: 1px solid #eee; border-radius: 4px; margin-top: 20px; }
+        #area-contracheque { width: 100%; background-color: white; padding: 0; box-sizing: border-box; }
+        .header-container { background-color: #204b7b; padding: 8px; text-align: center; }
+        .header-titulo { color: white; font-size: 14px; font-weight: bold; }
+        .info-row { padding: 8px; background: #f8f9fa; border: 1px solid #dee2e6; border-top: none; display: grid; grid-template-columns: 80px 1fr 80px 1fr; gap: 8px; }
+        .info-label { font-weight: 800; color: #204b7b; text-transform: uppercase; font-size: 8px; }
+        .info-value { font-size: 10px; color: #333; border-bottom: 1px solid #e9ecef; min-height: 14px; }
+        table { width: 100%; border-collapse: collapse; margin: 8px 0; table-layout: fixed; }
+        th, td { border: 1px solid #dee2e6; padding: 6px; font-size: 10px; color: #333; }
+        th { background-color: #f1f3f5; color: #204b7b; text-align: left; }
+        .td-valor { text-align: right; font-family: monospace; font-size: 11px; width: 35%; font-weight: bold; }
+        .row-total { background-color: #e7f1ff; font-weight: bold; }
+        .row-liquido { background-color: #fff3cd; font-weight: bold; font-size: 12px; border: 2px solid #ffecb5; }
+        .rodape { text-align: center; font-size: 9px; color: #6c757d; padding: 15px; border-top: 1px solid #dee2e6; display: flex; flex-direction: column; align-items: center; }
+        .footer-logos { display: flex; gap: 15px; justify-content: center; margin-bottom: 10px; }
+        .footer-logo { height: 35px; width: auto; }
+        .checkbox-label { display: flex; align-items: center; gap: 5px; font-size: 9px; font-weight: 800; color: #204b7b; text-transform: uppercase; cursor: pointer; margin-top: 5px; }
+
+        .side-panel { width: 380px; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-top: 5px solid #2e7d32; position: sticky; top: 10px; }
+        .btn-add-comp { width: 100%; padding: 12px; background: #204b7b; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin-bottom: 15px; }
+        .comp-card { background: #fcfcfc; border: 1px solid #ddd; padding: 12px; border-radius: 8px; margin-bottom: 12px; position: relative; font-size: 11px; border-left: 5px solid #2e7d32; }
+        .btn-remove-comp { position: absolute; top: 5px; right: 5px; background: #c62828; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px; }
+        .dark-toggle-btn { position: fixed; bottom: 20px; right: 20px; z-index: 9999; padding: 12px 20px; border-radius: 30px; border: none; background: #333; color: #fff; font-weight: bold; cursor: pointer; }
+
+        body.dark-mode { background-color: #0d0d0d; color: #eee; }
+        body.dark-mode .main-content, body.dark-mode .side-panel, body.dark-mode .variables-panel, body.dark-mode #area-contracheque, body.dark-mode .group-box, body.dark-mode .vinculo-selector { background-color: #1a1a1a !important; border-color: #333 !important; }
+        body.dark-mode th, body.dark-mode .info-row, body.dark-mode .comp-card { background-color: #262626 !important; border-color: #3d3d3d !important; color: #fff !important; }
+        body.dark-mode td, body.dark-mode .info-value, body.dark-mode p, body.dark-mode .info-label, body.dark-mode span { color: #fff !important; }
+        body.dark-mode .input-item input, body.dark-mode .input-item select { background-color: #2a2a2a; border-color: #444; color: #fff; }
+        body.dark-mode .row-total { background-color: #1e3a5a; }
+        body.dark-mode .row-liquido { background-color: #4a4a10; color: #fff !important; }
+        body.dark-mode label, body.dark-mode .variables-title, body.dark-mode .group-title { color: #81c784 !important; }
+        body.dark-mode .vinculo-btn .btn-content { background: #262626; border-color: #444; color: #aaa; }
+        body.dark-mode .vinculo-btn:hover .btn-content { border-color: #81c784; color: #81c784; background: #1e3020; }
+        body.dark-mode .vinculo-btn input[type="radio"]:checked + .btn-content { background: #2e7d32; color: #fff; border-color: #2e7d32; }
+
+        @media (max-width: 1000px) {
+            .container { flex-direction: column; align-items: center; }
+            .side-panel { width: 100%; position: static; }
+        }
+        
+        @media (max-width: 768px) {
+            .input-grid { grid-template-columns: 1fr; }
+            .group-grid { grid-template-columns: 1fr; }
+            .radio-group-horizontal { justify-content: center; width: 100%; }
+            .vinculo-btn { flex: 1 1 calc(50% - 10px); }
+            .vinculo-btn .btn-content { width: 100%; }
+            .btn-download-container { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="dark-toggle-btn" onclick="document.body.classList.toggle('dark-mode')">🌓 TEMA</button>
+
+<div class="container">
+    <div class="main-content">
+        <header class="dashboard-header">
+            <div class="vinculo-selector">
+                <div class="radio-group-horizontal">
+                    <label class="vinculo-btn">
+                        <input type="radio" name="vinculo" value="AUXILIAR">
+                        <span class="btn-content">Auxiliar</span>
+                    </label>
+                    <label class="vinculo-btn">
+                        <input type="radio" name="vinculo" value="TECNICO" checked>
+                        <span class="btn-content">Técnico</span>
+                    </label>
+                    <label class="vinculo-btn">
+                        <input type="radio" name="vinculo" value="OFICIAL_PJIII">
+                        <span class="btn-content">Oficial-PJIII</span>
+                    </label>
+                    <label class="vinculo-btn">
+                        <input type="radio" name="vinculo" value="ANALISTA">
+                        <span class="btn-content">Analista</span>
+                    </label>
+                    <label class="vinculo-btn">
+                        <input type="radio" name="vinculo" value="OFICIAL">
+                        <span class="btn-content">Oficial</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="btn-download-container">
+                <div style="font-size: 11px; color:#6c757d; font-weight:600;">Selecione o vínculo acima para recalcular automaticamente.</div>
+                <button class="btn-download" onclick="baixarImagem()">💾 Salvar Imagem</button>
+            </div>
+        </header>
+
+        <section class="variables-panel">
+            <div class="variables-title">Variáveis de Cálculo</div>
+            <div class="input-grid">
+                <div class="input-item">
+                    <label>Padrão Salarial</label>
+                    <select id="select-padrao"></select>
+                </div>
+                
+                <div class="input-item">
+                    <label>AQ (%)</label>
+                    <div class="aq-options">
+                        <label style="font-size: 11px;"><input type="radio" name="aq" value="0" checked> N/A</label>
+                        <label style="font-size: 11px;"><input type="radio" name="aq" value="0.03"> 3%</label>
+                        <label style="font-size: 11px;"><input type="radio" name="aq" value="0.045"> 4,5%</label>
+                    </div>
+                    <div id="aq-warning" class="aq-warning">⚠️ AQ INDISPONÍVEL > P15.</div>
+                </div>
+
+                <div class="input-item">
+                    <label>Cargo Comissionado (CC)</label>
+                    <select id="select-sigla-cargo"><option value="">-- Nenhum --</option></select>
+                </div>
+
+                <div class="input-item">
+                    <label>Função Gratificada (FG)</label>
+                    <select id="select-sigla-fg"><option value="">-- Nenhuma --</option></select>
+                </div>
+
+                <div class="input-item">
+                    <label>Dependentes (IR)</label>
+                    <input type="number" id="input-dep-ir" value="0" min="0" oninput="updateContracheque(false)">
+                </div>
+
+                <div class="input-item" id="item-risco-vida">
+                    <label>Risco de Vida</label>
+                    <input type="text" id="input-risco" value="721,68" readonly>
+                </div>
+
+                <div class="group-box">
+                    <div class="group-title">Indenizatórios</div>
+                    <div class="group-grid">
+                        <div class="input-item">
+                            <label>Aux. Saúde</label>
+                            <input type="text" id="input-saude-mask" value="0,00" oninput="mascaraMoeda(this)">
+                            <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+                                <button id="saude-lock" data-locked="true" onclick="toggleSaudeLock()" type="button" title="Clique para editar manualmente" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0;line-height:1;">🔒</button>
+                                <span id="saude-lock-label" style="font-size:9px;color:#6c757d;font-weight:600;text-transform:uppercase;">Automático (10%) - Clique para alterar</span>
+                            </div>
+                            <label class="checkbox-label"><input type="checkbox" id="check-saude-extra" onchange="updateContracheque(false)">+50% (Idade/Doença)</label>
+                        </div>
+
+                        <div id="box-transporte-comum" class="input-item">
+                            <label>Aux. Transporte</label>
+                            <input type="text" id="input-transp-mask" value="246,40" readonly>
+                            <label class="checkbox-label"><input type="checkbox" id="check-pecunia"> Pecúnia Duplicada</label>
+                        </div>
+                        
+                        <div id="box-dias-uteis" class="input-item">
+                            <label>Dias Trabalhados</label>
+                            <input type="number" id="input-dias-uteis" value="22" min="0" max="31" oninput="updateContracheque(false)">
+                        </div>
+
+                        <div class="input-item" id="box-indenizacao-transp" style="display:none;">
+                            <label>Indenização Transp.</label>
+                            <input type="text" id="input-indenizacao" value="2.789,71" readonly>
+                        </div>
+
+                        <div class="input-item" id="box-creche-container">
+                            <label>Creche (Filhos)</label>
+                            <input type="number" id="input-filhos-qtd" value="0" min="0" oninput="updateContracheque(false)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="contracheque-wrapper">
+            <div id="area-contracheque">
+                <div class="header-container"><span class="header-titulo">SIMULAÇÃO TJPE 2026 - EFETIVOS</span></div>
+                <div class="info-row">
+                    <div class="info-label">CC:</div> <div class="info-value" id="lbl-sigla-cargo">-</div>
+                    <div class="info-label">FG:</div> <div class="info-value" id="lbl-sigla-fg">-</div>
+                    <div class="info-label">Vínculo:</div> <div class="info-value" id="lbl-nome-cargo">-</div>
+                    <div class="info-label">Padrão:</div> <div class="info-value" id="lbl-nome-fg">-</div>
+                </div>
+                <table>
+                    <thead><tr><th>RUBRICA</th><th class="td-valor">VALOR</th></tr></thead>
+                    <tbody id="corpo-vencimentos"></tbody>
+                </table>
+                <table>
+                    <tbody id="corpo-descontos"></tbody>
+                </table>
+                <div class="rodape">
+                    <div style="background-color: #ffebee; color: #c62828; font-weight: bold; padding: 5px; border: 1px solid #c62828; border-radius: 4px; font-size: 11px; margin-bottom: 10px; width: 90%;">
+                        AVISO: ESTA É UMA SIMULAÇÃO ESTIMATIVA E NÃO SUBSTITUI O CONTRACHEQUE OFICIAL.
+                    </div>
+                    <div class="footer-logos">
+                        <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo"> 
+                        <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo">
+                    </div>
+                    <div>DGF-NUGOV-2026</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <aside class="side-panel">
+        <h3 style="color: #2e7d32; margin-top: 0;">📊 Comparativo</h3>
+        <button class="btn-add-comp" onclick="addSituacao()">➕Adicionar Cenário Atual</button> 
+        <div id="lista-comparativos"></div>
+    </aside>
+</div>
+
+<script>
+    const AJUSTES_SALARIAIS = [1.053]; 
+    const AJUSTES_ALIMENTACAO = [1.053]; 
+    const AJUSTES_RISCO_VIDA = [1.00]; 
+    const AJUSTES_INDENIZACAO = [1.00]; 
+    const AJUSTES_CRECHE = [1.053];
+    
+    const getFatorAcumulado = (lista) => lista.reduce((acc, curr) => acc * curr, 1);
+    
+    const tabelaSalarial = [
+        {p: "P00", auxiliar: 5565.92, tecnico: 5858.86, oficial_pjIII: 7252.72, analista_oficial: 7634.45},
+        {p: "P01", auxiliar: 5705.07, tecnico: 6005.32, oficial_pjIII: 7434.03, analista_oficial: 7825.32},
+        {p: "P02", auxiliar: 5856.24, tecnico: 6164.45, oficial_pjIII: 7631.04, analista_oficial: 8032.69},
+        {p: "P03", auxiliar: 6020.23, tecnico: 6337.08, oficial_pjIII: 7844.72, analista_oficial: 8257.59},
+        {p: "P04", auxiliar: 6197.83, tecnico: 6524.04, oficial_pjIII: 8076.13, analista_oficial: 8501.20},
+        {p: "P05", auxiliar: 6389.93, tecnico: 6726.26, oficial_pjIII: 8326.49, analista_oficial: 8764.72},
+        {p: "P06", auxiliar: 6597.61, tecnico: 6944.85, oficial_pjIII: 8597.11, analista_oficial: 9049.60},
+        {p: "P07", auxiliar: 6821.91, tecnico: 7181.00, oficial_pjIII: 8889.42, analista_oficial: 9357.29},
+        {p: "P08", auxiliar: 7064.12, tecnico: 7435.92, oficial_pjIII: 9204.99, analista_oficial: 9689.45},
+        {p: "P09", auxiliar: 7325.47, tecnico: 7711.05, oficial_pjIII: 9545.58, analista_oficial: 10047.97},
+        {p: "P10", auxiliar: 7607.51, tecnico: 8007.94, oficial_pjIII: 9913.07, analista_oficial: 10434.83},
+        {p: "P11", auxiliar: 7911.82, tecnico: 8328.22, oficial_pjIII: 10309.59, analista_oficial: 10852.20},
+        {p: "P12", auxiliar: 8386.53, tecnico: 8827.94, oficial_pjIII: 10928.18, analista_oficial: 11503.34},
+        {p: "P13", auxiliar: 8973.59, tecnico: 9445.90, oficial_pjIII: 11693.13, analista_oficial: 12308.58},
+        {p: "P14", auxiliar: 9691.46, tecnico: 10201.54, oficial_pjIII: 12628.60, analista_oficial: 13293.27},
+        {p: "P15", auxiliar: 10563.73, tecnico: 11119.71, oficial_pjIII: 13765.15, analista_oficial: 14489.66},
+        {p: "P16", auxiliar: 11620.08, tecnico: 12231.66, oficial_pjIII: 15141.69, analista_oficial: 15938.64},
+        {p: "P17", auxiliar: 12898.30, tecnico: 13577.14, oficial_pjIII: 16807.28, analista_oficial: 17691.87},
+        {p: "P18", auxiliar: 14446.06, tecnico: 15206.39, oficial_pjIII: 18824.14, analista_oficial: 19814.88},
+        {p: "P19", auxiliar: 16324.07, tecnico: 17183.24, oficial_pjIII: 21271.28, analista_oficial: 22390.82},
+        {p: "P20", auxiliar: 18609.46, tecnico: 19588.89, oficial_pjIII: 24249.28, analista_oficial: 25525.53},
+        {p: "P21", auxiliar: 21400.86, tecnico: 22527.23, oficial_pjIII: 27886.68, analista_oficial: 29354.38}
+    ];
+    
+    const comissionadosData = [{s: "APJC", b: 1319.77, r: 1583.72},{s: "DGAPJC", b: 12260.68, r: 14712.82},{s: "DGPJC", b: 13078.07, r: 15693.68},{s: "DASPJC", b: 7028.09, r: 8433.71},{s: "DSPJC", b: 7590.35, r: 9108.42},{s: "MPJC", b: 6559.35, r: 7871.22},{s: "PJC", b: 8433.72, r: 10120.46},{s: "PJC-II", b: 7590.35, r: 9108.42},{s: "PJC-III", b: 7028.09, r: 8433.71},{s: "PJC-IV", b: 4216.80, r: 5060.16},{s: "PJC-V", b: 3092.36, r: 3710.83},{s: "PJC-VI", b: 2634.71, r: 3161.65},{s: "PJC-VII", b: 2266.58, r: 2719.90},{s: "SPJC", b: 8996.05, r: 10795.26}];
+    const funcoesGratificadasData = [{s: "CPL", v: 3142.11}, {s: "FAJ-1", v: 1051.13}, {s: "FAJ-3", v: 450.47}, {s: "FAP-AJ1G", v: 635.36}, {s: "FAT", v: 2102.28}, {s: "FATUJ", v: 8045.93}, {s: "FGAGD", v: 8268.36}, {s: "FGAI", v: 2462.9}, {s: "FGAM", v: 3078.65}, {s: "FGASCPR", v: 9108.41}, {s: "FGATCPR", v: 8433.72}, {s: "FGCCRC", v: 7994.07}, {s: "FGCJ-1", v: 1944.39}, {s: "FGCNCPR", v: 3997.02}, {s: "FGCNPR", v: 5060.17}, {s: "FGCNRC", v: 7994.07}, {s: "FGCNSC", v: 1944.39}, {s: "FGCNSPR", v: 3997.02}, {s: "FGCSJ-1", v: 3534.76}, {s: "FGCSJD", v: 3997.02}, {s: "FGDEGD", v: 8268.36}, {s: "FGDEPR", v: 7994.07}, {s: "FGDGD", v: 8929.83}, {s: "FGDPR", v: 8633.58}, {s: "FGDR", v: 8633.58}, {s: "FGGC", v: 1441.36}, {s: "FGGPE-1", v: 8633.58}, {s: "FGGPE-2", v: 3997.02}, {s: "FGGPE-3", v: 2102.28}, {s: "FGGUJ-1", v: 1441.36}, {s: "FGGUE", v: 3997.02}, {s: "FGGUE-2", v: 1441.36}, {s: "FGJ-1", v: 2102.28}, {s: "FGJ-2", v: 1501.62}, {s: "FGJ-3", v: 1051.13}, {s: "FGMN-1", v: 1861.5}, {s: "FGNCON", v: 3078.65}, {s: "FGNDM-1", v: 3078.65}, {s: "FGNDM-2", v: 1441.36}, {s: "FGNDR", v: 3534.76}, {s: "FGSCPR", v: 10795.26}, {s: "FGSCRC", v: 3997.02}, {s: "FGSECPR", v: 10120.47}, {s: "FGSNRC", v: 3997.02}, {s: "FGSPR", v: 3997.02}, {s: "FGSS", v: 2474}, {s: "FJCP", v: 2295.26}, {s: "FLJ-1", v: 1201.24}, {s: "FMT", v: 1051.13}, {s: "FSJ-1", v: 1201.24}, {s: "FSJ-3", v: 1201.24}, {s: "RG", v: 2462.9}];
+
+    function formatarParaMoeda(valor) { return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+    
+    function mascaraMoeda(i) {
+        let v = i.value.replace(/\D/g, "");
+        v = (v / 100).toFixed(2) + ""; v = v.replace(".", ",");
+        v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,"); v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+        i.value = v; updateContracheque(false);
+    }
+    
+    function parseMoeda(v) { return parseFloat(v.replace(/\./g, "").replace(",", ".")) || 0; }
+
+    window.onload = () => {
+        const sP = document.getElementById('select-padrao');
+        tabelaSalarial.forEach(item => sP.add(new Option(item.p, item.p)));
+        comissionadosData.forEach(c => document.getElementById('select-sigla-cargo').add(new Option(c.s, c.s)));
+        funcoesGratificadasData.forEach(f => document.getElementById('select-sigla-fg').add(new Option(f.s, f.s)));
+        
+        document.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('change', () => {
+                updateContracheque(el.name === 'vinculo' || el.id === 'select-padrao' || el.name === 'aq');
+            });
+        });
+        
+        updateContracheque(true);
+        document.getElementById('input-saude-mask').readOnly = true;
+        document.getElementById('input-saude-mask').classList.add('auto');
+    };
+
+    let cData = {};
+    let ultimoLiquidoReferencia = 0; 
+
+    function addSituacao() {
+        const container = document.getElementById('lista-comparativos');
+        const id = Date.now();
+        const card = document.createElement('div');
+        card.className = 'comp-card'; card.id = `comp-${id}`;
+        let liqAtualNumerico = parseFloat(cData.liq.replace(/[R$\s.]/g, '').replace(',', '.'));
+        ultimoLiquidoReferencia = liqAtualNumerico;
+        card.innerHTML = `<button class="btn-remove-comp" onclick="document.getElementById('comp-${id}').remove()">X</button>
+            <div style="font-weight:bold; color:#2e7d32; margin-bottom:5px;">${cData.vinculo} - ${cData.padrao}</div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px;">
+                <div><b>Bruto:</b> ${cData.bruto}</div>
+                <div style="color:#c62828;"><b>Prev:</b> ${cData.prev}</div>
+                <div style="color:#c62828;"><b>IR:</b> ${cData.ir}</div>
+            </div>
+            <div style="margin-top:8px; border-top:1px dashed #ccc; padding-top:8px;">
+                <div style="display:flex; justify-content:space-between; color:#2e7d32; font-weight:900;"><span>LÍQUIDO:</span> <span>${cData.liq}</span></div>
+            </div>`;
+        container.prepend(card);
+    }
+
+    function updateContracheque(resetSaude = true) {
+        const mode = document.querySelector('input[name="vinculo"]:checked').value;
+        const dependentesIR = parseInt(document.getElementById('input-dep-ir').value) || 0;
+
+        const f = v => v.toLocaleString('pt-BR', {style:'currency', currency:'BRL'});
+        const fSal = getFatorAcumulado(AJUSTES_SALARIAIS);
+        const padraoSel = document.getElementById('select-padrao').value;
+        const dP = tabelaSalarial.find(x => x.p === padraoSel);
+        
+        let baseTabela = 0;
+        if (mode === 'AUXILIAR') baseTabela = dP.auxiliar;
+        else if (mode === 'TECNICO') baseTabela = dP.tecnico;
+        else if (mode === 'OFICIAL_PJIII') baseTabela = dP.oficial_pjIII;
+        else if (mode === 'ANALISTA') baseTabela = dP.analista_oficial; 
+        else if (mode === 'OFICIAL') baseTabela = dP.analista_oficial; 
+
+        let vencimentoOriginal = baseTabela * fSal;
+        let vencimentoBase = vencimentoOriginal;
+        
+        const ccSigla = document.getElementById('select-sigla-cargo').value;
+        const fgSigla = document.getElementById('select-sigla-fg').value;
+        
+        let bCC = 0, rCC = 0;
+        if (ccSigla) {
+            const ccData = comissionadosData.find(x => x.s === ccSigla);
+            bCC = ccData.b * fSal;
+            rCC = ccData.r * fSal;
+        }
+        let vFG = fgSigla ? (funcoesGratificadasData.find(x => x.s === fgSigla).v) * fSal : 0;
+
+        let labelVencimento = "VENCIMENTO BASE";
+        if (bCC > vencimentoOriginal) {
+            vencimentoBase = bCC;
+            labelVencimento = "SALÁRIO BASE (CC)";
+        }
+
+        const aqInput = document.querySelector('input[name="aq"]:checked');
+        let aqPercent = parseFloat(aqInput.value);
+        // Alteração: usando 'vencimentoOriginal' em vez de 'vencimentoBase'
+        let vAQ = parseInt(padraoSel.replace("P", "")) > 15 ? 0 : vencimentoOriginal * aqPercent;
+        document.getElementById('aq-warning').style.display = parseInt(padraoSel.replace("P", "")) > 15 ? "block" : "none";
+
+        const tetoSaude = (vencimentoBase + rCC + vAQ) * 0.10;
+        const saudeManual = document.getElementById('saude-lock').dataset.locked === 'false';
+        
+        if (!saudeManual && (resetSaude || document.activeElement.id !== 'input-saude-mask')) {
+            document.getElementById('input-saude-mask').value = formatarParaMoeda(tetoSaude);
+        }
+
+        let saudeDigitado = parseMoeda(document.getElementById('input-saude-mask').value);
+        const labelLock = document.getElementById('saude-lock-label');
+        
+        if (saudeManual && saudeDigitado > (tetoSaude + 0.01)) {
+            labelLock.textContent = "⚠️ LIMITE 10% EXCEDIDO!";
+            labelLock.style.color = "#c62828";
+            document.getElementById('input-saude-mask').value = formatarParaMoeda(tetoSaude);
+            saudeDigitado = tetoSaude;
+        } else if (saudeManual) {
+            labelLock.textContent = "Manual";
+            labelLock.style.color = "#c62828";
+        }
+
+        const diasUteis = parseInt(document.getElementById('input-dias-uteis').value) || 0;
+        const valorDiaTransp = document.getElementById('check-pecunia').checked ? 22.40 : 11.20;
+        const transporteCalculado = (diasUteis * valorDiaTransp);
+        
+        const isQualquerOficial = (mode === 'OFICIAL' || mode === 'OFICIAL_PJIII');
+        if (!isQualquerOficial) document.getElementById('input-transp-mask').value = formatarParaMoeda(transporteCalculado);
+
+        const boxComum = document.getElementById('box-transporte-comum');
+        const boxDias = document.getElementById('box-dias-uteis');
+        const boxIndeniza = document.getElementById('box-indenizacao-transp');
+        const riscoItem = document.getElementById('item-risco-vida');
+
+        if (isQualquerOficial) {
+            boxComum.style.display = 'none';
+            boxDias.style.display = 'none';
+            boxIndeniza.style.display = 'flex';
+            riscoItem.style.display = 'flex';
+        } else {
+            boxComum.style.display = 'flex';
+            boxDias.style.display = 'flex';
+            boxIndeniza.style.display = 'none';
+            riscoItem.style.display = 'none';
+        }
+
+        const alim = (1359.28 * getFatorAcumulado(AJUSTES_ALIMENTACAO));
+        const saudeBaseValor = saudeDigitado;
+        const saudeExtraValor = document.getElementById('check-saude-extra').checked ? (saudeBaseValor * 0.5) : 0;
+        const saudeFinal = saudeBaseValor + saudeExtraValor;
+        const transpFinal = (isQualquerOficial ? 2789.71 * getFatorAcumulado(AJUSTES_INDENIZACAO) : transporteCalculado);
+        const risco = isQualquerOficial ? 721.68 * getFatorAcumulado(AJUSTES_RISCO_VIDA) : 0;
+        
+        const fCreche = getFatorAcumulado(AJUSTES_CRECHE);
+        const vCreche = ((parseInt(document.getElementById('input-filhos-qtd').value) || 0) * 300 * fCreche);
+
+        let bruto = vencimentoBase + vAQ + rCC + vFG + alim + transpFinal + risco + saudeFinal + vCreche;
+        
+        // 🏛️ CÁLCULO PREVIDENCIÁRIO (ATIVOS)
+        let prevBase = (vencimentoBase + vAQ) * 0.14;
+        
+        // ⚖️ CÁLCULO DO IMPOSTO DE RENDA (ATIVOS)
+        let irF = 0;
+        const bIR = (vencimentoBase + vAQ + rCC + vFG + risco) - prevBase - Math.min((parseInt(document.getElementById('input-dep-ir').value) || 0) * 189.59, 607.20);
+        const bIR2 = (vencimentoBase + vAQ + rCC + vFG + risco);
+        
+        let irC = bIR > 4664.68 ? (bIR * 0.275) - 908.73 : bIR > 3751.05 ? (bIR * 0.225) - 675.49 : bIR > 2826.65 ? (bIR * 0.15) - 394.16 : bIR > 2428.80 ? (bIR * 0.075) - 182.16 : 0;
+        irF = bIR2 <= 5000 ? 0 : bIR2 > 7350 ? Math.max(irC, 0) : Math.max(irC - (978.62 - (0.133145 * bIR2)), 0);
+
+        let dTr = isQualquerOficial ? 0 : ((vencimentoBase / 30) * 0.005) * diasUteis;
+        let totalDesc = prevBase + irF + dTr;
+        let liqFinal = bruto - totalDesc;
+
+        let vencRows = `<tr><td>${labelVencimento}</td><td class="td-valor">${f(vencimentoBase)}</td></tr>`;
+        if (rCC > 0) vencRows += `<tr><td>REPRESENTAÇÃO (R)</td><td class="td-valor">${f(rCC)}</td></tr>`;
+        if (vFG > 0) vencRows += `<tr><td>FUNÇÃO GRATIFICADA (FG)</td><td class="td-valor">${f(vFG)}</td></tr>`;
+        if (vAQ > 0) vencRows += `<tr><td>ADIC. QUALIFICAÇÃO (AQ)</td><td class="td-valor">${f(vAQ)}</td></tr>`;
+        vencRows += (risco > 0 ? `<tr><td>RISCO VIDA</td><td class="td-valor">${f(risco)}</td></tr>` : '') +
+        (alim > 0 ? `<tr><td>ALIMENTAÇÃO</td><td class="td-valor">${f(alim)}</td></tr>` : '') + 
+        (transpFinal > 0 ? `<tr><td>TRANSPORTE</td><td class="td-valor">${f(transpFinal)}</td></tr>` : '') + 
+        `<tr><td>SAÚDE</td><td class="td-valor">${f(saudeBaseValor)}</td></tr>` +
+        (saudeExtraValor > 0 ? `<tr><td>SAÚDE - ACRÉSCIMO</td><td class="td-valor">${f(saudeExtraValor)}</td></tr>` : '') +
+        (vCreche > 0 ? `<tr><td>CRECHE</td><td class="td-valor">${f(vCreche)}</td></tr>` : '') +
+        `<tr class="row-total"><td>BRUTO</td><td class="td-valor">${f(bruto)}</td></tr>`;
+
+        document.getElementById('corpo-vencimentos').innerHTML = vencRows;
+        document.getElementById('corpo-descontos').innerHTML = `<tr><td>PREVIDÊNCIA (14%)</td><td class="td-valor">${f(prevBase)}</td></tr><tr><td>I.R.R.F.</td><td class="td-valor">${f(irF)}</td></tr>` +
+        (dTr > 0 ? `<tr><td>DESC. TRANSP.</td><td class="td-valor">${f(dTr)}</td></tr>` : '') +
+        `<tr class="row-total"><td>TOTAL DESCONTOS</td><td class="td-valor">${f(totalDesc)}</td></tr><tr class="row-liquido"><td>LÍQUIDO</td><td class="td-valor">${f(liqFinal)}</td></tr>`;
+
+        document.getElementById('lbl-sigla-cargo').textContent = ccSigla || "-";
+        document.getElementById('lbl-sigla-fg').textContent = fgSigla || "-";
+        document.getElementById('lbl-nome-cargo').textContent = mode.replace('_', '-');
+        document.getElementById('lbl-nome-fg').textContent = padraoSel;
+        cData = { vinculo: mode.replace('_', '-'), padrao: padraoSel, bruto: f(bruto), prev: f(prevBase), ir: f(irF), liq: f(liqFinal) };
+    }
+
+    function toggleSaudeLock() {
+        const lock = document.getElementById('saude-lock');
+        const input = document.getElementById('input-saude-mask');
+        const label = document.getElementById('saude-lock-label');
+        const isLocked = lock.dataset.locked === 'true';
+        if (isLocked) {
+            lock.dataset.locked = 'false';
+            lock.textContent = '🔓';
+            lock.title = 'Clique para voltar ao cálculo automático';
+            label.textContent = 'Manual';
+            label.style.color = '#c62828';
+            input.readOnly = false;
+            input.classList.remove('auto');
+            input.focus();
+            input.select();
+        } else {
+            lock.dataset.locked = 'true';
+            lock.textContent = '🔒';
+            lock.title = 'Clique para editar manualmente';
+            label.textContent = 'Automático (10%) - Clique para alterar';
+            label.style.color = '#6c757d';
+            input.readOnly = true;
+            input.classList.add('auto');
+            updateContracheque(false);
+        }
+    }
+    
+    function baixarImagem() { 
+        html2canvas(document.getElementById('area-contracheque'), { scale:2, useCORS: true }).then(c => { 
+            let l = document.createElement('a'); 
+            l.download = 'Contracheque_TJPE.png'; 
+            l.href = c.toDataURL(); 
+            l.click(); 
+        }); 
+    }
+</script>
+</body>
+</html>

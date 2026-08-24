@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGI Labs - Dashboards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px 20px; /* Ajustado padding superior para dar consistência */
+        }
+
+        /* Topo Centralizado */
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            /* Torna o tamanho da imagem dinâmico para se ajustar ao mobile */
+            width: 100%;
+            max-width: 700px;
+            height: auto;
+            display: block;
+            margin-top: 40px; /* Adicionado espaçamento para desencostar do topo do navegador */
+        }
+
+        /* Container Central Azul Petróleo */
+        .container-projetos {
+            background-color: rgba(0, 77, 97, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 77, 97, 0.25), 0 5px 15px rgba(0, 0, 0, 0.1);
+            
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 12px;
+            position: relative;
+            z-index: 1;
+            /* Ajustado para se posicionar logo abaixo da logo sem sobreposição */
+            margin-top: 20px; 
+        }
+
+        .container-projetos h1 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        /* --- SISTEMA DE SEÇÕES RETRÁTEIS (ACCORDION) --- */
+        .secao-retratil {
+            margin-bottom: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Input checkbox escondido que controla o estado */
+        .secao-toggle {
+            display: none;
+        }
+
+        /* Botão / Cabeçalho da Seção */
+        .secao-header {
+            background-color: #ffffff;
+            color: #004d61;
+            padding: 18px 20px;
+            font-weight: bold;
+            font-size: 1.15rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s;
+        }
+
+        .secao-header:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Ícone de seta indicando se está aberto/fechado */
+        .secao-header::after {
+            content: '▼';
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+            color: #004d61;
+        }
+
+        /* Conteúdo que expande e colapsa */
+        .secao-conteudo {
+            max-height: 0;
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.05);
+            transition: max-height 0.3s ease-out, padding 0.3s ease;
+            padding: 0 20px;
+        }
+
+        /* Grid de links internos do Power BI */
+        .grid-dashboards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            padding: 20px 0;
+        }
+
+        /* Estilo dos links dos Dashboards (Cards Menores e Elegantes) */
+        .card-dashboard {
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #004d61;
+            text-decoration: none;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card-dashboard:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            background-color: #ffffff;
+        }
+
+        .dash-icon {
+            font-size: 1.4rem;
+        }
+
+        /* LOGICA DE ATIVAÇÃO VIA CSS */
+        .secao-toggle:checked ~ .secao-conteudo {
+            max-height: 1000px;
+        }
+
+        .secao-toggle:checked ~ .secao-header::after {
+            transform: rotate(180deg);
+        }
+
+        /* Rodapé Institucional */
+        footer {
+            margin-top: 30px; /* Aproxima o rodapé eliminando a rolagem falsa */
+            padding-top: 40px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .footer-logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .footer-logo {
+            height: 45px;
+            width: auto;
+            display: block;
+            opacity: 0.85;
+            transition: opacity 0.2s;
+        }
+
+        .footer-logo:hover {
+            opacity: 1;
+        }
+
+        .footer-text {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="https://i.ibb.co/tMYkXHps/Chat-GPT-Image-19-de-mai-de-2026-11-06-18-Photoroom-1.png" alt="NGI Labs Logo" class="logo">
+    </header>
+
+    <main class="container-projetos">
+
+        <h1>Dashboards Power BI</h1>
+         
+        <div class="secao-retratil">
+            <input type="checkbox" id="secao-gestao" class="secao-toggle" checked> 
+            <label for="secao-gestao" class="secao-header">
+                📊 Gestão Estratégica
+            </label>
+            <div class="secao-conteudo">
+                <div class="grid-dashboards">
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiOTNmNGU3NTEtMjM2NS00MWFhLWFjOTAtMzMzMzI1MjRmYmYyIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">📈</span>
+                        <span>Diretoria</span>
+                    </a>
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiMGI1ZjJmYWMtNWRkOS00YWJlLWFjMTctM2VkNjk5Yzg2N2U5IiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">📋</span>
+                        <span>Distribuição do Quadro de pessoal</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao-retratil">
+            <input type="checkbox" id="secao-rh" class="secao-toggle">
+            <label for="secao-rh" class="secao-header">
+                💲 Folha de Pagamento e Financeiro
+            </label>
+            <div class="secao-conteudo">
+                <div class="grid-dashboards">
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiZTI1ODc2YjItNDRjMi00MjUwLTg3MWEtOTQyN2UwMGI2M2U1IiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">💰</span>
+                        <span>Geral e Tabelas</span>
+                    </a>
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiZDExODQzMjEtYjg4Zi00ZjJmLWFjN2QtNzk2YzViYTgwZGUwIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">✅️</span>
+                        <span>Eventos da folha</span>
+                    </a>
+                   <a href="https://app.powerbi.com/view?r=eyJrIjoiMDk0ODRhZDItYzdkOS00MjQyLWFhNWQtOTY2MjIwNWZiZmIzIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">⚕️</span>
+                        <span>Extrato Aux. Saúde</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="secao-retratil">
+            <input type="checkbox" id="secao-Orcamento" class="secao-toggle">
+            <label for="secao-Orcamento" class="secao-header">
+                 👩🏻‍💻 Funções
+            </label>
+            <div class="secao-conteudo">
+                <div class="grid-dashboards">
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiNzBlMGYxMzctZmQzYi00ZWRmLWE0MmUtZTQxODZiNDI2NjEwIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">🏢</span>
+                        <span>Funções SGP</span>
+                    </a>
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiMzliOThjOWEtYWQwMy00YzYzLWI1ZDEtYTk0ODIzMGFkMzEyIiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">📝</span>
+                        <span>Saldo das Funçoes</span>
+                    </a>
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiMWM4NjIxZTgtZWZkNC00NWVhLThmNzctMjFmYzQxNjY2Yjg1IiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">👨🏻‍💻</span>
+                        <span>Geral das Funções</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+       <div class="secao-retratil">
+            <input type="checkbox" id="secao-outros" class="secao-toggle">
+            <label for="secao-outros" class="secao-header">
+                 📚 Outros
+            </label>
+            <div class="secao-conteudo">
+                <div class="grid-dashboards">
+                    <a href="https://app.powerbi.com/view?r=eyJrIjoiOTU1N2E4YWQtMTYxNi00ZjQ5LWFjZTktMmZkNTEyNGQ3ODU0IiwidCI6IjgxMzczZDliLTYwN2EtNDY0Mi1iYTc0LWVjMWVlNDQ0ZDY5ZSJ9" target="_blank" class="card-dashboard">
+                        <span class="dash-icon">📅</span>
+                        <span>Afastados por data</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <div class="footer-logos">
+            <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo" alt="Logo 1"> 
+            <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo" alt="Logo DGF">
+        </div>
+        <div class="footer-text">DGF • NUGOV • TJPE</div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Auxílio Saúde</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --text-main: #1f2937;
+            --text-muted: #4b5563;
+            --bg-page: #f9fafb;
+            --bg-card: #ffffff;
+            --border: #e5e7eb;
+            --success: #059669;
+            --success-light: #ecfdf5;
+            --warning: #d97706;
+            --warning-light: #fef3c7;
+            --danger: #dc2626;
+            --danger-light: #fef2f2;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body { background-color: var(--bg-page); color: var(--text-main); padding: 2rem 1rem; }
+        
+        .container { max-width: 1000px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        
+        .header { grid-column: 1 / -1; text-align: center; margin-bottom: 0.5rem; }
+        .header h1 { font-size: 1.75rem; color: var(--primary); font-weight: 600; margin-bottom: 0.5rem; }
+
+        /* Abas Principais */
+        .tabs-nav { grid-column: 1 / -1; display: flex; justify-content: center; gap: 0.5rem; border-bottom: 2px solid var(--border); margin-bottom: 1rem; }
+        .tab-btn { background: none; border: none; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab-btn:hover { color: var(--primary); }
+        .tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+        .card { background: var(--bg-card); padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border: 1px solid var(--border); }
+        .card h2 { font-size: 1.15rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; color: var(--primary); }
+        
+        .form-group { margin-bottom: 1rem; }
+        label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-main); font-size: 0.9rem; }
+        select, input[type="number"] { width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.95rem; }
+        select:focus, input:focus { outline: none; border-color: var(--primary); }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        
+        .toggle-container { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.5rem; background: var(--primary-light); padding: 1rem; border-radius: 8px; }
+        .toggle-label { font-weight: 600; font-size: 0.95rem; color: var(--text-muted); cursor: pointer; }
+        .toggle-label.active { color: var(--primary); }
+        
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--primary); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary); }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        .checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+        .checkbox-group input { width: 1.2rem; height: 1.2rem; cursor: pointer; }
+        .checkbox-group label { margin: 0; font-weight: 400; cursor: pointer; }
+
+        .results-container { display: flex; flex-direction: column; gap: 0.75rem; }
+        .result-box { padding: 1rem; border-radius: 6px; border: 1px solid var(--border); background: #f9fafb; display: flex; justify-content: space-between; align-items: center; transition: background 0.3s; }
+        .result-box .label { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; transition: color 0.3s; }
+        .result-box .value { font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
+        
+        /* Bloco Verde Padrão */
+        .result-box.highlight { background: var(--success-light); border-color: var(--success); flex-direction: column; align-items: stretch; gap: 0.5rem; }
+        .result-box.highlight .main-value-row { display: flex; justify-content: space-between; align-items: center; }
+        .result-box.highlight .value { color: var(--success); font-size: 1.5rem; }
+        
+        /* Bloco Amarelo Adicional */
+        .result-box.warning-box { background: var(--warning-light); border-color: #fcd34d; flex-direction: column; align-items: stretch; gap: 0.5rem; }
+        .result-box.warning-box .main-value-row { display: flex; justify-content: space-between; align-items: center; }
+        .result-box.warning-box .value { color: var(--warning); font-size: 1.4rem; }
+
+        /* Bloco Azul Escuro Total */
+        .result-box.total-box { background: var(--primary); border-color: var(--primary); flex-direction: column; align-items: stretch; gap: 0.5rem; }
+        .result-box.total-box .main-value-row { display: flex; justify-content: space-between; align-items: center; }
+        .result-box.total-box .label { color: #e0e7ff; font-size: 0.95rem; }
+        .result-box.total-box .value { color: white; font-size: 1.6rem; }
+        
+        .result-box.net-cost { background: #fff7ed; border-color: #fdba74; }
+        .result-box.net-cost .value { color: #c2410c; font-size: 1.4rem; }
+
+        .detalhe-container { margin-left: 1rem; border-left: 2px solid var(--border); padding-left: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0; margin-bottom: 0.25rem; }
+        .detalhe-item { font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); background: #ffffff; padding: 0.4rem 0.6rem; border-radius: 4px; border: 1px dashed var(--border); }
+        .detalhe-item span.title { font-weight: 600; color: var(--text-main); }
+
+        .alert { padding: 0.75rem; border-radius: 6px; font-size: 0.85rem; margin-top: 0.5rem; display: none; }
+        .alert-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; display: block; }
+
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; width: 100%; text-align: center; margin-top: 0.5rem; display: block; text-decoration: none; }
+        .btn-outline:hover { background: var(--primary-light); }
+        
+        .btn-secondary { background: var(--primary-light); border: 1px solid var(--primary); color: var(--primary); padding: 0.6rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: 600; width: 100%; text-align: center; margin-top: 0.5rem; transition: background 0.2s; }
+        .btn-secondary:hover { background: #dbeafe; }
+        
+        .btn-danger { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 0.4rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; transition: background 0.2s; }
+        .btn-danger:hover { background: var(--danger-light); }
+        
+        .dependente-item { background: #f3f4f6; border: 1px solid var(--border); padding: 0.75rem; border-radius: 6px; margin-top: 0.75rem; position: relative; }
+        .dependente-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); }
+
+        .table-container { margin-top: 1rem; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background-color: var(--primary-light); color: var(--primary); font-weight: 600; }
+        td.text-right, th.text-right { text-align: right; }
+        tr:last-child td { border-bottom: none; }
+        tr:nth-child(even) { background-color: #f9fafb; }
+
+        .hidden { display: none !important; }
+        
+        /* Estilos do Footer Atualizados */
+        .footer-container { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; gap: 1rem; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .footer-logos { display: flex; justify-content: center; align-items: center; gap: 2.5rem; }
+        .footer-logo { max-height: 55px; width: auto; object-fit: contain; }
+        .footer-text { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.5px; }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+            .footer-logos { flex-direction: column; gap: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Simulador de Auxílio Saúde</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Análise de cenários de reembolso institucional</p>
+        </div>
+
+        <!-- Abas Superiores -->
+        <div class="tabs-nav">
+            <button class="tab-btn active" id="tabBtnPadrao" onclick="switchTab('padrao')">Padrão</button>
+            <button class="tab-btn" id="tabBtnSassepe" onclick="switchTab('sassepe')">SASSEPE</button>
+        </div>
+
+        <div class="card">
+            <h2>Dados Funcionais</h2>
+            
+            <div class="toggle-container">
+                <span class="toggle-label active" id="labelEfetivo" onclick="setVinculo('efetivo')">Efetivo</span>
+                <label class="switch">
+                    <input type="checkbox" id="vinculoToggle" onchange="toggleVinculo()">
+                    <span class="slider"></span>
+                </label>
+                <span class="toggle-label" id="labelComissionado" onclick="setVinculo('comissionado')">Comissionado</span>
+            </div>
+
+            <!-- Campos Efetivo -->
+            <div id="camposEfetivo">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="cargo">Cargo</label>
+                        <select id="cargo">
+                            <option value="auxiliar">Auxiliar</option>
+                            <option value="tecnico">Técnico</option>
+                            <option value="oficial_pjIII">Oficial PJ III</option>
+                            <option value="analista_oficial">Analista / Oficial</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="funcaoComissionada">Cargo Comissionado</label>
+                        <select id="funcaoComissionada">
+                            <option value="">Sem cargo comissionado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="padrao">Padrão</label>
+                    <select id="padrao"></select>
+                </div>
+                
+                <!-- Adicional de Qualificação -->
+                <div class="form-group">
+                    <label>Adicional de Qualificação (AQ)</label>
+                    <div style="display: flex; gap: 1.5rem;">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="aq3">
+                            <label for="aq3">3%</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="aq45">
+                            <label for="aq45">4,5%</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Campos Comissionado -->
+            <div id="camposComissionado" class="hidden">
+                <div class="form-group">
+                    <label for="cargoComissionado">Cargo Comissionado</label>
+                    <select id="cargoComissionado"></select>
+                </div>
+            </div>
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="idade">Idade Titular (anos)</label>
+                    <input type="number" id="idade" value="30" min="0" max="120">
+                </div>
+                <div class="form-group" id="groupPlanoTitular">
+                    <label for="valorPlano">Plano Titular (R$)</label>
+                    <input type="number" id="valorPlano" value="800.00" step="10.00" min="0">
+                </div>
+            </div>
+
+            <div class="form-group" id="groupDoencaGrave">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="doencaGrave">
+                    <label for="doencaGrave">Portador de Doença Grave (Titular)</label>
+                </div>
+            </div>
+
+            <!-- Seção de Dependentes -->
+            <div style="margin-top: 1.5rem; border-top: 1px dashed var(--border); padding-top: 1rem;">
+                <div id="listaDependentes"></div>
+                <button type="button" id="btnAddDependente" class="btn-secondary">+ Incluir Dependente</button>
+            </div>
+        </div>
+
+        <div class="card results-container">
+            <h2>Demonstrativo de Cálculo</h2>
+            
+            <!-- Visível apenas na Aba Padrão -->
+            <div id="painelPadrao">
+                
+                <!-- Critério 1: Teto Remuneração -->
+                <div class="result-box">
+                    <div>
+                        <div class="label">Teto Remuneração (Base 10%)</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted)" id="salarioBaseRef">Base de Cálculo: R$ 0,00</div>
+                    </div>
+                    <div class="value" id="resTetoSalario">R$ 0,00</div>
+                </div>
+
+                <!-- Critério 2: Teto Faixa Etária -->
+                <div class="result-box" id="boxTetoIdade" style="margin-top:0.75rem;">
+                    <div>
+                        <div class="label" id="lblTetoIdade">Teto Faixa Etária (Titular)</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted)" id="descTetoIdade">Faixa: --</div>
+                    </div>
+                    <div class="value" id="resTetoIdade">R$ 0,00</div>
+                </div>
+                
+                <div id="detalhesTetoIdadePadrao" class="detalhe-container hidden"></div>
+
+                <!-- Critério 3: Valor Comprovado Plano -->
+                <div class="result-box" id="boxPlano" style="margin-top:0.75rem;">
+                    <div>
+                        <div class="label" id="lblPlano">Valor Comprovado (Mensalidade)</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted)" id="descPlano">Apenas Titular</div>
+                    </div>
+                    <div class="value" id="resPlano">R$ 0,00</div>
+                </div>
+                
+                <div id="detalhesPlanoPadrao" class="detalhe-container hidden"></div>
+
+                <!-- Resultado Final Padrão (Os 3 Blocos) -->
+                <div id="containerResultadoFinal" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem;">
+                    
+                    <!-- Bloco Verde: Valor Base -->
+                    <div class="result-box highlight" id="boxRestituirBase">
+                        <div class="main-value-row">
+                            <div>
+                                <div class="label" style="color: var(--success)" id="lblRestituirBase">Valor a Restituir</div>
+                                <div style="font-size:0.7rem; font-weight:normal; color:#065f46;" id="descRestituirBase">(Menor valor entre os cenários)</div>
+                            </div>
+                            <div class="value" id="resFinalBase">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco Amarelo: Adicional 50% -->
+                    <div class="result-box warning-box hidden" id="boxAdicional">
+                        <div class="main-value-row">
+                            <div>
+                                <div class="label" style="color: var(--warning)">Adicional de 50%</div>
+                                <div style="font-size:0.7rem; font-weight:normal; color:#b45309;" id="motivoAdicional"></div>
+                            </div>
+                            <div class="value" id="resAdicional">+ R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <!-- Bloco Azul Escuro: Total Final -->
+                    <div class="result-box total-box hidden" id="boxTotal">
+                        <div class="main-value-row">
+                            <div>
+                                <div class="label">Total a Restituir</div>
+                            </div>
+                            <div class="value" id="resFinalTotal">R$ 0,00</div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <div id="sugestaoPlano" class="alert alert-info hidden" style="margin-top: 1rem;">
+                    <strong>Sugestão Estratégica:</strong> O valor do seu reembolso atual é igual à mensalidade total. Como os limites institucionais (10% e Teto das Faixas Etárias) são maiores, há margem para migrar para um plano de categoria superior sem impacto financeiro direto.
+                </div>
+
+                <!-- BOTÃO DE LINK PARA O PDF DA UNIMED COM A NOTA -->
+                <a href="https://www.anserjufe.org.br/assets/pdfs/saude_unimed_recife.pdf" target="_blank" class="btn-outline">Consultar tabela Unimed - Anserjuf</a>
+                <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">*para outros valores, consulte seu plano</p>
+
+                <button id="btnToggleTabela" class="btn-outline">Ver Tabela de Faixas Etárias</button>
+                
+                <div id="containerTabelaIdade" class="table-container hidden">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Faixa Etária (Anos)</th>
+                                <th class="text-right">Valor Limite (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodyIdades"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Visível apenas na Aba SASSEPE -->
+            <div id="painelSassepe" class="hidden">
+                <div class="alert alert-warning" style="display:block; margin-bottom: 0.75rem; background: var(--warning-light); color: var(--warning); border: 1px solid #fcd34d;">
+                    <strong>Aviso importante:</strong> Caso o servidor opte pelo plano do <strong>SASSEPE</strong>, o reembolso do auxílio-saúde pela instituição será fixo em <strong>R$ 150,00</strong>.
+                </div>
+
+                <div class="result-box">
+                    <div>
+                        <div class="label">Base de Cálculo (Salário)</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted)" id="sassepeSalarioRef">Remuneração Base Considerada</div>
+                    </div>
+                    <div class="value" id="resSassepeSalario">R$ 0,00</div>
+                </div>
+
+                <!-- Mensalidade SASSEPE -->
+                <div class="result-box" id="boxSassepeMensalidade" style="margin-top:0.75rem;">
+                    <div>
+                        <div class="label" id="lblSassepeMensalidade">Mensalidade SASSEPE (Titular)</div>
+                        <div style="font-size:0.75rem; color:var(--text-muted)" id="descSassepeMensalidade">Alíquota: --</div>
+                    </div>
+                    <div class="value" id="resSassepeMensalidade">R$ 0,00</div>
+                </div>
+                
+                <div id="detalhesSassepe" class="detalhe-container hidden"></div>
+
+                <div class="result-box highlight" style="margin-top:0.75rem;">
+                    <div class="main-value-row">
+                        <div>
+                            <div class="label" style="color: var(--success)">Reembolso Fixo (Auxílio Saúde)</div>
+                            <div style="font-size:0.7rem; font-weight:normal; color:#065f46;">(Opção pelo SASSEPE)</div>
+                        </div>
+                        <div class="value" id="resSassepeReembolso">R$ 150,00</div>
+                    </div>
+                </div>
+
+                <div class="result-box net-cost" style="margin-top:0.75rem;">
+                    <div>
+                        <div class="label" style="color: #9a3412;">Desembolso Efetivo do Servidor</div>
+                        <div style="font-size:0.7rem; font-weight:normal; color:#c2410c;" id="sassepeDesembolsoRef">(Titular - R$ 150,00 Reembolsados)</div>
+                    </div>
+                    <div class="value" id="resSassepeDesembolso">R$ 0,00</div>
+                </div>
+
+                <button id="btnToggleTabelasSassepe" class="btn-outline">Ver Tabelas de Alíquotas SASSEPE</button>
+                
+                <div id="containerTabelasSassepe" class="table-container hidden">
+                    <h3 style="font-size:0.9rem; padding:0.5rem; background:#eff6ff; color:var(--primary); text-align:center;">Tabela do Titular</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Faixa Etária</th>
+                                <th class="text-right">Alíquota</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodySassepeTitular"></tbody>
+                    </table>
+
+                    <h3 style="font-size:0.9rem; padding:0.5rem; background:#eff6ff; color:var(--primary); text-align:center; margin-top:0.5rem;">Tabela do Dependente</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Faixa Etária</th>
+                                <th class="text-right">Alíquota</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbodySassepeDependente"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FOOTER ATUALIZADO -->
+        <div class="footer-container">
+            <div class="footer-logos">
+                <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo" alt="Logo SGP"> 
+                <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo" alt="Logo DGF">
+            </div>
+            <div class="footer-text">DGF-NUGOV-2026</div>
+        </div>
+
+    </div>
+
+    <script>
+        const FATOR_ATUALIZACAO_SALARIO = 1.053;
+        const FATOR_ATUALIZACAO_COMISSIONADOS = 1.053;
+        const FATOR_ATUALIZACAO_SAUDE = 1.0;
+
+        let activeTab = 'padrao';
+
+        const tabelaSalarial = [
+            {p: "P00", auxiliar: 5565.92, tecnico: 5858.86, oficial_pjIII: 7252.72, analista_oficial: 7634.45},
+            {p: "P01", auxiliar: 5705.07, tecnico: 6005.32, oficial_pjIII: 7434.03, analista_oficial: 7825.32},
+            {p: "P02", auxiliar: 5856.24, tecnico: 6164.45, oficial_pjIII: 7631.04, analista_oficial: 8032.69},
+            {p: "P03", auxiliar: 6020.23, tecnico: 6337.08, oficial_pjIII: 7844.72, analista_oficial: 8257.59},
+            {p: "P04", auxiliar: 6197.83, tecnico: 6524.04, oficial_pjIII: 8076.13, analista_oficial: 8501.20},
+            {p: "P05", auxiliar: 6389.93, tecnico: 6726.26, oficial_pjIII: 8326.49, analista_oficial: 8764.72},
+            {p: "P06", auxiliar: 6597.61, tecnico: 6944.85, oficial_pjIII: 8597.11, analista_oficial: 9049.60},
+            {p: "P07", auxiliar: 6821.91, tecnico: 7181.00, oficial_pjIII: 8889.42, analista_oficial: 9357.29},
+            {p: "P08", auxiliar: 7064.12, tecnico: 7435.92, oficial_pjIII: 9204.99, analista_oficial: 9689.45},
+            {p: "P09", auxiliar: 7325.47, tecnico: 7711.05, oficial_pjIII: 9545.58, analista_oficial: 10047.97},
+            {p: "P10", auxiliar: 7607.51, tecnico: 8007.94, oficial_pjIII: 9913.07, analista_oficial: 10434.83},
+            {p: "P11", auxiliar: 7911.82, tecnico: 8328.22, oficial_pjIII: 10309.59, analista_oficial: 10852.20},
+            {p: "P12", auxiliar: 8386.53, tecnico: 8827.94, oficial_pjIII: 10928.18, analista_oficial: 11503.34},
+            {p: "P13", auxiliar: 8973.59, tecnico: 9445.90, oficial_pjIII: 11693.13, analista_oficial: 12308.58},
+            {p: "P14", auxiliar: 9691.46, tecnico: 10201.54, oficial_pjIII: 12628.60, analista_oficial: 13293.27},
+            {p: "P15", auxiliar: 10563.73, tecnico: 11119.71, oficial_pjIII: 13765.15, analista_oficial: 14489.66},
+            {p: "P16", auxiliar: 11620.08, tecnico: 12231.66, oficial_pjIII: 15141.69, analista_oficial: 15938.64},
+            {p: "P17", auxiliar: 12898.30, tecnico: 13577.14, oficial_pjIII: 16807.28, analista_oficial: 17691.87},
+            {p: "P18", auxiliar: 14446.06, tecnico: 15206.39, oficial_pjIII: 18824.14, analista_oficial: 19814.88},
+            {p: "P19", auxiliar: 16324.07, tecnico: 17183.24, oficial_pjIII: 21271.28, analista_oficial: 22390.82},
+            {p: "P20", auxiliar: 18609.46, tecnico: 19588.89, oficial_pjIII: 24249.28, analista_oficial: 25525.53},
+            {p: "P21", auxiliar: 21400.86, tecnico: 22527.23, oficial_pjIII: 27886.68, analista_oficial: 29354.38}
+        ];
+
+        const comissionadosData = [
+            {s: "APJC", b: 1319.77, r: 1583.72},
+            {s: "DGAPJC", b: 12260.68, r: 14712.82},
+            {s: "DGPJC", b: 13078.07, r: 15693.68},
+            {s: "DASPJC", b: 7028.09, r: 8433.71},
+            {s: "DSPJC", b: 7590.35, r: 9108.42},
+            {s: "MPJC", b: 6559.35, r: 7871.22},
+            {s: "PJC", b: 8433.72, r: 10120.46},
+            {s: "PJC-II", b: 7590.35, r: 9108.42},
+            {s: "PJC-III", b: 7028.09, r: 8433.71},
+            {s: "PJC-IV", b: 4216.80, r: 5060.16},
+            {s: "PJC-V", b: 3092.36, r: 3710.83},
+            {s: "PJC-VI", b: 2634.71, r: 3161.65},
+            {s: "PJC-VII", b: 2266.58, r: 2719.90},
+            {s: "SPJC", b: 8996.05, r: 10795.26}
+        ];
+
+        const tabelaIdade = [
+            { min: 0, max: 18, val: 383.60, label: "00 a 18 anos" },
+            { min: 19, max: 23, val: 479.49, label: "19 a 23 anos" },
+            { min: 24, max: 28, val: 599.34, label: "24 a 28 anos" },
+            { min: 29, max: 33, val: 659.29, label: "29 a 33 anos" },
+            { min: 34, max: 38, val: 692.24, label: "34 a 38 anos" },
+            { min: 39, max: 43, val: 761.47, label: "39 a 43 anos" },
+            { min: 44, max: 48, val: 951.82, label: "44 a 48 anos" },
+            { min: 49, max: 53, val: 1047.01, label: "49 a 53 anos" },
+            { min: 54, max: 58, val: 1308.79, label: "54 a 58 anos" },
+            { min: 59, max: 999, val: 2290.38, label: "59 anos ou mais" }
+        ];
+
+        const tabelaSassepeTitular = [
+            { min: 0, max: 18, aliq: 0.064, label: "0 a 18 anos" },
+            { min: 19, max: 23, aliq: 0.065, label: "19 a 23 anos" },
+            { min: 24, max: 28, aliq: 0.066, label: "24 a 28 anos" },
+            { min: 29, max: 33, aliq: 0.067, label: "29 a 33 anos" },
+            { min: 34, max: 38, aliq: 0.068, label: "34 a 38 anos" },
+            { min: 39, max: 43, aliq: 0.069, label: "39 a 43 anos" },
+            { min: 44, max: 48, aliq: 0.070, label: "44 a 48 anos" },
+            { min: 49, max: 53, aliq: 0.071, label: "49 a 53 anos" },
+            { min: 54, max: 58, aliq: 0.072, label: "54 a 58 anos" },
+            { min: 59, max: 999, aliq: 0.073, label: "59 anos ou mais" }
+        ];
+
+        const tabelaSassepeDependente = [
+            { min: 0, max: 18, aliq: 0.024, label: "0 a 18 anos" },
+            { min: 19, max: 23, aliq: 0.028, label: "19 a 23 anos" },
+            { min: 24, max: 28, aliq: 0.028, label: "24 a 28 anos" },
+            { min: 29, max: 33, aliq: 0.028, label: "29 a 33 anos" },
+            { min: 34, max: 38, aliq: 0.028, label: "34 a 38 anos" },
+            { min: 39, max: 43, aliq: 0.030, label: "39 a 43 anos" },
+            { min: 44, max: 48, aliq: 0.030, label: "44 a 48 anos" },
+            { min: 49, max: 53, aliq: 0.030, label: "49 a 53 anos" },
+            { min: 54, max: 58, aliq: 0.030, label: "54 a 58 anos" },
+            { min: 59, max: 999, aliq: 0.040, label: "59 anos ou mais" }
+        ];
+
+        const formatBRL = (value) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
+        const formatPct = (value) => (value * 100).toFixed(2).replace('.', ',') + '%';
+
+        const els = {
+            cargo: document.getElementById('cargo'),
+            funcaoComissionada: document.getElementById('funcaoComissionada'),
+            padrao: document.getElementById('padrao'),
+            cargoComissionado: document.getElementById('cargoComissionado'),
+            idade: document.getElementById('idade'),
+            valorPlano: document.getElementById('valorPlano'),
+            doencaGrave: document.getElementById('doencaGrave'),
+            aq3: document.getElementById('aq3'),
+            aq45: document.getElementById('aq45')
+        };
+
+        let dependenteCount = 0;
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.getElementById('tabBtnPadrao').classList.toggle('active', tab === 'padrao');
+            document.getElementById('tabBtnSassepe').classList.toggle('active', tab === 'sassepe');
+            
+            document.getElementById('painelPadrao').classList.toggle('hidden', tab !== 'padrao');
+            document.getElementById('painelSassepe').classList.toggle('hidden', tab !== 'sassepe');
+
+            document.getElementById('groupPlanoTitular').classList.toggle('hidden', tab === 'sassepe');
+            document.getElementById('groupDoencaGrave').classList.toggle('hidden', tab === 'sassepe');
+            
+            document.querySelectorAll('.dep-valor-group').forEach(el => {
+                el.classList.toggle('hidden', tab === 'sassepe');
+            });
+
+            calcularReembolso();
+        }
+
+        const tbodyIdades = document.getElementById('tbodyIdades');
+        tabelaIdade.forEach(faixa => {
+            const tr = document.createElement('tr');
+            const tdFaixa = document.createElement('td');
+            tdFaixa.textContent = faixa.label;
+            const tdValor = document.createElement('td');
+            tdValor.className = 'text-right';
+            tdValor.textContent = formatBRL(faixa.val * FATOR_ATUALIZACAO_SAUDE);
+            tr.appendChild(tdFaixa);
+            tr.appendChild(tdValor);
+            tbodyIdades.appendChild(tr);
+        });
+
+        const tbodySassepeTitular = document.getElementById('tbodySassepeTitular');
+        tabelaSassepeTitular.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.label}</td><td class="text-right">${formatPct(row.aliq)}</td>`;
+            tbodySassepeTitular.appendChild(tr);
+        });
+
+        const tbodySassepeDependente = document.getElementById('tbodySassepeDependente');
+        tabelaSassepeDependente.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${row.label}</td><td class="text-right">${formatPct(row.aliq)}</td>`;
+            tbodySassepeDependente.appendChild(tr);
+        });
+
+        const btnToggleTabelasSassepe = document.getElementById('btnToggleTabelasSassepe');
+        const containerTabelasSassepe = document.getElementById('containerTabelasSassepe');
+        btnToggleTabelasSassepe.addEventListener('click', () => {
+            containerTabelasSassepe.classList.toggle('hidden');
+            btnToggleTabelasSassepe.textContent = containerTabelasSassepe.classList.contains('hidden') 
+                ? 'Ver Tabelas de Alíquotas SASSEPE' 
+                : 'Ocultar Tabelas de Alíquotas SASSEPE';
+        });
+
+        const btnToggleTabela = document.getElementById('btnToggleTabela');
+        const containerTabelaIdade = document.getElementById('containerTabelaIdade');
+        btnToggleTabela.addEventListener('click', () => {
+            containerTabelaIdade.classList.toggle('hidden');
+            btnToggleTabela.textContent = containerTabelaIdade.classList.contains('hidden') 
+                ? 'Ver Tabela de Faixas Etárias' 
+                : 'Ocultar Tabela de Faixas Etárias';
+        });
+
+        els.aq3.addEventListener('change', (e) => {
+            if (e.target.checked) els.aq45.checked = false;
+            calcularReembolso();
+        });
+        
+        els.aq45.addEventListener('change', (e) => {
+            if (e.target.checked) els.aq3.checked = false;
+            calcularReembolso();
+        });
+
+        document.getElementById('btnAddDependente').addEventListener('click', () => {
+            dependenteCount++;
+            const container = document.getElementById('listaDependentes');
+            const depDiv = document.createElement('div');
+            depDiv.className = 'dependente-item';
+            depDiv.id = `dependente-${dependenteCount}`;
+            
+            const isSassepe = activeTab === 'sassepe';
+            
+            const checkboxId = `doencaGraveDep-${dependenteCount}`;
+
+            depDiv.innerHTML = `
+                <div class="dependente-header">
+                    <span>Dependente ${dependenteCount}</span>
+                    <button type="button" class="btn-danger" onclick="removerDependente(${dependenteCount})">Remover</button>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Idade (anos)</label>
+                        <input type="number" class="dep-idade" value="10" min="0" max="120">
+                    </div>
+                    <div class="form-group dep-valor-group ${isSassepe ? 'hidden' : ''}">
+                        <label>Plano (R$)</label>
+                        <input type="number" class="dep-valor" value="300.00" step="10.00" min="0">
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <div class="checkbox-group">
+                        <input type="checkbox" class="dep-doenca-grave" id="${checkboxId}">
+                        <label for="${checkboxId}">Portador de Doença Grave (Dependente)</label>
+                    </div>
+                </div>
+            `;
+            container.appendChild(depDiv);
+
+            depDiv.querySelectorAll('input').forEach(input => {
+                input.addEventListener('input', calcularReembolso);
+                input.addEventListener('change', calcularReembolso);
+            });
+
+            calcularReembolso();
+        });
+
+        function removerDependente(id) {
+            const el = document.getElementById(`dependente-${id}`);
+            if (el) {
+                el.remove();
+                calcularReembolso();
+            }
+        }
+
+        function atualizarDropdowns() {
+            const padraoAtual = els.padrao.value;
+            els.padrao.innerHTML = '';
+            tabelaSalarial.forEach(row => {
+                els.padrao.appendChild(new Option(row.p, row.p));
+            });
+            if (padraoAtual && Array.from(els.padrao.options).some(opt => opt.value === padraoAtual)) {
+                els.padrao.value = padraoAtual;
+            }
+
+            if (els.cargoComissionado.options.length === 0) {
+                comissionadosData.forEach(row => {
+                    els.cargoComissionado.appendChild(new Option(row.s, row.s));
+                });
+            }
+
+            if (els.funcaoComissionada.options.length === 1) {
+                comissionadosData.forEach(row => {
+                    els.funcaoComissionada.appendChild(new Option(row.s, row.s));
+                });
+            }
+        }
+
+        els.cargo.addEventListener('change', () => {
+            atualizarDropdowns();
+            calcularReembolso();
+        });
+
+        const toggle = document.getElementById('vinculoToggle');
+        
+        function setVinculo(tipo) {
+            toggle.checked = tipo === 'comissionado';
+            toggleVinculo();
+        }
+        
+        function toggleVinculo() {
+            const isComissionado = toggle.checked;
+            document.getElementById('labelEfetivo').classList.toggle('active', !isComissionado);
+            document.getElementById('labelComissionado').classList.toggle('active', isComissionado);
+            
+            if (isComissionado) {
+                document.getElementById('camposEfetivo').classList.add('hidden');
+                document.getElementById('camposComissionado').classList.remove('hidden');
+            } else {
+                document.getElementById('camposEfetivo').classList.remove('hidden');
+                document.getElementById('camposComissionado').classList.add('hidden');
+            }
+            calcularReembolso();
+        }
+
+        function calcularReembolso() {
+            const isComissionado = toggle.checked;
+            let salarioAtualizado = 0;
+            let baseSalarioSemAQ = 0;
+            let valorAQ = 0;
+            let valorRepresentacao = 0;
+
+            if (isComissionado) {
+                const comissionadoRow = comissionadosData.find(c => c.s === els.cargoComissionado.value);
+                const salarioBase = comissionadoRow ? (comissionadoRow.b + comissionadoRow.r) : 0;
+                baseSalarioSemAQ = salarioBase * FATOR_ATUALIZACAO_COMISSIONADOS;
+                salarioAtualizado = baseSalarioSemAQ;
+            } else {
+                const efetivoRow = tabelaSalarial.find(s => s.p === els.padrao.value);
+                const salarioBase = efetivoRow ? efetivoRow[els.cargo.value] : 0;
+                baseSalarioSemAQ = salarioBase * FATOR_ATUALIZACAO_SALARIO;
+
+                const funcaoSel = els.funcaoComissionada.value;
+                if (funcaoSel) {
+                    const funcData = comissionadosData.find(c => c.s === funcaoSel);
+                    if (funcData) {
+                        valorRepresentacao = funcData.r * FATOR_ATUALIZACAO_COMISSIONADOS;
+                    }
+                }
+
+                if (els.aq3.checked) {
+                    valorAQ = baseSalarioSemAQ * 0.03;
+                } else if (els.aq45.checked) {
+                    valorAQ = baseSalarioSemAQ * 0.045;
+                }
+
+                salarioAtualizado = baseSalarioSemAQ + valorAQ + valorRepresentacao;
+            }
+
+            const idadeTitular = parseInt(els.idade.value) || 0;
+            const depElements = document.querySelectorAll('.dependente-item');
+            
+            let textoBaseRef = `Base: ${formatBRL(baseSalarioSemAQ)}`;
+            if (valorRepresentacao > 0) {
+                textoBaseRef += ` + Rep: ${formatBRL(valorRepresentacao)}`;
+            }
+            if (valorAQ > 0) {
+                textoBaseRef += ` + AQ: ${formatBRL(valorAQ)}`;
+            }
+            if (valorRepresentacao > 0 || valorAQ > 0) {
+                textoBaseRef += ` = Total: ${formatBRL(salarioAtualizado)}`;
+            }
+
+            if (activeTab === 'padrao') {
+                const tetoRemuneracao10 = salarioAtualizado * 0.10;
+                
+                let temDoencaGraveGeral = els.doencaGrave.checked;
+                depElements.forEach(depEl => {
+                    if (depEl.querySelector('.dep-doenca-grave').checked) {
+                        temDoencaGraveGeral = true;
+                    }
+                });
+
+                const teveAcrescimo = (idadeTitular > 49 || temDoencaGraveGeral);
+
+                const planoTitularVal = parseFloat(els.valorPlano.value) || 0;
+                const linhaIdadeTitular = tabelaIdade.find(i => idadeTitular >= i.min && idadeTitular <= i.max);
+                const tetoIdadeTitular = (linhaIdadeTitular ? linhaIdadeTitular.val : 0) * FATOR_ATUALIZACAO_SAUDE;
+
+                let planoTotalVal = planoTitularVal;
+                let tetoIdadeTotal = tetoIdadeTitular;
+
+                const boxTetoIdade = document.getElementById('boxTetoIdade');
+                const lblTetoIdade = document.getElementById('lblTetoIdade');
+                const descTetoIdade = document.getElementById('descTetoIdade');
+                const resTetoIdade = document.getElementById('resTetoIdade');
+                const detalhesTetoIdadePadrao = document.getElementById('detalhesTetoIdadePadrao');
+
+                const boxPlano = document.getElementById('boxPlano');
+                const lblPlano = document.getElementById('lblPlano');
+                const descPlano = document.getElementById('descPlano');
+                const resPlano = document.getElementById('resPlano');
+                const detalhesPlanoPadrao = document.getElementById('detalhesPlanoPadrao');
+                
+                detalhesTetoIdadePadrao.innerHTML = '';
+                detalhesPlanoPadrao.innerHTML = '';
+
+                if (depElements.length > 0) {
+                    lblTetoIdade.textContent = 'Teto Faixas Etárias Total';
+                    descTetoIdade.textContent = 'Titular + Dependentes';
+                    boxTetoIdade.style.background = '#f3f4f6';
+                    detalhesTetoIdadePadrao.classList.remove('hidden');
+
+                    lblPlano.textContent = 'Valor Comprovado Total';
+                    descPlano.textContent = 'Mensalidades Titular + Dependentes';
+                    boxPlano.style.background = '#f3f4f6';
+                    detalhesPlanoPadrao.classList.remove('hidden');
+
+                    let tetoHtml = `
+                        <div class="detalhe-item">
+                            <span><span class="title">Titular</span> (${idadeTitular} anos - Faixa: ${linhaIdadeTitular ? linhaIdadeTitular.label : '--'})</span>
+                            <strong>${formatBRL(tetoIdadeTitular)}</strong>
+                        </div>
+                    `;
+                    
+                    let planoHtml = `
+                        <div class="detalhe-item">
+                            <span><span class="title">Titular</span></span>
+                            <strong>${formatBRL(planoTitularVal)}</strong>
+                        </div>
+                    `;
+
+                    depElements.forEach((depEl, idx) => {
+                        const depIdade = parseInt(depEl.querySelector('.dep-idade').value) || 0;
+                        const depValor = parseFloat(depEl.querySelector('.dep-valor').value) || 0;
+                        const linhaIdadeDep = tabelaIdade.find(i => depIdade >= i.min && depIdade <= i.max);
+                        const tetoIdadeDep = (linhaIdadeDep ? linhaIdadeDep.val : 0) * FATOR_ATUALIZACAO_SAUDE;
+
+                        planoTotalVal += depValor;
+                        tetoIdadeTotal += tetoIdadeDep;
+
+                        tetoHtml += `
+                            <div class="detalhe-item">
+                                <span><span class="title">Dependente ${idx + 1}</span> (${depIdade} anos - Faixa: ${linhaIdadeDep ? linhaIdadeDep.label : '--'})</span>
+                                <strong>${formatBRL(tetoIdadeDep)}</strong>
+                            </div>
+                        `;
+                        
+                        planoHtml += `
+                            <div class="detalhe-item">
+                                <span><span class="title">Dependente ${idx + 1}</span></span>
+                                <strong>${formatBRL(depValor)}</strong>
+                            </div>
+                        `;
+                    });
+
+                    detalhesTetoIdadePadrao.innerHTML = tetoHtml;
+                    detalhesPlanoPadrao.innerHTML = planoHtml;
+
+                } else {
+                    lblTetoIdade.textContent = 'Teto Faixa Etária (Titular)';
+                    descTetoIdade.textContent = `Faixa: ${linhaIdadeTitular ? linhaIdadeTitular.label : "--"}`;
+                    boxTetoIdade.style.background = '#f9fafb';
+                    detalhesTetoIdadePadrao.classList.add('hidden');
+
+                    lblPlano.textContent = 'Valor Comprovado (Mensalidade)';
+                    descPlano.textContent = 'Apenas Titular';
+                    boxPlano.style.background = '#f9fafb';
+                    detalhesPlanoPadrao.classList.add('hidden');
+                }
+
+                document.getElementById('resTetoSalario').textContent = formatBRL(tetoRemuneracao10);
+                document.getElementById('salarioBaseRef').textContent = textoBaseRef;
+                
+                resTetoIdade.textContent = formatBRL(tetoIdadeTotal);
+                resPlano.textContent = formatBRL(planoTotalVal);
+
+                const reembolsoBase = Math.min(tetoRemuneracao10, tetoIdadeTotal, planoTotalVal);
+                let valorAdicional = 0;
+                let reembolsoTotal = reembolsoBase;
+
+                const boxAdicional = document.getElementById('boxAdicional');
+                const boxTotal = document.getElementById('boxTotal');
+                const lblRestituirBase = document.getElementById('lblRestituirBase');
+                const descRestituirBase = document.getElementById('descRestituirBase');
+
+                if (teveAcrescimo) {
+                    valorAdicional = reembolsoBase * 0.50;
+                    reembolsoTotal = reembolsoBase + valorAdicional;
+
+                    lblRestituirBase.textContent = 'Valor a Restituir (Sem Adicional)';
+                    
+                    boxAdicional.classList.remove('hidden');
+                    boxTotal.classList.remove('hidden');
+                    
+                    let motivos = [];
+                    if (idadeTitular > 49) motivos.push("Idade > 49");
+                    if (temDoencaGraveGeral) motivos.push("Doença Grave");
+                    document.getElementById('motivoAdicional').textContent = `Motivo: ${motivos.join(' e ')}`;
+                    
+                    document.getElementById('resAdicional').textContent = '+ ' + formatBRL(valorAdicional);
+                    document.getElementById('resFinalTotal').textContent = formatBRL(reembolsoTotal);
+                    
+                } else {
+                    lblRestituirBase.textContent = 'Valor a Restituir';
+                    
+                    boxAdicional.classList.add('hidden');
+                    boxTotal.classList.add('hidden');
+                }
+                
+                document.getElementById('resFinalBase').textContent = formatBRL(reembolsoBase);
+
+                const sugestao = document.getElementById('sugestaoPlano');
+                if (reembolsoBase === planoTotalVal && planoTotalVal < tetoRemuneracao10 && planoTotalVal < tetoIdadeTotal) {
+                    const margem = Math.min(tetoRemuneracao10, tetoIdadeTotal) - planoTotalVal;
+                    sugestao.innerHTML = `<strong>💡 Sugestão Estratégica:</strong> Você ainda possui margem institucional. É possível melhorar a cobertura ou migrar para planos superiores (aumentar em até <strong>${formatBRL(margem)}</strong> no custo total) sem impacto financeiro direto em folha.`;
+                    sugestao.classList.remove('hidden');
+                } else {
+                    sugestao.classList.add('hidden');
+                }
+
+            } else {
+                const linhaTitular = tabelaSassepeTitular.find(i => idadeTitular >= i.min && idadeTitular <= i.max);
+                const aliqTitular = linhaTitular ? linhaTitular.aliq : 0;
+                const valorSassepeTitular = salarioAtualizado * aliqTitular;
+
+                let valorSassepeDepTotal = 0;
+
+                const boxSassepeMensalidade = document.getElementById('boxSassepeMensalidade');
+                const lblSassepeMensalidade = document.getElementById('lblSassepeMensalidade');
+                const descSassepeMensalidade = document.getElementById('descSassepeMensalidade');
+                const resSassepeMensalidade = document.getElementById('resSassepeMensalidade');
+                const detalhesSassepe = document.getElementById('detalhesSassepe');
+                const sassepeDesembolsoRef = document.getElementById('sassepeDesembolsoRef');
+
+                detalhesSassepe.innerHTML = '';
+
+                if (depElements.length > 0) {
+                    lblSassepeMensalidade.textContent = 'Valor Total Mensal do SASSEPE';
+                    descSassepeMensalidade.textContent = 'Titular + Dependentes';
+                    boxSassepeMensalidade.style.background = '#f3f4f6';
+                    resSassepeMensalidade.style.color = 'var(--primary)';
+                    detalhesSassepe.classList.remove('hidden');
+                    sassepeDesembolsoRef.textContent = "(Total do Plano - R$ 150,00 Reembolsados)"; 
+
+                    let sassepeHtml = `
+                        <div class="detalhe-item">
+                            <span><span class="title">Titular</span> (${idadeTitular} anos - Alíquota: ${formatPct(aliqTitular)})</span>
+                            <strong>${formatBRL(valorSassepeTitular)}</strong>
+                        </div>
+                    `;
+
+                    depElements.forEach((depEl, idx) => {
+                        const depIdade = parseInt(depEl.querySelector('.dep-idade').value) || 0;
+                        const linhaDep = tabelaSassepeDependente.find(i => depIdade >= i.min && depIdade <= i.max);
+                        const aliqDep = linhaDep ? linhaDep.aliq : 0;
+                        const valDep = salarioAtualizado * aliqDep;
+                        valorSassepeDepTotal += valDep;
+
+                        sassepeHtml += `
+                            <div class="detalhe-item">
+                                <span><span class="title">Dependente ${idx + 1}</span> (${depIdade} anos - Alíquota: ${formatPct(aliqDep)})</span>
+                                <strong>${formatBRL(valDep)}</strong>
+                            </div>
+                        `;
+                    });
+
+                    detalhesSassepe.innerHTML = sassepeHtml;
+
+                } else {
+                    lblSassepeMensalidade.textContent = 'Mensalidade SASSEPE (Titular)';
+                    descSassepeMensalidade.textContent = `Alíquota: ${formatPct(aliqTitular)}`;
+                    boxSassepeMensalidade.style.background = '#f9fafb';
+                    resSassepeMensalidade.style.color = 'var(--text-main)';
+                    detalhesSassepe.classList.add('hidden');
+                    sassepeDesembolsoRef.textContent = "(Titular - R$ 150,00 Reembolsados)";
+                }
+
+                const totalPlanoSassepe = valorSassepeTitular + valorSassepeDepTotal;
+                const reembolsoFixo = 150.00;
+                const desembolsoEfetivo = Math.max(0, totalPlanoSassepe - reembolsoFixo);
+
+                document.getElementById('resSassepeSalario').textContent = formatBRL(salarioAtualizado);
+                document.getElementById('sassepeSalarioRef').textContent = textoBaseRef;
+                
+                resSassepeMensalidade.textContent = formatBRL(totalPlanoSassepe);
+                document.getElementById('resSassepeReembolso').textContent = formatBRL(reembolsoFixo);
+                document.getElementById('resSassepeDesembolso').textContent = formatBRL(desembolsoEfetivo);
+            }
+        }
+
+        atualizarDropdowns();
+        
+        Object.values(els).forEach(el => {
+            if (el !== els.cargo) {
+                el.addEventListener('input', calcularReembolso);
+                el.addEventListener('change', calcularReembolso);
+            }
+        });
+
+        calcularReembolso();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Organomaker TJPE</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* --- CSS ORIGINAL (STYLE_SHEET) TRANSLADADO PARA WEB --- */
+        * { box-sizing: border-box; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+        
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; color: #000000; background-color: #ffffff; }
+        
+        /* Layout Principal */
+        .app-container { display: flex; width: 100vw; height: 100vh; overflow: hidden; }
+        
+        /* Menu Superior (MenuBar) */
+        .menu-bar { position: absolute; top: 0; left: 0; width: 100%; height: 30px; background-color: #ffffff; border-bottom: 1px solid #cccccc; display: flex; align-items: center; z-index: 1000; padding: 0 10px; }
+        .menu-item { position: relative; padding: 6px 10px; cursor: pointer; user-select: none; }
+        .menu-item:hover { background-color: #e9ecef; }
+        .menu-dropdown { display: none; position: absolute; top: 100%; left: 0; background-color: #ffffff; border: 1px solid #cccccc; min-width: 180px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); }
+        .menu-item:hover .menu-dropdown { display: block; }
+        .dropdown-item { padding: 6px 22px; cursor: pointer; display: flex; justify-content: space-between; }
+        .dropdown-item:hover { background-color: #0d6efd; color: #ffffff; }
+        .dropdown-separator { height: 1px; background-color: #cccccc; margin: 4px 0; }
+        .shortcut { color: #888888; font-size: 10px; padding-left: 10px; }
+        .dropdown-item:hover .shortcut { color: #dddddd; }
+
+        /* Sidebar Esquerda */
+        #Sidebar { width: 320px; background-color: #ffffff; border-right: 1px solid #cccccc; display: flex; flex-direction: column; padding: 10px; padding-top: 40px; flex-shrink: 0; height: 100%; z-index: 90; transition: margin-left 0.2s ease; }
+        
+        /* Workspace da Direita */
+        .workspace { flex-grow: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; position: relative; background-color: #f1f1f1; }
+        
+        #TopBar { height: 52px; background-color: #ffffff; border-bottom: 1px solid #cccccc; display: flex; align-items: center; padding: 10px; gap: 8px; margin-top: 30px; z-index: 80; }
+        
+        /* CORREÇÃO DO MOTOR: ScrollArea atuando como Viewport Centralizador Flex */
+        .scroll-area { flex-grow: 1; position: relative; overflow: auto; outline: none; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+        .scroll-area::-webkit-scrollbar { display: none; }
+
+        /* Canvas Infinito Fixo 5000x5000 - Origem de transformação centralizada */
+        #Canvas { width: 5000px !important; height: 5000px !important; background-color: #ffffff; position: relative; transform-origin: center center; user-select: none; flex-shrink: 0; }
+        
+        /* SVG de Conexões e Grid */
+        #canvas-svg { position: absolute; top: 0; left: 0; width: 5000px; height: 5000px; pointer-events: none; z-index: 1; }
+        
+        /* Headers e Labels */
+        .header-label { font-weight: bold; font-size: 13px; color: #2c3e50; margin-top: 10px; margin-bottom: 4px; }
+        
+        /* Elementos de Formulário */
+        input[type="text"], select, .list-widget, .table-widget { width: 100%; background-color: #ffffff; color: #000000; border: 1px solid #000000; border-radius: 4px; padding: 5px; margin-bottom: 8px; outline: none; }
+        
+        .list-widget { flex-grow: 1; overflow-y: auto; max-height: 300px; padding: 0; margin: 0; list-style: none; }
+        .list-item { padding: 6px; cursor: grab; border-bottom: 1px solid #eee; display: flex; flex-direction: column; }
+        .list-item:active { cursor: grabbing; }
+
+        .table-widget { height: 150px; overflow-y: auto; padding: 0; border-collapse: collapse; display: block; }
+        .table-widget th, .table-widget td { border: 1px solid #cccccc; padding: 4px; text-align: left; }
+        .table-widget th { background-color: #f8f9fa; position: sticky; top: 0; }
+        
+        /* Botões */
+        button { background-color: #0d6efd; color: #ffffff; border: 1px solid #000000; border-radius: 4px; padding: 6px; font-weight: bold; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; }
+        button:hover { background-color: #0b5ed7; }
+        button.danger { background-color: #dc3545; }
+        button.danger:hover { background-color: #bb2d3b; }
+        button.success { background-color: #198754; }
+        button.success:hover { background-color: #157347; }
+        button.warning { background-color: #ffc107; color: #000000; }
+        button.warning:hover { background-color: #e0a800; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+
+        /* Setor Widget (Quadros Dinâmicos no Canvas) */
+        .sector-widget { position: absolute; z-index: 10; border-radius: 8px; padding: 5px 5px 20px 5px; display: flex; flex-direction: column; gap: 2px; box-sizing: border-box; background-color: #ffffff; }
+        .sector-header { display: flex; align-items: center; gap: 2px; width: 100%; height: auto; }
+        .sector-title { flex-grow: 1; font-weight: bold; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: normal; word-break: break-word; pointer-events: none; }
+        
+        .sector-widget button { padding: 2px; font-size: 10px; font-weight: normal; border: 1px solid #333; }
+        .sector-widget button.child-btn { background-color: #495057; color: #ffffff; border: 1px solid #000000; border-radius: 4px; padding: 4px; font-weight: bold; font-size: 11px; margin: 1px; }
+
+        .details-container { display: flex; flex-direction: column; gap: 2px; flex-grow: 1; overflow: hidden; }
+        .separator-line { height: 1px; background-color: #000000; width: 100%; margin: 2px 0; }
+        .zone-title { font-weight: bold; background: transparent; border: none; font-size: 10px; margin-top: 2px; }
+        
+        /* Drop Zones */
+        .drop-zone { min-height: 40px; background-color: transparent; border: 1px dashed #555; border-radius: 4px; display: flex; flex-direction: column; gap: 2px; padding: 2px; overflow-y: auto; }
+        .team-scroll { flex-grow: 1; overflow-y: auto; border: none; background: transparent; }
+
+        /* Person Card */
+        .person-card { display: flex; align-items: center; justify-content: space-between; padding: 5px; border-radius: 4px; gap: 2px; background-color: #ffffff; border: 1px solid #000000; border-left: 6px solid #555555; cursor: grab; width: 100%; }
+        .person-info { border: none; background: transparent; word-break: break-word; flex-grow: 1; pointer-events: none; }
+        .return-btn { background: transparent; color: #555; border: none; font-size: 14px; font-weight: bold; padding: 0; cursor: pointer; width: 24px; height: 24px; border-radius: 10px; }
+        .return-btn:hover { color: #dc3545; background-color: #eee; }
+
+        /* Alça de Redimensionamento */
+        .resize-handle { position: absolute; right: 0; bottom: 0; width: 15px; height: 15px; cursor: se-resize; background-color: #555; border-top-left-radius: 4px; z-index: 20; }
+
+        /* Sockets de Conexão */
+        .socket { position: absolute; width: 12px; height: 12px; background-color: #ffffff; border: 2px solid #333333; border-radius: 6px; cursor: crosshair; z-index: 30; display: none; }
+        .socket.active-start { background-color: #20c997; border-color: #198754; }
+        .socket.active-end { background-color: #0d6efd; border-color: #0a58ca; }
+
+        /* Elementos Fixados no Viewport Real (Imunes ao Zoom out) */
+        .zoom-controls { position: absolute; background: #ffffff; border: 1px solid #cccccc; border-radius: 6px; width: 140px; height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 6px; z-index: 500; bottom: 12px; right: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .zoom-controls button { width: 28px; height: 22px; padding: 0; }
+        
+        .sidebar-toggle-btn { position: absolute; bottom: 12px; left: 12px; width: 34px; height: 34px; background: #ffffff; border: 1px solid #cccccc; border-radius: 6px; z-index: 500; font-size: 16px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); cursor: pointer; }
+
+        /* Rubber Band Selection */
+        .rubber-band { position: absolute; border: 1px solid rgb(0, 120, 215); background-color: rgba(0, 120, 215, 0.2); pointer-events: none; z-index: 1000; display: none; }
+
+        /* Context Menu Customizado para Linhas */
+        .context-menu { display: none; position: absolute; background: #ffffff; border: 1px solid #cccccc; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 2000; padding: 4px 0; min-width: 130px; }
+        .context-menu-item { padding: 6px 20px; cursor: pointer; user-select: none; }
+        .context-menu-item:hover { background-color: #0d6efd; color: #ffffff; }
+
+        /* Modais */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 3000; display: none; }
+        .modal-box { background: #ffffff; border-radius: 6px; padding: 15px; width: 400px; border: 1px solid #000000; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 5px; margin-top: 15px; }
+
+        /* Impressão / Exportação Oculta Controles */
+        @media print {
+            #Sidebar, #TopBar, .menu-bar, .zoom-controls, .sidebar-toggle-btn, .resize-handle, .socket, .sector-header button { display: none !important; }
+            #Canvas { transform: scale(1) !important; top: 0 !important; left: 0 !important; }
+            body, html { overflow: visible !important; height: auto !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="menu-bar">
+        <div class="menu-item">
+            &nbsp;Arquivo
+            <div class="menu-dropdown">
+                <div class="dropdown-item" onclick="clearCanvas()">🆕 Nova tela <span class="shortcut">Ctrl+N</span></div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" onclick="triggerJsonLoad()">📂 Abrir... <span class="shortcut">Ctrl+O</span></div>
+                <div class="dropdown-item" onclick="saveProject()">💾 Salvar... <span class="shortcut">Ctrl+S</span></div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" onclick="exportView()">🖼 Exportar imagem... <span class="shortcut">Ctrl+E</span></div>
+                <div class="dropdown-item" onclick="window.print()">📄 Exportar PDF... <span class="shortcut">Ctrl+Shift+E</span></div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" onclick="window.close()">Sair <span class="shortcut">Ctrl+Q</span></div>
+            </div>
+        </div>
+        <div class="menu-item">
+            &nbsp;Inserir
+            <div class="menu-dropdown">
+                <div class="dropdown-item" onclick="openNewSectorModal(null, null)">➕ Novo setor... <span class="shortcut">Ctrl+Shift+N</span></div>
+            </div>
+        </div>
+        <div class="menu-item">
+            &nbsp;Editar
+            <div class="menu-dropdown">
+                <div class="dropdown-item" onclick="undoAction()">↩ Desfazer <span class="shortcut">Ctrl+Z</span></div>
+                <div class="dropdown-item" onclick="redoAction()">↪ Refazer <span class="shortcut">Ctrl+Y</span></div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" onclick="copySelection()">📋 Copiar setor(es) <span class="shortcut">Ctrl+C</span></div>
+                <div class="dropdown-item" onclick="pasteClipboard()">📌 Colar setor(es) <span class="shortcut">Ctrl+V</span></div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" onclick="deleteSelection()">🗑 Excluir setor(es) <span class="shortcut">Del</span></div>
+            </div>
+        </div>
+        <div class="menu-item">
+            &nbsp;Ferramentas
+            <div class="menu-dropdown">
+                <div class="dropdown-item" onclick="toggleConnectModeFromMenu()">🔗 Conectar (alternar) <span class="shortcut">Ctrl+K</span></div>
+                <div class="dropdown-item" onclick="triggerExcelLoad()">📋 Carregar lista... <span class="shortcut">Ctrl+Alt+O</span></div>
+            </div>
+        </div>
+        <div class="menu-item">
+            &nbsp;Exibir
+            <div class="menu-dropdown">
+                <div class="dropdown-item" onclick="changeZoom(0.05)">Zoom + <span class="shortcut">Ctrl++</span></div>
+                <div class="dropdown-item" onclick="changeZoom(-0.05)">Zoom - <span class="shortcut">Ctrl+-</span></div>
+                <div class="dropdown-item" onclick="resetZoomView()">Zoom 100% <span class="shortcut">Ctrl+0</span></div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" onclick="fitToContentView()">Enquadrar tudo <span class="shortcut">Ctrl+F</span></div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" onclick="toggleGrid()">Mostrar/ocultar grade <span class="shortcut">Ctrl+G</span></div>
+                <div class="dropdown-item" onclick="toggleSectorButtons()">Mostrar/ocultar botões <span class="shortcut">Ctrl+H</span></div>
+                <div class="dropdown-item" onclick="toggleAllDetails()">Recolher/expandir detalhes</div>
+                <div class="dropdown-item" onclick="toggleSidebar()">Mostrar/ocultar painel esquerdo <span class="shortcut">Ctrl+B</span></div>
+            </div>
+        </div>
+        <div class="menu-item">
+            &nbsp;Ajuda
+            <div class="menu-dropdown">
+                <div class="dropdown-item" onclick="showShortcuts()">Atalhos do teclado <span class="shortcut">F1</span></div>
+                <div class="dropdown-separator"></div>
+                <div class="dropdown-item" onclick="showAbout()">Sobre</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="Sidebar">
+        <button class="success" onclick="triggerExcelLoad()">📂 CARREGAR LISTA</button>
+        <input type="file" id="excel-file-input" accept=".xlsx,.xls,.csv" style="display:none;" onchange="loadExcel(event)" />
+        <input type="file" id="json-file-input" accept=".json" style="display:none;" onchange="loadProject(event)" />
+
+        <div class="header-label">Secretaria / Lotação:</div>
+        <select id="cb_sec" onchange="updSec()"><option value="Todas">Todas</option></select>
+
+        <div class="header-label">Setor:</div>
+        <select id="cb_set" onchange="filt()"><option value="Todos">Todos</option></select>
+
+        <div class="header-label">Buscar Nome:</div>
+        <input type="text" id="txt_search" placeholder="Buscar..." oninput="filt()" />
+
+        <div id="lbl_n" style="margin-bottom: 5px;">0 disponíveis</div>
+        <ul id="lst" class="list-widget"></ul>
+
+        <div class="header-label" style="margin-top:15px;">Estatísticas de Alocação:</div>
+        <table id="tbl_stats" class="table-widget">
+            <thead>
+                <tr><th style="width: 80%;">Setor</th><th style="width: 20%;">Qtd</th></tr>
+            </thead>
+            <tbody id="tbl_stats_body">
+                <tr><td>TOTAL</td><td>0</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="workspace">
+        <div id="TopBar">
+            <button class="danger" onclick="clearCanvas()">🗑 LIMPAR</button>
+            <button onclick="exportView()">🖼 EXPORTAR IMAGEM</button>
+            <button onclick="window.print()">📄 EXPORTAR PDF</button>
+            <button id="b_grid" onclick="toggleGrid()">▦ GRID</button>
+            <button id="b_hide_buttons" onclick="toggleSectorButtons()">👁 BOTÕES</button>
+            <button id="b_collapse_all" onclick="toggleAllDetails()">− TODOS</button>
+            <div style="flex-grow:1;"></div>
+            <button onclick="openNewSectorModal(null, null)">+ NOVO SETOR</button>
+            <button id="b_con" onclick="togCon()">🔗 CONECTAR</button>
+        </div>
+
+        <div class="scroll-area" id="ScrollArea" tabindex="0">
+            <div id="Canvas">
+                <svg id="canvas-svg">
+                    <defs>
+                        <pattern id="dot-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <circle cx="2" cy="2" r="1.5" fill="#dcdcdc" />
+                        </pattern>
+                    </defs>
+                    <rect id="grid-rect" width="100%" height="100%" fill="url(#dot-grid)" />
+                    <g id="svg-connections-group"></g>
+                </svg>
+                <div id="widgets-container"></div>
+            </div>
+            
+            <div id="rubber-band" class="rubber-band"></div>
+        </div>
+
+        <div class="zoom-controls">
+            <button onclick="changeZoom(-0.05)">-</button>
+            <span id="lbl_zoom">100%</span>
+            <button onclick="changeZoom(0.05)">+</button>
+        </div>
+        <div class="sidebar-toggle-btn" onclick="toggleSidebar()">☰</div>
+    </div>
+</div>
+
+<div id="connection-menu" class="context-menu">
+    <div class="context-menu-item" onclick="beginEditConnectionPoints()">✏ Alterar Pontos</div>
+    <div class="context-menu-item" onclick="invertConnection()">🔁 Inverter</div>
+    <div class="dropdown-separator"></div>
+    <div class="context-menu-item danger" onclick="deleteConnection()" style="color:#dc3545;">🗑 Excluir</div>
+</div>
+
+<div id="sector-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="modal-title" style="margin-top:0;">Novo Setor</h3>
+        <div class="header-label">Nome do setor:</div>
+        <input type="text" id="modal-sector-name" value="" />
+        <div class="header-label">Tipo de Setor:</div>
+        <select id="modal-sector-type">
+            <option value="Diretoria">Diretoria</option>
+            <option value="Núcleo">Núcleo</option>
+            <option value="Gerência">Gerência</option>
+            <option value="Unidade">Unidade</option>
+        </select>
+        <div id="modal-font-options" style="display:none;">
+            <div class="header-label">Fonte do título (px):</div>
+            <input type="number" id="modal-font-title" min="6" max="96" value="12" style="width:100%; padding:5px; border:1px solid #000; border-radius:4px;" />
+            <div class="header-label">Fonte dos nomes (px):</div>
+            <input type="number" id="modal-font-people" min="6" max="96" value="11" style="width:100%; padding:5px; border:1px solid #000; border-radius:4px;" />
+        </div>
+        <div class="modal-footer">
+            <button id="modal-cancel-btn" class="danger">Cancelar</button>
+            <button id="modal-ok-btn">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="whatsnew-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 style="margin-top:0;">✨ Novidades</h3>
+        <p><b>Seleção por arrasto</b>: arraste no vazio para selecionar vários quadros.</p>
+        <p><b>Pan</b>: botão direito no vazio (ou <b>Space</b> + arrasto) move a tela.</p>
+        <p><b>Redimensionar em grupo</b>: selecione vários e use a alça.</p>
+        <p><b>Fonte acompanha tamanho</b>: ao redimensionar, as fontes se ajustam.</p>
+        <p><b>Conexão por 4 pontos</b>: cima/baixo/esquerda/direita.</p>
+        <div style="margin-top:15px; display:flex; align-items:center; gap:5px;">
+            <input type="checkbox" id="whatsnew-dont-show" />
+            <label id="dont-show-lbl" for="whatsnew-dont-show" style="color:#555; cursor:pointer;">Não mostrar de novo</label>
+        </div>
+        <div class="modal-footer">
+            <button onclick="closeWhatsNew()">OK</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- PARÂMETROS E PALETAS ORIGINAIS ---
+    const PALETTE = [
+        {"bg": "#ffffff", "border": "#000000"},
+        {"bg": "#f8f9fa", "border": "#343a40"},
+        {"bg": "#ffcdd2", "border": "#b71c1c"},
+        {"bg": "#ffecb3", "border": "#ff6f00"},
+        {"bg": "#fff9c4", "border": "#fbc02d"},
+        {"bg": "#c8e6c9", "border": "#2e7d32"},
+        {"bg": "#b2ebf2", "border": "#00838f"},
+        {"bg": "#bbdefb", "border": "#1565c0"},
+        {"bg": "#e1bee7", "border": "#6a1b9a"},
+        {"bg": "#f8bbd0", "border": "#ad1457"},
+        {"bg": "#d7ccc8", "border": "#4e342e"},
+        {"bg": "#f0f4c3", "border": "#9e9d24"},
+        {"bg": "#b2dfdb", "border": "#00695c"},
+        {"bg": "#d1c4e9", "border": "#4527a0"},
+        {"bg": "#ffccbc", "border": "#d84315"},
+        {"bg": "#cfd8dc", "border": "#455a64"}
+    ];
+
+    const SECTOR_STYLES = {
+        "Diretoria": {"bg": "#dbeafe", "border": "#1e40af"},
+        "Núcleo":    {"bg": "#fee2e2", "border": "#991b1b"},
+        "Gerência":  {"bg": "#fef9c3", "border": "#854d0e"},
+        "Unidade":   {"bg": "#d1fae5", "border": "#065f46"}
+    };
+
+    // Estado da Aplicação Global
+    let df = null;
+    let allocated = new Set();
+    let connections = [];
+    let selectedWidgets = [];
+    let connectMode = false;
+    let currentZoom = 1.0;
+    let showGridState = true;
+    let sectorButtonsHidden = false;
+    let bulkDetailsToggle = false;
+    let sectorClipboard = null;
+    let pasteSerial = 0;
+
+    // Conexões e Edições de Pontos
+    let connectStart = null;
+    let activeConn = null;
+    let editingConn = null;
+    let editingStep = null;
+    let editingStartSocket = null;
+
+    // Máquina do Histórico (Undo/Redo Stack)
+    let undoStack = [];
+    let redoStack = [];
+    let pendingUndoState = null;
+    let restoringState = false;
+    const undoMax = 50;
+
+    // Mouse Tracking para Pan e Seleção (Rubber Band)
+    let isPanning = false;
+    let startPanX, startPanY, scrollStartX, scrollStartY;
+    let isSpacePressed = false;
+    let isSelecting = false;
+    let selectionStart = {x: 0, y: 0};
+
+    // Inicialização da Janela Principal
+    window.addEventListener('DOMContentLoaded', () => {
+        centerCanvas();
+        syncCollapseAllButton();
+        maybeShowWhatsNew();
+        setupGlobalEvents();
+    });
+
+    function centerCanvas() {
+        const sa = document.getElementById('ScrollArea');
+        // Centralização física estável baseada na rolagem do container Flex
+        sa.scrollLeft = (5000 - sa.clientWidth) / 2;
+        sa.scrollTop = (5000 - sa.clientHeight) / 2;
+    }
+
+    function setupGlobalEvents() {
+        const sa = document.getElementById('ScrollArea');
+        
+        // Atalhos globais mapeados diretamente dos mapeamentos nativos do PyQt6
+        window.addEventListener('keydown', (e) => {
+            if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'SELECT') return;
+            
+            if (e.code === 'Space') { isSpacePressed = true; sa.style.cursor = 'grab'; }
+            if (e.ctrlKey && e.key.toLowerCase() === 'n') { e.preventDefault(); clearCanvas(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'o') { e.preventDefault(); triggerJsonLoad(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 's') { e.preventDefault(); saveProject(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'e') { e.preventDefault(); exportView(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'z') { e.preventDefault(); undoAction(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'y') { e.preventDefault(); redoAction(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'c') { e.preventDefault(); copySelection(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'v') { e.preventDefault(); pasteClipboard(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'g') { e.preventDefault(); toggleGrid(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'h') { e.preventDefault(); toggleSectorButtons(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'b') { e.preventDefault(); toggleSidebar(); }
+            if (e.ctrlKey && e.key.toLowerCase() === 'f') { e.preventDefault(); fitToContentView(); }
+            if (e.key === 'Delete') { e.preventDefault(); deleteSelection(); }
+            if (e.key === 'F1') { e.preventDefault(); showShortcuts(); }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (connectMode || editingConn || connectStart) {
+                    editingConn = null; editingStep = null; editingStartSocket = null; connectStart = null;
+                    document.getElementById('b_con').checked = false;
+                    if(connectMode) togCon();
+                    updateConnectionsSVG();
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space') { isSpacePressed = false; sa.style.cursor = 'default'; }
+        });
+
+        // Eventos do mouse no ScrollArea para Pan, Seleção e Linha hit-test
+        sa.addEventListener('mousedown', (e) => {
+            const canvas = document.getElementById('Canvas');
+            const rect = canvas.getBoundingClientRect();
+            // CORREÇÃO DA MATRIZ: Ajustado para calcular o clique partindo do novo ponto de origem central (0.5 0.5)
+            const mouseX = (e.clientX - rect.left) / currentZoom;
+            const mouseY = (e.clientY - rect.top) / currentZoom;
+
+            // Ajuste cirúrgico do clique em cima de uma conexão para não bloquear o botão direito do Pan
+            let clickedConn = findConnectionAt(mouseX, mouseY);
+            if (clickedConn && e.button !== 2) {
+                e.preventDefault();
+                showConnectionMenu(clickedConn, e.clientX, e.clientY);
+                return;
+            }
+            document.getElementById('connection-menu').style.display = 'none';
+
+            if (e.button === 1 || e.button === 2 || (e.button === 0 && isSpacePressed)) {
+                // Pan Ativo (Botão do meio, botão direito ou espaço + esquerdo)
+                isPanning = true;
+                sa.style.cursor = 'closedhand';
+                startPanX = e.clientX; startPanY = e.clientY;
+                scrollStartX = sa.scrollLeft; scrollStartY = sa.scrollTop;
+                e.preventDefault();
+            } else if (e.button === 0) {
+                // Seleção Retangular ativa (Rubber Band)
+                if (e.target.id === 'Canvas' || e.target.id === 'canvas-svg' || e.target.id === 'grid-rect') {
+                    clearSelection();
+                    isSelecting = true;
+                    const saRect = sa.getBoundingClientRect();
+                    selectionStart = { x: e.clientX - saRect.left + sa.scrollLeft, y: e.clientY - saRect.top + sa.scrollTop };
+                }
+            }
+        });
+
+        sa.addEventListener('mousemove', (e) => {
+            if (isPanning) {
+                const dx = e.clientX - startPanX;
+                const dy = e.clientY - startPanY;
+                sa.scrollLeft = scrollStartX - dx;
+                sa.scrollTop = scrollStartY - dy;
+            } else if (isSelecting) {
+                const saRect = sa.getBoundingClientRect();
+                const currentX = e.clientX - saRect.left + sa.scrollLeft;
+                const currentY = e.clientY - saRect.top + sa.scrollTop;
+                
+                const rb = document.getElementById('rubber-band');
+                const left = Math.min(selectionStart.x, currentX);
+                const top = Math.min(selectionStart.y, currentY);
+                const width = Math.abs(selectionStart.x - currentX);
+                const height = Math.abs(selectionStart.y - currentY);
+                
+                rb.style.display = 'block';
+                rb.style.left = left + 'px';
+                rb.style.top = top + 'px';
+                rb.style.width = width + 'px';
+                rb.style.height = height + 'px';
+
+                // Hit-Test geométrico PyQt6 nativo intersectando os retângulos lógicos baseados no ponto central
+                const canvas = document.getElementById('Canvas');
+                const cRect = canvas.getBoundingClientRect();
+                const lLeft = (left - sa.scrollLeft + sa.getBoundingClientRect().left - cRect.left) / currentZoom;
+                const lTop = (top - sa.scrollTop + sa.getBoundingClientRect().top - cRect.top) / currentZoom;
+                const lWidth = width / currentZoom;
+                const lHeight = height / currentZoom;
+
+                document.querySelectorAll('.sector-widget').forEach(sw => {
+                    const id = sw.dataset.uid;
+                    const widgetX = parseFloat(sw.dataset.lx);
+                    const widgetY = parseFloat(sw.dataset.ly);
+                    const widgetW = parseFloat(sw.dataset.lw);
+                    const widgetH = parseFloat(sw.dataset.lh);
+
+                    if (widgetX < lLeft + lWidth && widgetX + widgetW > lLeft && widgetY < lTop + lHeight && widgetY + widgetH > lTop) {
+                        if (!selectedWidgets.includes(id)) selectWidget(id, true);
+                    } else {
+                        if (selectedWidgets.includes(id)) deselectWidget(id);
+                    }
+                });
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isPanning) { isPanning = false; sa.style.cursor = isSpacePressed ? 'grab' : 'default'; }
+            if (isSelecting) {
+                isSelecting = false;
+                document.getElementById('rubber-band').style.display = 'none';
+            }
+        });
+
+        // Zoom controlado pelo Scroll da Roda do Mouse ancorado
+        sa.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const step = 0.05;
+            let zoomDelta = e.deltaY < 0 ? step : -step;
+            let newZoom = currentZoom + zoomDelta;
+            if (newZoom < 0.2) newZoom = 0.2;
+            if (newZoom > 3.0) newZoom = 3.0;
+            
+            currentZoom = newZoom;
+            applyZoom();
+        });
+
+        // Impedir menu de contexto do navegador no Canvas para usar botão direito para mover
+        sa.addEventListener('contextmenu', e => e.preventDefault());
+    }
+
+    function applyZoom() {
+        document.getElementById('Canvas').style.transform = `scale(${currentZoom})`;
+        document.getElementById('lbl_zoom').innerText = `${Math.round(currentZoom * 100)}%`;
+        updateConnectionsSVG();
+    }
+
+    // --- ALGORITMOS DE CONEXÕES E HIT-TEST DE DISTÂNCIAS ORTOGONAIS ---
+    function _distPointToSegment(px, py, ax, ay, bx, by) {
+        let abx = bx - ax, aby = by - ay;
+        let apx = px - ax, apy = py - ay;
+        let ab_len2 = abx*abx + aby*aby;
+        if (ab_len2 === 0) return Math.sqrt((px-ax)**2 + (py-ay)**2);
+        let t = (apx*abx + apy*aby) / ab_len2;
+        t = t < 0 ? 0 : (t > 1 ? 1 : t);
+        let cx = ax + t*abx;
+        let cy = ay + t*aby;
+        return Math.sqrt((px-cx)**2 + (py-cy)**2);
+    }
+
+    function _getSocketPoint(uid, posKey) {
+        const sw = document.querySelector(`[data-uid="${uid}"]`);
+        if (!sw) return {x: 0, y: 0};
+        let x = parseFloat(sw.dataset.lx);
+        let y = parseFloat(sw.dataset.ly);
+        let w = parseFloat(sw.dataset.lw);
+        let h = parseFloat(sw.dataset.lh);
+        
+        if (posKey === 'top') return { x: x + w/2, y: y };
+        if (posKey === 'bottom') return { x: x + w/2, y: y + h };
+        if (posKey === 'right') return { x: x + w, y: y + h/2 };
+        return { x: x, y: y + h/2 }; // left
+    }
+
+    function _buildConnPath(conn) {
+        let start = _getSocketPoint(conn.from, conn.startSocket || 'left');
+        let end = _getSocketPoint(conn.to, conn.endSocket || 'left');
+        let startKey = conn.startSocket || 'left';
+        let endKey = conn.endSocket || 'left';
+
+        if (startKey === 'bottom' && endKey === 'top') {
+            let midY = (start.y + end.y) / 2;
+            return [start, {x: start.x, y: midY}, {x: end.x, y: midY}, end];
+        }
+        let leftMargin = Math.min(start.x, end.x) - 40;
+        return [start, {x: leftMargin, y: start.y}, {x: leftMargin, y: end.y}, end];
+    }
+
+    function findConnectionAt(mx, my) {
+        let tol = 5;
+        for (let i = connections.length - 1; i >= 0; i--) {
+            let conn = connections[i];
+            let path = _buildConnPath(conn);
+            for (let j = 0; j < path.length - 1; j++) {
+                let a = path[j], b = path[j+1];
+                if (_distPointToSegment(mx, my, a.x, a.y, b.x, b.y) <= tol) {
+                    return conn;
+                }
+            }
+        }
+        return null;
+    }
+
+    function updateConnectionsSVG() {
+        const group = document.getElementById('svg-connections-group');
+        group.innerHTML = '';
+
+        connections.forEach(conn => {
+            let path = _buildConnPath(conn);
+            if (path.length < 2) return;
+            
+            // Desenhar caminhos lineares no SVG
+            let dAttr = `M ${path[0].x} ${path[0].y}`;
+            for (let i = 1; i < path.length; i++) {
+                dAttr += ` L ${path[i].x} ${path[i].y}`;
+            }
+
+            let pathEl = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            pathEl.setAttribute("d", dAttr);
+            pathEl.setAttribute("stroke", "#000000");
+            pathEl.setAttribute("stroke-width", "2");
+            pathEl.setAttribute("fill", "none");
+            group.appendChild(pathEl);
+
+            // Desenhar elipse/círculo terminal PyQt6
+            let endPt = path[path.length - 1];
+            let circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", endPt.x);
+            circle.setAttribute("cy", endPt.y);
+            circle.setAttribute("r", "3");
+            circle.setAttribute("fill", "#000000");
+            group.appendChild(circle);
+        });
+    }
+
+    // --- ENGENHARIA DA FICHA DE PERSONAGEM TJPE (PANDAS PORTADO) ---
+    function triggerExcelLoad() { document.getElementById('excel-file-input').click(); }
+    function triggerJsonLoad() { document.getElementById('json-file-input').click(); }
+
+    function loadExcel(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const data = evt.target.result;
+            const workbook = XLSX.read(data, {type: 'binary'});
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            // Tratamento vetorial equivalente ao pandas original do TJPE
+            let rawJson = XLSX.utils.sheet_to_json(worksheet, {defval: ""});
+            df = rawJson.map(row => {
+                let cleanRow = {};
+                for (let k in row) cleanRow[String(k).trim().toUpperCase()] = row[k];
+                return cleanRow;
+            });
+
+            if (df.length === 0) return;
+            let firstRow = df[0];
+            let columns = Object.keys(firstRow);
+
+            window.col_n = columns.find(c => c.includes("NOME")) || null;
+            window.col_c = columns.find(c => c.includes("CATEGORIA") || c.includes("VINCULO")) || "CARGO";
+            window.col_s = columns.find(c => ["SECRETARIA", "SUBDIVISAO", "PASTA", "LOTAÇÃO", "UNIDADE"].some(x => c.includes(x))) || null;
+            window.col_t = columns.find(c => c.includes("TEMATICA")) || null;
+
+            if (!window.col_n) { alert("Sem coluna NOME"); return; }
+
+            allocated.clear();
+            const cb_sec = document.getElementById('cb_sec');
+            cb_sec.innerHTML = '<option value="Todas">Todas</option>';
+            
+            if (window.col_s) {
+                let uniqueSecs = [...new Set(df.map(r => String(r[window.col_s])))].filter(x => x !== "").sort();
+                uniqueSecs.forEach(s => {
+                    let opt = document.createElement('option'); opt.value = s; opt.innerText = s; cb_sec.appendChild(opt);
+                });
+            }
+            updSec();
+        };
+        reader.readAsBinaryString(file);
+    }
+
+    function updSec() {
+        if (!df) return;
+        const sel = document.getElementById('cb_sec').value;
+        const cb_set = document.getElementById('cb_set');
+        cb_set.innerHTML = '<option value="Todos">Todos</option>';
+
+        if (window.col_t) {
+            let d = df;
+            if (window.col_s && sel !== "Todas") d = d.filter(r => String(r[window.col_s]) === sel);
+            let uniqueSets = [...new Set(d.map(r => String(r[window.col_t])))].filter(x => x !== "").sort();
+            uniqueSets.forEach(s => {
+                let opt = document.createElement('option'); opt.value = s; opt.innerText = s; cb_set.appendChild(opt);
+            });
+        }
+        filt();
+    }
+
+    function filt() {
+        if (!df) return;
+        const lst = document.getElementById('lst');
+        lst.innerHTML = '';
+        
+        const sec = document.getElementById('cb_sec').value;
+        const st = document.getElementById('cb_set').value;
+        const txt = document.getElementById('txt_search').value.toUpperCase();
+
+        let d = df.filter(r => {
+            if (window.col_s && sec !== "Todas" && String(r[window.col_s]) !== sec) return false;
+            if (window.col_t && st !== "Todos" && String(r[window.col_t]) !== st) return false;
+            if (txt && !String(r[window.col_n]).toUpperCase().includes(txt)) return false;
+            return true;
+        });
+
+        d.sort((a,b) => String(a[window.col_n]).localeCompare(String(b[window.col_n])));
+
+        let count = 0;
+        d.forEach(r => {
+            let n = String(r[window.col_n]);
+            if (allocated.has(n)) return;
+            if (count > 500) return;
+
+            let cg = r[window.col_c] ? String(r[window.col_c]) : "EFETIVO";
+            let li = document.createElement('li');
+            li.className = 'list-item';
+            li.innerText = n;
+            li.dataset.name = n;
+            li.dataset.role = cg;
+            li.setAttribute('draggable', 'true');
+            
+            if (cg.toUpperCase().includes("ESTAGI")) {
+                li.style.color = "#0d47a1"; li.style.backgroundColor = "#e3f2fd";
+            } else {
+                li.style.color = "black"; li.style.backgroundColor = "white";
+            }
+
+            li.addEventListener('dragstart', (evt) => {
+                evt.dataTransfer.setData("text/plain", `${n}|${cg}`);
+            });
+
+            lst.appendChild(li);
+            count++;
+        });
+        document.getElementById('lbl_n').innerText = `${count} disponíveis`;
+    }
+
+    // --- FABRICAÇÃO E GERENCIAMENTO DOS QUADROS (SECTOR WIDGET) ---
+    function openNewSectorModal(targetWidgetId = null, childType = null) {
+        beginUndoCapture();
+        const modal = document.getElementById('sector-modal');
+        modal.style.display = 'flex';
+        
+        const nameInput = document.getElementById('modal-sector-name');
+        const typeSelect = document.getElementById('modal-sector-type');
+        const fontOpts = document.getElementById('modal-font-options');
+        
+        nameInput.value = targetWidgetId ? document.querySelector(`[data-uid="${targetWidgetId}"]`).dataset.name : "";
+        if (childType) { typeSelect.value = childType; typeSelect.disabled = true; } 
+        else { typeSelect.value = "Diretoria"; typeSelect.disabled = false; }
+
+        if(targetWidgetId && !childType) {
+            fontOpts.style.display = 'block';
+            document.getElementById('modal-title').innerText = "Editar Setor";
+            let w = document.querySelector(`[data-uid="${targetWidgetId}"]`);
+            document.getElementById('modal-font-title').value = w.dataset.title_font_base || 12;
+            document.getElementById('modal-font-people').value = w.dataset.people_font_base || 11;
+        } else {
+            fontOpts.style.display = 'none';
+            document.getElementById('modal-title').innerText = "Novo Setor";
+        }
+
+        document.getElementById('modal-cancel-btn').onclick = () => { modal.style.display = 'none'; commitUndoCapture(false); };
+        document.getElementById('modal-ok-btn').onclick = () => {
+            let hn = nameInput.value.trim();
+            let ht = typeSelect.value;
+            modal.style.display = 'none';
+
+            if(targetWidgetId && !childType) {
+                let sw = document.querySelector(`[data-uid="${targetWidgetId}"]`);
+                sw.dataset.name = hn;
+                sw.dataset.title_font_base = document.getElementById('modal-font-title').value;
+                sw.dataset.people_font_base = document.getElementById('modal-font-people').value;
+                refreshGeometry(targetWidgetId);
+                updateStats();
+                commitUndoCapture(true);
+            } else {
+                let nx = null, ny = null;
+                if(targetWidgetId && childType) {
+                    let p = document.querySelector(`[data-uid="${targetWidgetId}"]`);
+                    let px = parseFloat(p.dataset.lx), py = parseFloat(p.dataset.ly), ph = parseFloat(p.dataset.lh), pw = parseFloat(p.dataset.lw);
+                    if (p.dataset.type === "Diretoria" && ["Núcleo", "Gerência"].includes(childType)) {
+                        nx = px; ny = py + ph + 60;
+                    } else if (["Núcleo", "Gerência"].includes(p.dataset.type) && childType === "Diretoria") {
+                        nx = px; ny = py - 400;
+                    } else {
+                        nx = px + pw + 60; ny = py;
+                    }
+                }
+                let spawned = spawn(nx, ny, hn, ht);
+                commitUndoCapture(spawned ? true : false);
+            }
+        };
+    }
+
+    function spawn(x, y, hn = "", ht = "Diretoria", w = 270, h = 360, color_idx = null, uid = null) {
+        if (x === null || y === null) {
+            // Spawn centralizado calibrado com base no plano estável 5000x5000
+            x = 2500 - w / 2;
+            y = 2500 - h / 2;
+        }
+        if (!uid) uid = crypto.randomUUID();
+        if (hn === "") { openNewSectorModal(null, null); return null; }
+
+        const container = document.getElementById('widgets-container');
+        const sw = document.createElement('div');
+        sw.className = 'sector-widget';
+        sw.dataset.uid = uid;
+        sw.dataset.lx = x; sw.dataset.ly = y; sw.dataset.lw = w; sw.dataset.lh = h;
+        sw.dataset.name = hn; sw.dataset.type = ht;
+        sw.dataset.collapsed = "false";
+        sw.dataset.expanded_h = h;
+        sw.dataset.title_font_base = 12;
+        sw.dataset.people_font_base = 11;
+        if (color_idx !== null) sw.dataset.color_idx = color_idx;
+
+        sw.innerHTML = `
+            <div class="sector-header">
+                <button class="color-picker-trigger" title="Mudar Cor">🎨</button>
+                <button class="edit-trigger" title="Editar (nome e fontes)">✏️</button>
+                <div class="sector-title">${hn}</div>
+                <button class="toggle-details-btn" title="Mostrar/ocultar Chefia e Equipe">-</button>
+                <button class="danger close-btn" title="Excluir setor">X</button>
+            </div>
+            <div class="details-container">
+                <div class="separator-line"></div>
+                <div class="zone-title lbl-chefia">CHEFIA</div>
+                <div class="drop-zone boss-zone" data-zone="boss"></div>
+                <div class="zone-title lbl-equipe">EQUIPE</div>
+                <div class="team-scroll">
+                    <div class="drop-zone team-zone" data-zone="team"></div>
+                </div>
+                <div class="child-bar" style="display:flex; gap:2px; margin-top:2px;"></div>
+            </div>
+            <div class="resize-handle"></div>
+            <div class="socket top" data-pos="top"></div>
+            <div class="socket bottom" data-pos="bottom"></div>
+            <div class="socket left" data-pos="left"></div>
+            <div class="socket right" data-pos="right"></div>
+        `;
+
+        container.appendChild(sw);
+        setupSectorEvents(sw);
+        refreshGeometry(uid);
+        updateStats();
+        return sw;
+    }
+
+    function setupSectorEvents(sw) {
+        const uid = sw.dataset.uid;
+        let isMoving = false;
+        let sStartX, sStartY;
+
+        sw.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('resize-handle') || e.target.classList.contains('socket') || e.target.tagName === 'BUTTON') return;
+            if (connectMode) { handleConnectionClick(uid); return; }
+
+            beginUndoCapture();
+            isMoving = true;
+            sStartX = e.clientX; sStartY = e.clientY;
+            
+            if (!e.ctrlKey && !selectedWidgets.includes(uid)) clearSelection();
+            if (!selectedWidgets.includes(uid)) selectWidget(uid, e.ctrlKey);
+
+            sw.style.zIndex = 100;
+            e.stopPropagation();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isMoving) return;
+            let dx = (e.clientX - sStartX) / currentZoom;
+            let dy = (e.clientY - sStartY) / currentZoom;
+            
+            selectedWidgets.forEach(id => {
+                const target = document.querySelector(`[data-uid="${id}"]`);
+                let nx = parseFloat(target.dataset.lx) + dx;
+                let ny = parseFloat(target.dataset.ly) + dy;
+                
+                if (showGridState && !e.altKey) {
+                    nx = Math.round(nx / 40) * 40;
+                    ny = Math.round(ny / 40) * 40;
+                }
+                
+                target.dataset.lx = nx;
+                target.dataset.ly = ny;
+                refreshGeometry(id);
+            });
+            sStartX = e.clientX; sStartY = e.clientY;
+            updateConnectionsSVG();
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isMoving) { isMoving = false; sw.style.zIndex = 10; commitUndoCapture(true); }
+        });
+
+        sw.querySelector('.close-btn').onclick = () => removeSector(uid);
+        sw.querySelector('.edit-trigger').onclick = () => openNewSectorModal(uid, null);
+        sw.querySelector('.toggle-details-btn').onclick = () => toggleDetailsSection(uid);
+        
+        sw.querySelector('.color-picker-trigger').onclick = (e) => {
+            clearSelection();
+            let idx = (parseInt(sw.dataset.color_idx) || 0) + 1;
+            if (idx >= PALETTE.length) idx = 0;
+            sw.dataset.color_idx = idx;
+            beginUndoCapture();
+            refreshGeometry(uid);
+            commitUndoCapture(true);
+        };
+
+        sw.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', (evt) => evt.preventDefault());
+            zone.addEventListener('drop', (evt) => {
+                evt.preventDefault();
+                let rawData = evt.dataTransfer.getData("text/plain");
+                if (!rawData) return;
+                let parts = rawData.split("|");
+                if (parts.length < 2) return;
+
+                createPersonCard(zone, parts[0], parts[1]);
+                allocated.add(parts[0]);
+                filt();
+                updateStats();
+            });
+        });
+
+        const handle = sw.querySelector('.resize-handle');
+        let isResizing = false;
+        let rStartX, rStartY, rStartW, rStartH;
+
+        handle.addEventListener('mousedown', (e) => {
+            e.stopPropagation(); e.preventDefault();
+            beginUndoCapture();
+            isResizing = true;
+            rStartX = e.clientX; rStartY = e.clientY;
+            rStartW = parseFloat(sw.dataset.lw); rStartH = parseFloat(sw.dataset.lh);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            let dw = (e.clientX - rStartX) / currentZoom;
+            let dh = (e.clientY - rStartY) / currentZoom;
+            
+            let nw = Math.max(150, rStartW + dw);
+            let nh = Math.max(200, rStartH + dh);
+
+            if (showGridState && !e.altKey) {
+                nw = Math.round(nw / 40) * 40;
+                nh = Math.round(nh / 40) * 40;
+            }
+
+            sw.dataset.lw = nw;
+            sw.dataset.lh = nh;
+            sw.dataset.expanded_h = nh;
+            refreshGeometry(uid);
+            updateConnectionsSVG();
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isResizing) { isResizing = false; commitUndoCapture(true); }
+        });
+
+        sw.querySelectorAll('.socket').forEach(sock => {
+            sock.onclick = (e) => {
+                e.stopPropagation();
+                handleSocketClick(uid, sock.dataset.pos);
+            };
+        });
+    }
+
+    function refreshGeometry(uid) {
+        const sw = document.querySelector(`[data-uid="${uid}"]`);
+        if (!sw) return;
+
+        let lx = parseFloat(sw.dataset.lx), ly = parseFloat(sw.dataset.ly);
+        let lw = parseFloat(sw.dataset.lw), lh = parseFloat(sw.dataset.lh);
+        let ht = sw.dataset.type;
+        let collapsed = sw.dataset.collapsed === "true";
+
+        let bg = "#ffffff", border = "#000000";
+        if (sw.dataset.color_idx !== undefined) {
+            let c = PALETTE[parseInt(sw.dataset.color_idx)];
+            bg = c.bg; border = c.border;
+        } else {
+            let s = SECTOR_STYLES[ht] || SECTOR_STYLES["Unidade"];
+            bg = s.bg; border = s.border;
+        }
+
+        if (selectedWidgets.includes(uid)) { border = "#ff6600"; sw.style.borderWidth = "4px"; } 
+        else { sw.style.borderWidth = "2px"; }
+
+        sw.style.left = lx + 'px';
+        sw.style.top = ly + 'px';
+        sw.style.width = lw + 'px';
+        sw.style.height = lh + 'px';
+        sw.style.backgroundColor = bg;
+        sw.style.borderColor = border;
+
+        let baseW = 270, baseH = 360;
+        let wRatio = lw / baseW;
+        let hRatio = lh / baseH;
+        let sizeScale = collapsed ? Math.pow(wRatio, 0.5) : Math.pow(Math.min(wRatio, hRatio), 0.5);
+
+        let tFont = Math.max(6, Math.min(96, parseInt(sw.dataset.title_font_base) * sizeScale));
+        let pFont = Math.max(6, Math.min(96, parseInt(sw.dataset.people_font_base) * sizeScale));
+
+        sw.querySelector('.sector-title').style.fontSize = tFont + 'px';
+        sw.querySelectorAll('.zone-title').forEach(el => el.style.fontSize = (pFont * 0.9) + 'px');
+        sw.querySelectorAll('.person-card').forEach(el => el.style.fontSize = pFont + 'px');
+
+        const bar = sw.querySelector('.child-bar');
+        bar.innerHTML = '';
+        let opts = [];
+        if (ht === "Diretoria") opts = ["Núcleo", "Gerência"];
+        else if (["Núcleo", "Gerência"].includes(ht)) opts = ["Unidade", "Diretoria"];
+
+        if (opts.length > 0 && !sectorButtonsHidden) {
+            opts.forEach(o => {
+                let b = document.createElement('button');
+                b.className = 'child-btn';
+                b.innerText = `+ ${o}`;
+                b.onclick = () => openNewSectorModal(uid, o);
+                bar.appendChild(b);
+            });
+        }
+
+        let s = 12;
+        sw.querySelector('.socket.top').style.left = ((lw - s)/2) + 'px'; sw.querySelector('.socket.top').style.top = (-s/2) + 'px';
+        sw.querySelector('.socket.bottom').style.left = ((lw - s)/2) + 'px'; sw.querySelector('.socket.bottom').style.top = (lh - s/2) + 'px';
+        sw.querySelector('.socket.left').style.left = (-s/2) + 'px'; sw.querySelector('.socket.left').style.top = ((lh - s)/2) + 'px';
+        sw.querySelector('.socket.right').style.left = (lw - s/2) + 'px'; sw.querySelector('.socket.right').style.top = ((lh - s)/2) + 'px';
+    }
+
+    function createPersonCard(zoneElement, name, role) {
+        let card = document.createElement('div');
+        card.className = 'person-card';
+        card.dataset.name = name;
+        card.dataset.role = role.toUpperCase();
+
+        if (role.toUpperCase().includes("ESTAGI")) {
+            card.style.backgroundColor = "#eff6ff"; card.style.borderColor = "#1d4ed8"; card.style.borderLeftWidth = "8px";
+        } else {
+            card.style.backgroundColor = "#ffffff"; card.style.borderColor = "#000000"; card.style.borderLeftWidth = "6px";
+        }
+
+        card.innerHTML = `
+            <div class="person-info">${name}<br><small style="font-size:0.85em; opacity:0.7;">${role.toUpperCase()}</small></div>
+            <button class="return-btn" title="Devolver para a lista">↩</button>
+        `;
+
+        card.querySelector('.return-btn').onclick = (e) => {
+            e.stopPropagation();
+            allocated.delete(name);
+            card.remove();
+            filt();
+            updateStats();
+        };
+
+        zoneElement.appendChild(card);
+    }
+
+    function toggleDetailsSection(uid) {
+        const sw = document.querySelector(`[data-uid="${uid}"]`);
+        let collapsed = sw.dataset.collapsed === "true";
+        beginUndoCapture();
+        
+        if (!collapsed) {
+            sw.dataset.collapsed = "true";
+            sw.querySelector('.details-container').style.display = 'none';
+            sw.querySelector('.toggle-details-btn').innerText = '+';
+            sw.dataset.expanded_h = sw.dataset.lh;
+            sw.dataset.lh = Math.max(70, Math.min(140, parseFloat(sw.dataset.lw) * 0.35));
+        } else {
+            sw.dataset.collapsed = "false";
+            sw.querySelector('.details-container').style.display = 'flex';
+            sw.querySelector('.toggle-details-btn').innerText = '-';
+            sw.dataset.lh = sw.dataset.expanded_h;
+        }
+        refreshGeometry(uid);
+        updateConnectionsSVG();
+        if (!bulkDetailsToggle) syncCollapseAllButton();
+        commitUndoCapture(true);
+    }
+
+    function removeSector(uid) {
+        beginUndoCapture();
+        const sw = document.querySelector(`[data-uid="${uid}"]`);
+        if (!sw) return;
+
+        sw.querySelectorAll('.person-card').forEach(card => {
+            allocated.delete(card.dataset.name);
+        });
+
+        connections = connections.filter(c => c.from !== uid && c.to !== uid);
+        deselectWidget(uid);
+        sw.remove();
+        filt();
+        updateConnectionsSVG();
+        updateStats();
+        commitUndoCapture(true);
+    }
+
+    // --- REGRAS SELEÇÃO E CONTROLES SUPERIORES ---
+    function selectWidget(uid, isCtrl) {
+        if (!isCtrl && !selectedWidgets.includes(uid)) clearSelection();
+        if (!selectedWidgets.includes(uid)) {
+            selectedWidgets.push(uid);
+            refreshGeometry(uid);
+        }
+    }
+    function deselectWidget(uid) {
+        selectedWidgets = selectedWidgets.filter(id => id !== uid);
+        refreshGeometry(uid);
+    }
+    function clearSelection() {
+        let copy = [...selectedWidgets];
+        selectedWidgets = [];
+        copy.forEach(id => refreshGeometry(id));
+    }
+
+    function toggleSidebar() {
+        const sb = document.getElementById('Sidebar');
+        sb.style.marginLeft = sb.style.marginLeft === '-320px' ? '0px' : '-320px';
+    }
+
+    // Grid e Elementos Estéticos
+    function toggleGrid() {
+        showGridState = !showGridState;
+        document.getElementById('grid-rect').style.display = showGridState ? 'block' : 'none';
+        document.getElementById('b_grid').classList.toggle('warning', !showGridState);
+    }
+
+    function toggleSectorButtons() {
+        sectorButtonsHidden = !sectorButtonsHidden;
+        document.getElementById('b_hide_buttons').innerText = sectorButtonsHidden ? '🙈 BOTÕES' : '👁 BOTÕES';
+        document.getElementById('b_hide_buttons').classList.toggle('warning', sectorButtonsHidden);
+        
+        document.querySelectorAll('.sector-widget').forEach(sw => {
+            sw.querySelector('.color-picker-trigger').style.display = sectorButtonsHidden ? 'none' : 'block';
+            sw.querySelector('.edit-trigger').style.display = sectorButtonsHidden ? 'none' : 'block';
+            sw.querySelector('.toggle-details-btn').style.display = sectorButtonsHidden ? 'none' : 'block';
+            sw.querySelector('.close-btn').style.display = sectorButtonsHidden ? 'none' : 'block';
+            sw.querySelector('.resize-handle').style.display = sectorButtonsHidden ? 'none' : 'block';
+            refreshGeometry(sw.dataset.uid);
+        });
+    }
+
+    function toggleAllDetails() {
+        let sectors = document.querySelectorAll('.sector-widget');
+        if (sectors.length === 0) return;
+        
+        let allCollapsed = [...sectors].every(s => s.dataset.collapsed === "true");
+        let target = !allCollapsed;
+
+        beginUndoCapture();
+        bulkDetailsToggle = true;
+        sectors.forEach(s => {
+            if ((s.dataset.collapsed === "true") !== target) {
+                toggleDetailsSection(s.dataset.uid);
+            }
+        });
+        bulkDetailsToggle = false;
+        syncCollapseAllButton();
+        commitUndoCapture(true);
+    }
+
+    function syncCollapseAllButton() {
+        let sectors = document.querySelectorAll('.sector-widget');
+        const btn = document.getElementById('b_collapse_all');
+        if (sectors.length === 0) { btn.innerText = '− TODOS'; return; }
+        
+        let allCollapsed = [...sectors].every(s => s.dataset.collapsed === "true");
+        let allExpanded = [...sectors].every(s => s.dataset.collapsed === "false");
+
+        if (allCollapsed) btn.innerText = '+ TODOS';
+        else if (allExpanded) btn.innerText = '− TODOS';
+        else btn.innerText = '± TODOS';
+    }
+
+    function clearCanvas() {
+        if (!confirm("Tem certeza que deseja apagar todos os quadros?")) return;
+        beginUndoCapture();
+        connections = [];
+        selectedWidgets = [];
+        allocated.clear();
+        document.getElementById('widgets-container').innerHTML = '';
+        updateConnectionsSVG();
+        filt();
+        updateStats();
+        commitUndoCapture(true);
+    }
+
+    // --- REGRAS DE COPYS E CLIPBOARDS ENTRE QUADROS ---
+    function copySelection() {
+        if (selectedWidgets.length === 0) return;
+        let copiedSectors = [];
+        
+        let minX = Infinity, minY = Infinity;
+        selectedWidgets.forEach(id => {
+            let sw = document.querySelector(`[data-uid="${id}"]`);
+            let lx = parseFloat(sw.dataset.lx), ly = parseFloat(sw.dataset.ly);
+            if (lx < minX) minX = lx; if (ly < minY) minY = ly;
+        });
+
+        selectedWidgets.forEach(id => {
+            let sw = document.querySelector(`[data-uid="${id}"]`);
+            let bosses = [], teams = [];
+            sw.querySelectorAll('.boss-zone .person-card').forEach(c => bosses.push({name: c.dataset.name, role: c.dataset.role}));
+            sw.querySelectorAll('.team-zone .person-card').forEach(c => teams.push({name: c.dataset.name, role: c.dataset.role}));
+
+            copiedSectors.push({
+                uid: id,
+                name: sw.dataset.name,
+                type_sector: sw.dataset.type,
+                dx: parseFloat(sw.dataset.lx) - minX,
+                dy: parseFloat(sw.dataset.ly) - minY,
+                w: parseFloat(sw.dataset.lw),
+                h: parseFloat(sw.dataset.lh),
+                color_idx: sw.dataset.color_idx !== undefined ? parseInt(sw.dataset.color_idx) : null,
+                title_font_base: parseInt(sw.dataset.title_font_base),
+                people_font_base: parseInt(sw.dataset.people_font_base)
+            });
+        });
+
+        let uids = new Set(selectedWidgets);
+        let copiedConns = connections.filter(c => uids.has(c.from) && uids.has(c.to)).map(c => ({
+            from: c.from, to: c.to, startSocket: c.startSocket, endSocket: c.endSocket
+        }));
+
+        sectorClipboard = { sectors: copiedSectors, connections: copiedConns };
+        pasteSerial = 0;
+    }
+
+    function pasteClipboard() {
+        if (!sectorClipboard) return;
+        beginUndoCapture();
+
+        // Colagem ancorada e centralizada no plano estático absoluto
+        let cx = 2500;
+        let cy = 2500;
+
+        let nudge = (pasteSerial + 1) * 20;
+        pasteSerial++;
+
+        let oldToNew = {};
+        let newIds = [];
+
+        sectorClipboard.sectors.forEach(s => {
+            let nx = cx + s.dx + nudge - s.w/2;
+            let ny = cy + s.dy + nudge - s.h/2;
+            let nId = crypto.randomUUID();
+            oldToNew[s.uid] = nId;
+
+            let sw = spawn(nx, ny, s.name, s.type_sector, s.w, s.h, s.color_idx, nId);
+            sw.dataset.title_font_base = s.title_font_base;
+            sw.dataset.people_font_base = s.people_font_base;
+            
+            let bZone = sw.querySelector('.boss-zone');
+            let tZone = sw.querySelector('.team-zone');
+            s.bosses.forEach(p => { createPersonCard(bZone, p.name, p.role); allocated.add(p.name); });
+            s.teams.forEach(p => { createPersonCard(tZone, p.name, p.role); allocated.add(p.name); });
+
+            refreshGeometry(nId);
+            newIds.push(nId);
+        });
+
+        sectorClipboard.connections.forEach(c => {
+            connections.push({
+                id: crypto.randomUUID(),
+                from: oldToNew[c.from],
+                to: oldToNew[c.to],
+                startSocket: c.startSocket,
+                endSocket: c.endSocket
+            });
+        });
+
+        clearSelection();
+        newIds.forEach(id => selectWidget(id, true));
+        updateConnectionsSVG();
+        filt();
+        updateStats();
+        commitUndoCapture(true);
+    }
+
+    function deleteSelection() {
+        if (selectedWidgets.length === 0) return;
+        beginUndoCapture();
+        let list = [...selectedWidgets];
+        list.forEach(id => {
+            let sw = document.querySelector(`[data-uid="${id}"]`);
+            if (sw) sw.remove();
+            connections = connections.filter(c => c.from !== id && c.to !== id);
+        });
+        selectedWidgets = [];
+        updateConnectionsSVG();
+        filt();
+        updateStats();
+        commitUndoCapture(true);
+    }
+
+    // --- CONEXÕES VIA MARCADORES SOCKETS ---
+    function togCon() {
+        connectMode = !connectMode;
+        document.querySelectorAll('.socket').forEach(s => s.style.display = connectMode ? 'block' : 'none');
+        const btn = document.getElementById('b_con');
+        btn.innerText = connectMode ? "SELECIONE A SAÍDA..." : "🔗 CONECTAR";
+        btn.classList.toggle('success', connectMode);
+        connectStart = null;
+    }
+
+    function toggleConnectModeFromMenu() {
+        togCon();
+    }
+
+    function handleSocketClick(uid, posKey) {
+        if (!connectMode && !editingConn) return;
+
+        if (editingConn) {
+            beginUndoCapture();
+            if (editingStep === "start") {
+                if (uid !== editingConn.from) { alert("Clique um ponto NO SETOR DE ORIGEM."); return; }
+                editingStartSocket = posKey;
+                editingStep = "end";
+                alert("Agora clique um ponto NO SETOR DE DESTINO (entrada).");
+            } else if (editingStep === "end") {
+                if (uid !== editingConn.to) { alert("Clique um ponto NO SETOR DE DESTINO."); return; }
+                editingConn.startSocket = editingStartSocket;
+                editingConn.endSocket = posKey;
+                editingConn = null; editingStep = null; editingStartSocket = null;
+                togCon();
+                updateConnectionsSVG();
+                commitUndoCapture(true);
+            }
+            return;
+        }
+
+        if (!connectStart) {
+            connectStart = { from: uid, socket: posKey };
+            document.getElementById('b_con').innerText = "SELECIONE A ENTRADA...";
+            document.querySelector(`[data-uid="${uid}"] [data-pos="${posKey}"]`).classList.add('active-start');
+        } else {
+            if (connectStart.from === uid) { alert("Saída e entrada não podem ser no mesmo setor."); return; }
+            beginUndoCapture();
+            connections.push({
+                id: crypto.randomUUID(),
+                from: connectStart.from,
+                to: uid,
+                startSocket: connectStart.socket,
+                endSocket: posKey
+            });
+            document.querySelector(`[data-uid="${connectStart.from}"] [data-pos="${connectStart.socket}"]`).classList.remove('active-start');
+            togCon();
+            updateConnectionsSVG();
+            commitUndoCapture(true);
+        }
+    }
+
+    function handleConnectionClick(wId) {
+        alert("Agora a conexão é por pontos (bolinhas). Clique em uma bolinha de SAÍDA e depois em uma bolinha de ENTRADA.");
+    }
+
+    function showConnectionMenu(conn, clientX, clientY) {
+        activeConn = conn;
+        const menu = document.getElementById('connection-menu');
+        menu.style.display = 'block';
+        menu.style.left = clientX + 'px';
+        menu.style.top = clientY + 'px';
+    }
+
+    function deleteConnection() {
+        if (!activeConn) return;
+        beginUndoCapture();
+        connections = connections.filter(c => c.id !== activeConn.id);
+        activeConn = null;
+        document.getElementById('connection-menu').style.display = 'none';
+        updateConnectionsSVG();
+        commitUndoCapture(true);
+    }
+
+    function invertConnection() {
+        if (!activeConn) return;
+        beginUndoCapture();
+        let tmp = activeConn.from; activeConn.from = activeConn.to; activeConn.to = tmp;
+        let tmpS = activeConn.startSocket; activeConn.startSocket = activeConn.endSocket; activeConn.endSocket = tmpS;
+        activeConn = null;
+        document.getElementById('connection-menu').style.display = 'none';
+        updateConnectionsSVG();
+        commitUndoCapture(true);
+    }
+
+    function beginEditConnectionPoints() {
+        if (!activeConn) return;
+        editingConn = activeConn;
+        editingStep = "start";
+        editingStartSocket = null;
+        document.getElementById('connection-menu').style.display = 'none';
+        if (!connectMode) togCon();
+        alert("Clique um ponto NO SETOR DE ORIGEM (saída).");
+    }
+
+    // --- HISTÓRICO DE CAPTURAS COMPLETO (UNDO/REDO MOTOR) ---
+    function _captureStateDict() {
+        let state = { sectors: [], connections: [] };
+        document.querySelectorAll('.sector-widget').forEach(sw => {
+            let b = [], t = [];
+            sw.querySelectorAll('.boss-zone .person-card').forEach(c => b.push({name: c.dataset.name, role: c.dataset.role}));
+            sw.querySelectorAll('.team-zone .person-card').forEach(c => t.push({name: c.dataset.name, role: c.dataset.role}));
+            state.sectors.push({
+                uid: sw.dataset.uid,
+                name: sw.dataset.name,
+                type: sw.dataset.type,
+                x: parseInt(sw.dataset.lx), y: parseInt(sw.dataset.ly),
+                w: parseInt(sw.dataset.lw), h: parseInt(sw.dataset.lh),
+                color_idx: sw.dataset.color_idx !== undefined ? parseInt(sw.dataset.color_idx) : null,
+                title_font: parseInt(sw.dataset.title_font_base),
+                people_font: parseInt(sw.dataset.people_font_base),
+                details_collapsed: sw.dataset.collapsed === "true",
+                expanded_h: parseInt(sw.dataset.expanded_h),
+                bosses: b, teams: t
+            });
+        });
+        state.connections = connections.map(c => ({ from: c.from, to: c.to, startSocket: c.startSocket, endSocket: c.endSocket, id: c.id }));
+        return state;
+    }
+
+    function beginUndoCapture() {
+        if (restoringState) return;
+        if (pendingUndoState === null) pendingUndoState = _captureStateDict();
+    }
+
+    function commitUndoCapture(changed) {
+        if (restoringState) { pendingUndoState = null; return; }
+        let st = pendingUndoState;
+        pendingUndoState = null;
+        if (!changed || st === null) return;
+        undoStack.push(st);
+        if (undoStack.length > undoMax) undoStack.shift();
+        redoStack = [];
+    }
+
+    function undoAction() {
+        if (undoStack.length === 0) return;
+        let current = _captureStateDict();
+        let prev = undoStack.pop();
+        redoStack.push(current);
+        _restoreStateDict(prev);
+    }
+
+    function redoAction() {
+        if (redoStack.length === 0) return;
+        let current = _captureStateDict();
+        let nxt = redoStack.pop();
+        undoStack.push(current);
+        _restoreStateDict(nxt);
+    }
+
+    function _restoreStateDict(state) {
+        restoringState = true;
+        document.getElementById('widgets-container').innerHTML = '';
+        connections = [];
+        allocated.clear();
+        selectedWidgets = [];
+
+        state.sectors.forEach(s => {
+            let sw = spawn(s.x, s.y, s.name, s.type, s.w, s.h, s.color_idx, s.uid);
+            sw.dataset.title_font_base = s.title_font;
+            sw.dataset.people_font_base = s.people_font;
+            sw.dataset.collapsed = s.details_collapsed ? "true" : "false";
+            sw.dataset.expanded_h = s.expanded_h;
+
+            let bZone = sw.querySelector('.boss-zone');
+            let tZone = sw.querySelector('.team-zone');
+            s.bosses.forEach(p => { createPersonCard(bZone, p.name, p.role); allocated.add(p.name); });
+            s.teams.forEach(p => { createPersonCard(tZone, p.name, p.role); allocated.add(p.name); });
+
+            if (s.details_collapsed) {
+                sw.querySelector('.details-container').style.display = 'none';
+                sw.querySelector('.toggle-details-btn').innerText = '+';
+            }
+            refreshGeometry(s.uid);
+        });
+
+        connections = state.connections.map(c => ({ ...c, id: c.id || crypto.randomUUID() }));
+        updateConnectionsSVG();
+        filt();
+        updateStats();
+        syncCollapseAllButton();
+        restoringState = false;
+    }
+
+    // --- EXPORTAÇÃO JSON / IMAGENS ---
+    function saveProject() {
+        let state = _captureStateDict();
+        let blob = new Blob([JSON.stringify(state, null, 2)], {type: "application/json;charset=utf-8"});
+        let a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = "organograma.json";
+        a.click();
+    }
+
+    function loadProject(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            let d = JSON.parse(evt.target.result);
+            _restoreStateDict(d);
+        };
+        reader.readAsText(file);
+    }
+
+    function updateStats() {
+        const tbody = document.getElementById('tbl_stats_body');
+        tbody.innerHTML = '';
+        let total = 0;
+        
+        document.querySelectorAll('.sector-widget').forEach(sw => {
+            let count = sw.querySelectorAll('.person-card').length;
+            total += count;
+            let tr = document.createElement('tr');
+            tr.innerHTML = `<td>${sw.dataset.name}</td><td>${count}</td>`;
+            tbody.appendChild(tr);
+        });
+
+        let trTotal = document.createElement('tr');
+        trTotal.innerHTML = `<strong><td>TOTAL</td><td>${total}</td></strong>`;
+        tbody.appendChild(trTotal);
+    }
+
+    function fitToContentView() {
+        let sectors = document.querySelectorAll('.sector-widget');
+        if (sectors.length === 0) return;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        sectors.forEach(s => {
+            let x = parseFloat(s.dataset.lx), y = parseFloat(s.dataset.ly);
+            let w = parseFloat(s.dataset.lw), h = parseFloat(s.dataset.lh);
+            if (x < minX) minX = x; if (y < minY) minY = y;
+            if (x + w > maxX) maxX = x + w; if (y + h > maxY) maxY = y + h;
+        });
+        const sa = document.getElementById('ScrollArea');
+        let bw = maxX - minX, bh = maxY - minY;
+        let z = Math.min((sa.clientWidth - 80) / bw, (sa.clientHeight - 80) / bh);
+        currentZoom = Math.max(0.2, Math.min(3.0, z));
+        applyZoom();
+        sa.scrollLeft = (minX + maxX) / 2 * currentZoom - sa.clientWidth / 2;
+        sa.scrollTop = (minY + maxY) / 2 * currentZoom - sa.clientHeight / 2;
+    }
+
+    function resetZoomView() { currentZoom = 1.0; applyZoom(); centerCanvas(); }
+    function changeZoom(delta) { currentZoom = Math.max(0.2, Math.min(3.0, currentZoom + delta)); applyZoom(); }
+
+    function exportView() {
+        alert("Para exportar uma imagem perfeita, utilize o atalho de Impressão (Ctrl+P ou Exportar PDF), selecione 'Salvar como PDF' ou use a captura de tela nativa do seu sistema.");
+    }
+
+    // --- MODAIS FLUTUANTES ---
+    function maybeShowWhatsNew() {
+        if (localStorage.getItem("organomaker_TJPE_seen_whatsnew") === "true") return;
+        document.getElementById('whatsnew-modal').style.display = 'flex';
+    }
+    function closeWhatsNew() {
+        if (document.getElementById('whatsnew-dont-show').checked) {
+            localStorage.setItem("organomaker_TJPE_seen_whatsnew", "true");
+        }
+        document.getElementById('whatsnew-modal').style.display = 'none';
+    }
+    function showShortcuts() {
+        alert("Atalhos principais:\n\nCtrl+N - Nova tela\nCtrl+O - Abrir JSON\nCtrl+S - Salvar JSON\nCtrl+E - Exportar imagem\nCtrl+Shift+E - Exportar PDF\nCtrl+Shift+N - Novo setor\nCtrl+K - Modo Conectar\nEsc - Sair dos modos de edição\nDel - Excluir selecionados");
+    }
+    function showAbout() { alert("Organomaker TJPE Web\n\nPortabilidade 100% fiel executada com sucesso."); }
+</script>
+</body>
+</html>

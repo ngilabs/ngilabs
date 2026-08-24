@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BPMN (single file)</title>
+
+  <!-- CDN: precisa de internet. Se quiser 100% offline, dá pra embutir os .js locais (fica bem grande). -->
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@latest/dist/assets/diagram-js.css" />
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@latest/dist/assets/bpmn-js.css" />
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@latest/dist/assets/bpmn-font/css/bpmn.css" />
+  <script src="https://unpkg.com/bpmn-js@latest/dist/bpmn-modeler.development.js"></script>
+
+  <style>
+    html, body { margin:0; height:100%; font-family:Segoe UI, system-ui, sans-serif; background:#f3f4f6; overflow:hidden; }
+    .topbar { height:52px; display:flex; align-items:center; justify-content:space-between;
+              padding:0 12px; background:#fff; border-bottom:1px solid #e5e7eb;
+              position:fixed; top:0; left:0; right:0; z-index:50; }
+    .brand { font-weight:600; white-space:nowrap; }
+    .actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+    .actions button { padding:8px 10px; border:1px solid #d1d5db;
+                      background:#fff; border-radius:8px; cursor:pointer; }
+    .actions button:hover { background:#f9fafb; }
+    .fontctl { display:flex; align-items:center; gap:6px; padding-left:10px; margin-left:4px; border-left:1px solid #e5e7eb; }
+    .fontctl .lbl { font-size:12px; color:#374151; }
+    .fontctl .val { font-size:12px; min-width:46px; text-align:center; color:#111827; }
+    .fontctl button { padding:6px 8px; }
+
+/* Paleta de cores estilo bpmn.io (pequena e discreta) */
+.palette {
+  position: fixed;
+  z-index: 2000;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  box-shadow: 0 10px 25px rgba(0,0,0,.12);
+  padding: 10px;
+  display: none;
+  user-select: none;
+}
+.palette .row { display:flex; gap:10px; margin-bottom:10px; }
+.palette .row:last-child { margin-bottom:0; }
+.palette .swatch {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 2px solid #111827;
+  background: #fff;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+.palette .swatch.reset {
+  border-style: dashed;
+  border-color: #6b7280;
+}
+.palette .hint {
+  margin-top: 8px;
+  font-size: 11px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+    #canvas { position:absolute; top:52px; left:0; right:0; bottom:0; background:#f3f4f6; }
+   
+    .djs-context-pad .entry[data-action="set-color"],
+    .djs-context-pad .entry.set-color,
+    .djs-context-pad .entry[data-id="set-color"] {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+    }
+
+    /* Ícone de pincel para o botão de cor no context-pad */
+    .djs-context-pad .entry.fm-icon-brush {
+      background: #fff url("data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22%20viewBox=%220%200%2024%2024%22%20fill=%22none%22%20stroke=%22%23111827%22%20stroke-width=%222%22%20stroke-linecap=%22round%22%20stroke-linejoin=%22round%22%3E%3Cpath%20d=%22M4%2020c2.5%200%204-1.5%204-4%200-1.1%200.9-2%202-2s2%200.9%202%202c0%204-3%206-8%206-1.1%200-2-0.9-2-2%200-0.6%200.4-1%202-1z%22/%3E%3Cpath%20d=%22M14%203l7%207-4%204-7-7%204-4z%22/%3E%3Cpath%20d=%22M9%208l7%207%22/%3E%3C/svg%3E") no-repeat center;
+      background-size: 18px 18px;
+    }
+    .djs-context-pad .entry.fm-icon-brush:before {
+      content: "" !important;
+    }
+
+
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">BPMN Desktop (1 arquivo)</div>
+    <div class="actions">
+      <button id="btnNew">Novo</button>
+      <button id="btnOpen">Abrir</button>
+      <button id="btnFixUtf8" title="Corrigir acentos quebrados (Ã§ etc.)">Corrigir acentos</button>
+      <button id="btnSave">Salvar BPMN</button>
+      <button id="btnSvg">Exportar SVG</button>
+      <button id="btnPdf">PDF A4 (separado)</button>
+      <button id="btnA4">Guias A4: ON</button>
+      <button id="btnGridZ" title="Alternar guias A4 por cima/por baixo dos lanes">Grid sobre lanes: OFF</button>
+      <button id="btnOri">A4: Paisagem</button>
+      <div class="fontctl">
+        <span class="lbl">Fonte:</span>
+        <button id="btnFontDown" title="Diminuir fonte">A-</button>
+        <span id="fontVal" class="val">12px</span>
+        <button id="btnFontUp" title="Aumentar fonte">A+</button>
+        <button id="btnFontReset" title="Reset">Reset</button>
+      </div>
+     
+      <button id="btnColor" title="Cores (paleta)">Cor</button>
+    </div>
+  </header>
+
+  <div id="canvas" tabindex="0"></div>
+
+  <div id="colorPalette" class="palette" aria-hidden="true"></div>
+
+
+  <script>
+    const EMPTY_BPMN = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="180" y="120" width="36" height="36" />
+      </bpmndi:BPMNShape>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>`;
+
+    const modeler = new BpmnJS({ container: "#canvas" });
+
+    // -------------------------------------------------
+    // Habilitar redimensionamento de TASK (UserTask, ServiceTask, etc.)
+    // Por padrão, o bpmn-js só deixa redimensionar "Participant/Pool" e poucos outros.
+    // Aqui a gente libera "shape.resize" para elementos cujo tipo termina com "Task".
+    // -------------------------------------------------
+    (function enableTaskResize() {
+      const eventBus = modeler.get("eventBus");
+      const HIGH_PRIORITY = 30000; // maior que as regras padrão
+
+      const MIN_W = 120;
+      const MIN_H = 80;
+
+      function isTask(shape) {
+        const bo = shape && shape.businessObject;
+        const t = bo && bo.$type;
+        return !!t && /Task$/.test(t);
+      }
+
+      // Regra de canExecute (diagram-js): se retornarmos algo != undefined, para a cadeia.
+      // true  -> permitido
+      // false -> proibido
+      // objeto -> permitido, com constraints (min/max)
+      eventBus.on("commandStack.shape.resize.canExecute", HIGH_PRIORITY, function(event) {
+        const ctx = event && event.context || {};
+        const shape = ctx.shape;
+        if (!isTask(shape)) return; // deixa regras padrão decidirem
+
+        return { min: { width: MIN_W, height: MIN_H } };
+      });
+   
+        })();
+
+    // -------------------------------------------------
+    // Fonte dos rótulos (labels) - controle via HUD
+    // -------------------------------------------------
+    const LABEL_FONT_MIN = 8;
+    const LABEL_FONT_MAX = 28;
+    const LABEL_FONT_DEFAULT = 12;
+
+    const labelFontStyleEl = document.createElement("style");
+    labelFontStyleEl.id = "labelFontStyle";
+    document.head.appendChild(labelFontStyleEl);
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+    let labelFontPx = (function loadFont() {
+      const raw = localStorage.getItem("labelFontPx");
+      const n = parseInt(raw || "", 10);
+      return Number.isFinite(n) ? clamp(n, LABEL_FONT_MIN, LABEL_FONT_MAX) : LABEL_FONT_DEFAULT;
+    })();
+
+    function applyLabelFont(px) {
+      labelFontPx = clamp(px, LABEL_FONT_MIN, LABEL_FONT_MAX);
+      labelFontStyleEl.textContent = `
+        .djs-label, .djs-label tspan { font-size: ${labelFontPx}px !important; }
+        .djs-direct-editing-content { font-size: ${labelFontPx}px !important; line-height: 1.2 !important; }
+      `;
+      localStorage.setItem("labelFontPx", String(labelFontPx));
+      const v = document.getElementById("fontVal");
+      if (v) v.textContent = `${labelFontPx}px`;
+    }
+
+    // Expor para uso global (segurança)
+    window.applyLabelFont = applyLabelFont;
+
+    // -------------------------------------------------
+    // Travar o HUD (evitar zoom do "site" via Ctrl+Wheel / Ctrl +/-)
+    // Em vez de dar zoom na página, aplicamos zoom no diagrama.
+    // -------------------------------------------------
+    function zoomDiagramBy(delta, center) {
+      const canvas = modeler.get("canvas");
+      const cur = canvas.zoom();
+      const next = clamp(cur + delta, 0.2, 4.0);
+      if (center) canvas.zoom(next, center);
+      else canvas.zoom(next);
+    }
+
+    (function lockPageZoomToDiagram() {
+      const canvasEl = document.getElementById("canvas");
+
+      window.addEventListener("wheel", (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          const rect = canvasEl.getBoundingClientRect();
+          const center = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+          zoomDiagramBy(e.deltaY > 0 ? -0.10 : 0.10, center);
+        }
+      }, { passive: false });
+
+      window.addEventListener("keydown", (e) => {
+        if (!(e.ctrlKey || e.metaKey)) return;
+
+        // Ctrl + / - / 0
+        if (e.key === "+" || e.key === "=") {
+          e.preventDefault();
+          zoomDiagramBy(0.10);
+        } else if (e.key === "-" || e.key === "_") {
+          e.preventDefault();
+          zoomDiagramBy(-0.10);
+        } else if (e.key === "0") {
+          e.preventDefault();
+          // volta para 100% (não mexe no HUD)
+          modeler.get("canvas").zoom(1.0);
+        }
+      }, { passive: false });
+    })();
+
+
+
+
+
+// -------------------------------------------------
+// Paleta de cores estilo bpmn.io (discreta, sem "bagunçar" o diagrama)
+// - Aplica principalmente a COR DA BORDA (stroke)
+// - Mantém preenchimento branco (fill) por padrão
+// -------------------------------------------------
+const COLOR_PRESETS = [
+  // Estilo bpmn.io: cor "de marcação" (stroke forte + fill suave)
+  { id: "default", fill: "#ffffff", stroke: "#111827" },
+
+  { id: "blue",   fill: "#dbeafe", stroke: "#2563eb" },
+  { id: "orange", fill: "#ffedd5", stroke: "#92400e" },
+  { id: "green",  fill: "#dcfce7", stroke: "#16a34a" },
+  { id: "red",    fill: "#fee2e2", stroke: "#b91c1c" },
+
+  { id: "purple", fill: "#ede9fe", stroke: "#6d28d9" },
+  { id: "teal",   fill: "#ccfbf1", stroke: "#0f766e" },
+  { id: "gray",   fill: "#f3f4f6", stroke: "#4b5563" },
+];
+
+const DEFAULT_STYLE = { fill: "#ffffff", stroke: "#000000" };
+
+// Mantém cor do texto igual ao stroke (visual bpmn.io). Isso é aplicado no DOM para impressão/export.
+const _labelColorById = new Map();
+
+function _setTextFillOnGraphics(gfx, color) {
+  if (!gfx) return;
+  const texts = gfx.querySelectorAll ? gfx.querySelectorAll("text") : [];
+  for (const t of texts) {
+    // não força quando for vazio (reset)
+    if (color) t.style.fill = color;
+    else t.style.fill = "";
+  }
+}
+
+function setLabelColor(elements, color) {
+  const canvas = modeler.get("canvas");
+  for (const el of elements) {
+    if (!el || !el.id) continue;
+    if (color) _labelColorById.set(el.id, color);
+    else _labelColorById.delete(el.id);
+
+    _setTextFillOnGraphics(canvas.getGraphics(el), color);
+    _setTextFillOnGraphics(canvas.getGraphics(el, true), color);
+  }
+}
+
+// Reaplica cores de texto após re-render do diagrama
+function reapplyAllLabelColors() {
+  const registry = modeler.get("elementRegistry");
+  const ids = Array.from(_labelColorById.keys());
+  for (const id of ids) {
+    const el = registry.get(id);
+    if (!el) continue;
+    const color = _labelColorById.get(id);
+    setLabelColor([el], color);
+  }
+}
+
+
+function _normalizedSelection() {
+  const sel = modeler.get("selection").get() || [];
+  const out = [];
+  for (let el of sel) {
+    if (!el) continue;
+    if (el.type === "label" && el.labelTarget) el = el.labelTarget;
+    if (!out.includes(el)) out.push(el);
+  }
+  return out;
+}
+
+let _warnedNoSetColor = false;
+
+function setStyleOnSelection(style, reset=false) {
+  const elements = _normalizedSelection();
+  if (!elements.length) return;
+
+  const modeling = modeler.get("modeling");
+  if (!modeling || typeof modeling.setColor !== "function") {
+    if (!_warnedNoSetColor) {
+      _warnedNoSetColor = true;
+      alert("Este editor não suportou mudança de cor (modeling.setColor indisponível). Atualize o bpmn-js.");
+    }
+    return;
+  }
+
+  const connections = elements.filter(e => e && e.waypoints);
+  const shapes = elements.filter(e => e && !e.waypoints);
+
+  if (reset) {
+    if (shapes.length) modeling.setColor(shapes, DEFAULT_STYLE);
+    if (connections.length) modeling.setColor(connections, { stroke: DEFAULT_STYLE.stroke });
+    // reset cor do texto
+    setLabelColor(shapes, null);
+    setLabelColor(connections, null);
+    return;
+  }
+
+  // Estilo bpmn.io: aplica fill suave + stroke forte (ou reset)
+  const fill = (style && style.fill) ? style.fill : "#ffffff";
+  const stroke = (style && style.stroke) ? style.stroke : "#111827";
+
+  if (shapes.length) modeling.setColor(shapes, { fill, stroke });
+  if (connections.length) modeling.setColor(connections, { stroke });
+
+  // Mantém cor do texto acompanhando a marcação
+  setLabelColor(shapes, stroke);
+  setLabelColor(connections, stroke);
+}
+
+function _buildPaletteDom(paletteEl) {
+  paletteEl.innerHTML = "";
+
+  const rows = [
+    COLOR_PRESETS.slice(0, 4),
+    COLOR_PRESETS.slice(4, 8),
+  ];
+
+  for (const row of rows) {
+    const rowEl = document.createElement("div");
+    rowEl.className = "row";
+    for (const c of row) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "swatch";
+      b.style.borderColor = c.stroke;
+      b.style.background = c.fill;
+      b.title = `Borda: ${c.stroke}`;
+      b.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        setStyleOnSelection(c, false);
+        hidePalette();
+      });
+      rowEl.appendChild(b);
+    }
+    paletteEl.appendChild(rowEl);
+  }
+
+  const row2 = document.createElement("div");
+  row2.className = "row";
+
+  const resetBtn = document.createElement("button");
+  resetBtn.type = "button";
+  resetBtn.className = "swatch reset";
+  resetBtn.title = "Reset (voltar ao padrão)";
+  resetBtn.addEventListener("click", (ev) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    setStyleOnSelection(null, true);
+    hidePalette();
+  });
+  row2.appendChild(resetBtn);
+
+  const hint = document.createElement("div");
+  hint.className = "hint";
+  hint.textContent = "Clique fora/ESC para fechar • Reset = tracejado";
+  paletteEl.appendChild(row2);
+  paletteEl.appendChild(hint);
+}
+
+let paletteReady = false;
+
+function showPaletteAt(clientX, clientY) {
+  const paletteEl = document.getElementById("colorPalette");
+  if (!paletteEl) return;
+
+  if (!paletteReady) {
+    _buildPaletteDom(paletteEl);
+    paletteReady = true;
+  }
+
+  paletteEl.style.display = "block";
+  paletteEl.setAttribute("aria-hidden", "false");
+
+  // posicionar sem sair da tela
+  const pad = 8;
+  const w = paletteEl.offsetWidth || 180;
+  const h = paletteEl.offsetHeight || 110;
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  let x = clientX + 10;
+  let y = clientY + 10;
+
+  if (x + w + pad > vw) x = vw - w - pad;
+  if (y + h + pad > vh) y = vh - h - pad;
+  if (x < pad) x = pad;
+  if (y < 52 + pad) y = 52 + pad; // não subir pra cima do HUD
+
+  paletteEl.style.left = x + "px";
+  paletteEl.style.top = y + "px";
+}
+
+function hidePalette() {
+  const paletteEl = document.getElementById("colorPalette");
+  if (!paletteEl) return;
+  paletteEl.style.display = "none";
+  paletteEl.setAttribute("aria-hidden", "true");
+}
+
+// Fecha ao clicar fora
+window.addEventListener("pointerdown", (e) => {
+  const paletteEl = document.getElementById("colorPalette");
+  if (!paletteEl || paletteEl.style.display !== "block") return;
+  if (paletteEl.contains(e.target)) return;
+  hidePalette();
+});
+
+// Fecha com ESC
+window.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") hidePalette();
+});
+
+// Botão no HUD (alternativo)
+const btnColor = document.getElementById("btnColor");
+if (btnColor) {
+  btnColor.onclick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // abre perto do canto direito do botão, como popup
+    const r = btnColor.getBoundingClientRect();
+    showPaletteAt(r.right, r.bottom);
+  };
+}
+
+// Context Pad: adiciona o ícone de cor ao lado das ações
+(function addContextPadColorAction(){
+  const contextPad = modeler.get("contextPad");
+  const selection = modeler.get("selection");
+
+  function Provider() {}
+  Provider.prototype.getContextPadEntries = function(element) {
+    return {
+      "set-color": {
+        group: "edit",
+        className: "fm-icon-brush", // ícone de pincel (custom)
+        title: "Cor (paleta)",
+        action: {
+          click: function(event) {
+            const x = (event && event.clientX) ? event.clientX : window.innerWidth/2;
+            const y = (event && event.clientY) ? event.clientY : window.innerHeight/2;
+            showPaletteAt(x, y);
+          }
+        }
+      }
+    };
+  };
+
+  // registrar provider com prioridade alta (depois do built-in)
+  contextPad.registerProvider(new Provider());
+
+  // esconde paleta ao mudar seleção
+  const eventBus = modeler.get("eventBus");
+  eventBus.on("selection.changed", hidePalette);
+})();
+
+
+    // -----------------------------
+    // Bounds (inclui conexões)
+    // -----------------------------
+    function getDiagramBounds() {
+      const registry = modeler.get("elementRegistry");
+      const all = registry.getAll();
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+      for (const el of all) {
+        if (el.waypoints && Array.isArray(el.waypoints)) {
+          for (const p of el.waypoints) {
+            if (!p) continue;
+            minX = Math.min(minX, p.x);
+            minY = Math.min(minY, p.y);
+            maxX = Math.max(maxX, p.x);
+            maxY = Math.max(maxY, p.y);
+          }
+          continue;
+        }
+
+        if (typeof el.x === "number" && typeof el.y === "number") {
+          const w = (typeof el.width === "number") ? el.width : 0;
+          const h = (typeof el.height === "number") ? el.height : 0;
+          minX = Math.min(minX, el.x);
+          minY = Math.min(minY, el.y);
+          maxX = Math.max(maxX, el.x + w);
+          maxY = Math.max(maxY, el.y + h);
+        }
+      }
+
+      if (!isFinite(minX)) {
+        return { minX: 0, minY: 0, maxX: 1123, maxY: 794 };
+      }
+      return { minX, minY, maxX, maxY };
+    }
+
+    async function importXml(xml) {
+      try {
+        await modeler.importXML(xml);
+        modeler.get("canvas").zoom("fit-viewport");
+        const c = document.getElementById("canvas");
+        if (c) c.focus();
+        updatePageGuides(0);
+      } catch (e) {
+        console.error(e);
+        alert("Erro ao importar: " + (e?.message || e));
+      }
+    }
+
+    async function newDiagram() { await importXml(EMPTY_BPMN); }
+
+    // Chamado pelo Python (abre arquivo BPMN com acentos corretos: base64 -> UTF-8)
+    function base64ToUtf8(b64) {
+      const bin = atob(b64);
+      if (window.TextDecoder) {
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder("utf-8").decode(bytes);
+      }
+      return bin;
+    }
+
+    window.importBpmnBase64 = async function(b64) {
+      try { await importXml(base64ToUtf8(b64)); }
+      catch (e) { alert("Erro ao abrir: " + (e?.message || e)); }
+    };
+
+    // Corrigir acentuação "quebrada" (mojibake) em textos já salvos/importados
+    function fixIfMojibake(s) {
+      if (!s || typeof s !== "string") return s;
+      if (!/[ÃÂ]/.test(s)) return s;
+      try {
+        const bytes = new Uint8Array(s.length);
+        for (let i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+        const dec = new TextDecoder("utf-8").decode(bytes);
+
+        const score = (t) => ((t.match(/[ÃÂ]/g) || []).length * 2) + ((t.match(/ /g) || []).length * 10);
+        if (score(dec) < score(s)) return dec;
+      } catch (_) {}
+      return s;
+    }
+
+    async function repairAcentosAll() {
+      try {
+        const registry = modeler.get("elementRegistry");
+        const modeling = modeler.get("modeling");
+        let changed = 0;
+
+        registry.getAll().forEach((el) => {
+          const bo = el.businessObject;
+          if (!bo) return;
+
+          if (typeof bo.name === "string") {
+            const fixed = fixIfMojibake(bo.name);
+            if (fixed !== bo.name) {
+              modeling.updateProperties(el, { name: fixed });
+              changed++;
+            }
+          }
+
+          if (bo.$type === "bpmn:TextAnnotation" && typeof bo.text === "string") {
+            const fixedT = fixIfMojibake(bo.text);
+            if (fixedT !== bo.text) {
+              modeling.updateProperties(el, { text: fixedT });
+              changed++;
+            }
+          }
+
+          if (Array.isArray(bo.documentation)) {
+            bo.documentation.forEach((d) => {
+              if (d && typeof d.text === "string") {
+                const fixedD = fixIfMojibake(d.text);
+                if (fixedD !== d.text) {
+                  d.text = fixedD;
+                  changed++;
+                }
+              }
+            });
+          }
+        });
+
+        if (changed > 0) alert("Acentos corrigidos em " + changed + " campo(s).");
+        else alert("Não encontrei textos com problema.");
+      } catch (e) {
+        alert("Erro ao corrigir acentos: " + (e?.message || e));
+      }
+    }
+
+    // -----------------------------
+    // GUIAS A4 (paisagem/retrato) no canvas
+    // -----------------------------
+    function mmToPx(mm, dpi = 96) { return (mm / 25.4) * dpi; }
+
+    const GUIDE_DPI = 96;
+    const MARGIN_MM = 10;
+    const MARGIN_PX = mmToPx(MARGIN_MM, GUIDE_DPI);
+
+    // Orientação do A4: "landscape" (paisagem) ou "portrait" (retrato)
+    let a4Orientation = (function loadOri() {
+      const v = (localStorage.getItem("a4Orientation") || "landscape").toLowerCase();
+      return (v === "portrait") ? "portrait" : "landscape";
+    })();
+
+    function pageSizePx() {
+      // A4: 210 x 297mm (retrato), 297 x 210mm (paisagem)
+      if (a4Orientation === "portrait") {
+        return { w: mmToPx(210, GUIDE_DPI), h: mmToPx(297, GUIDE_DPI) };
+      }
+      return { w: mmToPx(297, GUIDE_DPI), h: mmToPx(210, GUIDE_DPI) };
+    }
+
+    function updateOriButton() {
+      const btn = document.getElementById("btnOri");
+      if (!btn) return;
+      btn.textContent = (a4Orientation === "portrait") ? "A4: Retrato" : "A4: Paisagem";
+    }
+
+    let guidesOn = true;
+
+    let gridOnTop = (function loadGridZ(){
+      const v = (localStorage.getItem("gridOnTop") || "0");
+      return v === "1";
+    })();
+
+    function updateGridZButton(){
+      const b = document.getElementById("btnGridZ");
+      if (b) b.textContent = "Grid sobre lanes: " + (gridOnTop ? "ON" : "OFF");
+    }
+
+    function svgEl(name) {
+      return document.createElementNS("http://www.w3.org/2000/svg", name);
+    }
+
+    function ensureGuideLayer() {
+      const svg = document.querySelector("#canvas svg");
+      if (!svg) return null;
+
+      const viewport = svg.querySelector("g.viewport");
+      if (!viewport) return null;
+
+      let layer = viewport.querySelector("#page-guides");
+      if (!layer) {
+        layer = svgEl("g");
+        layer.setAttribute("id", "page-guides");
+        layer.style.pointerEvents = "none";
+        if (gridOnTop) viewport.appendChild(layer);
+        else viewport.insertBefore(layer, viewport.firstChild);
+      }
+      return layer;
+    }
+
+    function repositionGuideLayer(){
+      const svg = document.querySelector("#canvas svg");
+      if (!svg) return;
+      const viewport = svg.querySelector("g.viewport");
+      if (!viewport) return;
+      const layer = viewport.querySelector("#page-guides");
+      if (!layer) return;
+      if (gridOnTop) viewport.appendChild(layer);
+      else viewport.insertBefore(layer, viewport.firstChild);
+    }
+
+
+    function addRect(layer, x, y, w, h, dash, strokeWidth) {
+      const r = svgEl("rect");
+      r.setAttribute("x", x);
+      r.setAttribute("y", y);
+      r.setAttribute("width", w);
+      r.setAttribute("height", h);
+      r.setAttribute("fill", "none");
+      r.setAttribute("stroke", "#9ca3af");
+      r.setAttribute("stroke-width", strokeWidth);
+      r.setAttribute("stroke-dasharray", dash);
+      layer.appendChild(r);
+    }
+
+    function addLabel(layer, x, y, text) {
+      const t = svgEl("text");
+      t.setAttribute("x", x);
+      t.setAttribute("y", y);
+      t.setAttribute("font-size", "14");
+      t.setAttribute("fill", "#6b7280");
+      t.textContent = text;
+      layer.appendChild(t);
+    }
+
+    function updateGuideButton() {
+      const btn = document.getElementById("btnA4");
+      if (btn) btn.textContent = guidesOn ? "Guias A4: ON" : "Guias A4: OFF";
+    }
+
+    function updatePageGuides(attempt = 0) {
+      const layer = ensureGuideLayer();
+      if (!layer) {
+        if (attempt < 20) return requestAnimationFrame(() => updatePageGuides(attempt + 1));
+        return;
+      }
+
+      layer.style.display = guidesOn ? "block" : "none";
+      updateGuideButton();
+      updateOriButton();
+      if (!guidesOn) return;
+
+      while (layer.firstChild) layer.removeChild(layer.firstChild);
+
+      // Grade fixa 3x3
+
+      const { w: PAGE_W, h: PAGE_H } = pageSizePx();
+
+      // Grade fixa 3x3 (A4 1..9), sempre a partir da origem (0,0).
+      // Isso evita ficar “crescendo” o número de páginas conforme você adiciona elementos.
+      const startX = 0;
+      const startY = 0;
+      const cols = 3;
+      const rows = 3;
+
+      let pageNum = 1;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const x = startX + c * PAGE_W;
+          const y = startY + r * PAGE_H;
+
+          // borda da página
+          addRect(layer, x, y, PAGE_W, PAGE_H, "6 6", 1);
+
+          // área “útil” (margem)
+          addRect(layer, x + MARGIN_PX, y + MARGIN_PX, PAGE_W - 2*MARGIN_PX, PAGE_H - 2*MARGIN_PX, "2 6", 1);
+
+          addLabel(layer, x + 14, y + 24, `A4 ${pageNum++}`);
+        }
+      }
+    }
+
+    (function hookGuideUpdates() {
+      const eventBus = modeler.get("eventBus");
+      const debounce = (fn, ms) => {
+        let t = null;
+        return () => { clearTimeout(t); t = setTimeout(fn, ms); };
+      };
+
+      eventBus.on("canvas.viewbox.changed", updatePageGuides);
+      eventBus.on("commandStack.changed", debounce(updatePageGuides, 120));
+      eventBus.on("commandStack.changed", debounce(reapplyAllLabelColors, 150));
+      eventBus.on("import.done", () => updatePageGuides(0));
+    })();
+
+    // ---------------------------------------------------------
+    // Lógica Web Substituta Nativa (Ex-Bridge Python)
+    // ---------------------------------------------------------
+    function triggerDownload(content, filename, contentType) {
+      const blob = new Blob([content], { type: contentType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ABRIR ARQUIVO (btnOpen)
+    document.getElementById("btnOpen").onclick = () => {
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept = ".bpmn, .xml";
+      fileInput.onchange = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          const content = evt.target.result;
+          const b64 = btoa(unescape(encodeURIComponent(content)));
+          window.importBpmnBase64(b64);
+        };
+        reader.readAsText(file, "UTF-8");
+      };
+      fileInput.click();
+    };
+
+    // SALVAR BPMN (btnSave)
+    document.getElementById("btnSave").onclick = async () => {
+      const { xml } = await modeler.saveXML({ format: true });
+      triggerDownload(xml, "diagrama.bpmn", "text/xml;charset=utf-8");
+    };
+
+    // EXPORTAR SVG (btnSvg)
+    document.getElementById("btnSvg").onclick = async () => {
+      const { svg } = await modeler.saveSVG();
+      triggerDownload(svg, "diagrama.svg", "image/svg+xml;charset=utf-8");
+    };
+
+    // EXPORTAR PDF MOSAICO FILTRADO (btnPdf)
+    document.getElementById("btnPdf").onclick = async () => {
+      // 1. Esconder guias temporariamente para não saírem impressas
+      const guideLayer = document.querySelector("#canvas svg g.viewport #page-guides");
+      const prevDisplay = guideLayer ? guideLayer.style.display : null;
+      if (guideLayer) guideLayer.style.display = "none";
+
+      const { svg } = await modeler.saveSVG();
+      if (guideLayer) guideLayer.style.display = prevDisplay || "";
+
+      // 2. Coletar parâmetros dinâmicos via prompts nativos equivalentes ao Python
+      let base_name = prompt("Nome base dos arquivos (ex.: fluxograma):", "diagrama");
+      if (base_name === null) return;
+      base_name = base_name.replace(/[\\\\/:*?"<>|]/g, "").trim() || "diagrama";
+
+      const scale_str = prompt("Escala (%). 100 = tamanho 'normal' na A4.\nDica: 120-150% deixa maior (mais páginas).", "100");
+      if (scale_str === null) return;
+      const scale_percent = parseFloat(scale_str) || 100.0;
+
+      // 3. Execução da matemática exata do backend Python transpilada para o JS
+      const bounds = getDiagramBounds();
+      let minX = parseFloat(bounds.minX) - 6.0;
+      let minY = parseFloat(bounds.minY) - 6.0;
+      let maxX = parseFloat(bounds.maxX) + 6.0;
+      let maxY = parseFloat(bounds.maxY) + 6.0;
+
+      const DPI_SVG = 96.0;
+      const ori = a4Orientation;
+      const PAGE_W = ((ori === "portrait" ? 210.0 : 297.0) / 25.4) * DPI_SVG;
+      const PAGE_H = ((ori === "portrait" ? 297.0 : 210.0) / 25.4) * DPI_SVG;
+      const S = scale_percent / 100.0;
+
+      if (S <= 0) { alert("Escala inválida."); return; }
+
+      const EPS = 1e-6;
+      let min_col = Math.floor(minX / PAGE_W);
+      let max_col = Math.floor((maxX - EPS) / PAGE_W);
+      let min_row = Math.floor(minY / PAGE_H);
+      let max_row = Math.floor((maxY - EPS) / PAGE_H);
+
+      const orig_match = (min_col >= 0 && max_col <= 2 && min_row >= 0 && max_row <= 2);
+      min_col = Math.max(0, Math.min(2, min_col));
+      max_col = Math.max(0, Math.min(2, max_col));
+      min_row = Math.max(0, Math.min(2, min_row));
+      max_row = Math.max(0, Math.min(2, max_row));
+
+      if (min_col > max_col) min_col = max_col = 0;
+      if (min_row > max_row) min_row = max_row = 0;
+
+      if (!orig_match) {
+        alert("Aviso: Seu diagrama passou do limite da grade 3x3 (A4 1..9).\nVou exportar apenas o que estiver dentro dessas 9 páginas.");
+      }
+
+      // Função utilitária interna para alteração de viewBox estrutural idêntica
+      function setSvgViewbox(svgText, vbStr) {
+        return svgText.replace(/<svg\b[^>]*>/, (match) => {
+          let tag = match;
+          if (tag.includes("viewBox=")) {
+            tag = tag.replace(/viewBox="[^"]*"/, `viewBox="${vbStr}"`);
+          } else {
+            tag = tag.slice(0, -1) + ` viewBox="${vbStr}">`;
+          }
+          tag = tag.replace(/\bwidth="[^"]*"/g, 'width="100%"');
+          tag = tag.replace(/\bheight="[^"]*"/g, 'height="100%"');
+          if (!tag.includes("preserveAspectRatio=")) {
+            tag = tag.slice(0, -1) + ' preserveAspectRatio="xMinYMin meet">';
+          }
+          return tag;
+        });
+      }
+
+      // Encontrar propriedades viewBox originais
+      let vb_x = 0, vb_y = 0;
+      const vbMatch = svg.match(/viewBox="([^"]+)"/);
+      if (vbMatch) {
+        const parts = vbMatch[1].trim().split(/[\s,]+/);
+        if (parts.length >= 4) { vb_x = parseFloat(parts[0]); vb_y = parseFloat(parts[1]); }
+      }
+
+      let generatedCount = 0;
+
+      // Executa o loop gerando dinamicamente as visualizações fatiadas
+      for (let r = min_row; r <= max_row; r++) {
+        for (let c = min_col; c <= max_col; c++) {
+          const page_num = r * 3 + c + 1;
+          
+          const x0 = (c * PAGE_W) + MARGIN_PX;
+          const y0 = (r * PAGE_H) + MARGIN_PX;
+          const vb_w = (PAGE_W - 2 * MARGIN_PX) / S;
+          const vb_h = (PAGE_H - 2 * MARGIN_PX) / S;
+
+          const shift_x = vb_x - minX;
+          const shift_y = vb_y - minY;
+          const vb_str = `${x0 + shift_x} ${y0 + shift_y} ${vb_w} ${vb_h}`;
+
+          const tile_svg = setSvgViewbox(svg, vb_str);
+          
+          // Template HTML idêntico ao método privado _tile_html do Python
+          const tile_html = `<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/bpmn-js@latest/dist/assets/bpmn-font/css/bpmn.css" />
+  <style>
+    @page { size: ${ori === "landscape" ? "A4 landscape" : "A4"}; margin: 0; }
+    html, body { margin: 0; width: 100%; height: 100%; background: #ffffff; overflow: hidden; }
+    #pad { width: 100%; height: 100%; padding: ${MARGIN_MM}mm; box-sizing: border-box; }
+    #pad svg { width: 100%; height: 100%; display: block; }
+  </style>
+</head>
+<body>
+  <div id="pad">${tile_svg}</div>
+</body>
+</html>`;
+
+          // Disparar a impressão nativa individualizada ou download HTML estático por página
+          const win = window.open("", "_blank");
+          if (win) {
+            win.document.write(tile_html);
+            win.document.close();
+            win.focus();
+            // Timeout seguro para aguardar a renderização síncrona de fontes remotas
+            setTimeout(() => {
+              win.print();
+              win.close();
+            }, 350);
+          }
+          generatedCount++;
+        }
+      }
+      
+      alert(`Processo concluído. Enviado ${generatedCount} página(s) para o assistente de impressão do sistema.`);
+    };
+
+    document.getElementById("btnNew").onclick = () => newDiagram();
+
+    // Corrigir acentos manualmente
+    const btnFix = document.getElementById("btnFixUtf8");
+    if (btnFix) btnFix.onclick = () => repairAcentosAll();
+
+    // Grid por cima/por baixo dos lanes
+    updateGridZButton();
+    const btnGridZ = document.getElementById("btnGridZ");
+    if (btnGridZ) {
+      btnGridZ.onclick = () => {
+        gridOnTop = !gridOnTop;
+        localStorage.setItem("gridOnTop", gridOnTop ? "1" : "0");
+        updateGridZButton();
+        repositionGuideLayer();
+        // redesenha pra garantir
+        updatePageGuides(0);
+      };
+    }
+
+
+
+    // Fonte: botões
+    document.getElementById("btnFontDown").onclick = () => applyLabelFont(labelFontPx - 1);
+    document.getElementById("btnFontUp").onclick = () => applyLabelFont(labelFontPx + 1);
+    document.getElementById("btnFontReset").onclick = () => applyLabelFont(LABEL_FONT_DEFAULT);
+
+    const btnA4 = document.getElementById("btnA4");
+    btnA4.onclick = () => {
+      guidesOn = !guidesOn;
+      btnA4.textContent = guidesOn ? "Guias A4: ON" : "Guias A4: OFF";
+      updatePageGuides(0);
+    };
+    const btnOri = document.getElementById("btnOri");
+    if (btnOri) {
+      updateOriButton();
+      btnOri.onclick = () => {
+        a4Orientation = (a4Orientation === "portrait") ? "landscape" : "portrait";
+        localStorage.setItem("a4Orientation", a4Orientation);
+        updateOriButton();
+        updatePageGuides(0);
+      };
+    }
+
+
+    (async function boot(){
+      const c0 = document.getElementById("canvas");
+      if (c0) c0.focus();
+      applyLabelFont(labelFontPx);
+      // garante texto correto do toggle
+      const btnA4 = document.getElementById("btnA4");
+      if (btnA4) btnA4.textContent = guidesOn ? "Guias A4: ON" : "Guias A4: OFF";
+      updateOriButton();
+      await newDiagram();
+      updatePageGuides(0);
+    })();
+  </script>
+</body>
+</html>
