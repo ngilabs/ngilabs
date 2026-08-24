@@ -13,13 +13,12 @@
         }
 
         body {
-            /* Fundo 5% mais escuro que o branco original */
             background-color: #f2f2f2;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 10px 20px; /* Ajustado padding superior para dar consistência */
+            padding: 10px 20px; 
         }
 
         /* --- BOTÃO ÁREA RESTRITA --- */
@@ -46,7 +45,6 @@
             box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
         }
 
-        /* Topo Centralizado com o meio */
         header {
             width: 100%;
             display: flex;
@@ -56,22 +54,18 @@
         }
 
         .logo {
-            /* Torna o tamanho da imagem dinâmico para se ajustar ao mobile */
             width: 100%;
             max-width: 700px;
             height: auto;
             display: block;
-            margin-top: 40px; /* Adicionado espaçamento para desencostar do topo do navegador */
+            margin-top: 40px; 
         }
 
-        /* Container Central Azul Petróleo */
         .container-projetos {
-            /* Efeito Glassmorphism e Sombra */
             background-color: rgba(0, 77, 97, 0.92);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
             box-shadow: 0 15px 35px rgba(0, 77, 97, 0.25), 0 5px 15px rgba(0, 0, 0, 0.1);
-            
             width: 100%;
             max-width: 800px;
             padding: 40px;
@@ -79,8 +73,6 @@
             text-align: center;
             position: relative;
             z-index: 1;
-
-            /* Ajustado para ficar logo abaixo do cabeçalho de forma limpa */
             margin-top: 20px; 
         }
 
@@ -91,14 +83,12 @@
             font-weight: 600;
         }
 
-        /* Grid das Caixinhas */
         .grid-links {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
         }
 
-        /* Caixinhas Brancas com Letras Azuis */
         .card-link {
             background-color: #ffffff;
             color: #004d61;
@@ -120,14 +110,12 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
-        /* Estilização dos Ícones/Figurinhas */
         .icon {
             font-size: 2.5rem;
         }
 
-        /* Rodapé Institucional */
         footer {
-            margin-top: 30px; /* Aproxima o rodapé eliminando a rolagem falsa */
+            margin-top: 30px; 
             margin-bottom: 20px;
             display: flex;
             flex-direction: column;
@@ -144,7 +132,7 @@
         }
 
         .footer-logo {
-            height: 45px; /* Tamanho controlado para manter a elegância */
+            height: 45px; 
             width: auto;
             display: block;
             opacity: 0.85;
@@ -162,7 +150,6 @@
             letter-spacing: 1.5px;
         }
         
-        /* Ajuste para mobile no botão */
         @media (max-width: 600px) {
             .btn-restrito {
                 top: 10px;
@@ -171,12 +158,118 @@
                 padding: 8px 12px;
             }
         }
+
+        /* --- ESTILOS DO MODAL DE SENHA --- */
+        .modal-overlay {
+            display: none; /* Escondido por padrão */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-box {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .modal-box h2 {
+            color: #004d61;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            text-align: center;
+            outline: none;
+        }
+
+        .modal-box input:focus {
+            border-color: #004d61;
+        }
+
+        .modal-botoes {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1;
+        }
+
+        .btn-cancelar {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+
+        .btn-cancelar:hover {
+            background-color: #cbd5e1;
+        }
+
+        .btn-entrar {
+            background-color: #004d61;
+            color: #fff;
+        }
+
+        .btn-entrar:hover {
+            background-color: #003645;
+        }
+        
+        .erro-senha {
+            color: #dc2626;
+            font-size: 0.9rem;
+            margin-top: -10px;
+            margin-bottom: 15px;
+            display: none; /* Escondido por padrão */
+        }
     </style>
 </head>
 <body>
 
-    <!-- Botão Área Restrita -->
-    <button class="btn-restrito" onclick="acessarAreaRestrita()">🔒 Área Restrita</button>
+    <!-- Janela Modal de Senha -->
+    <div class="modal-overlay" id="modalSenha">
+        <div class="modal-box">
+            <h2>🔒 Área Restrita</h2>
+            <p style="color: #64748b; margin-bottom: 15px; font-size: 0.9rem;">Insira a senha de acesso:</p>
+            
+            <!-- type="password" é o que esconde a senha -->
+            <input type="password" id="inputSenha" placeholder="••••••••" onkeypress="verificarEnter(event)">
+            
+            <p class="erro-senha" id="msgErro">Senha incorreta. Tente novamente.</p>
+
+            <div class="modal-botoes">
+                <button class="modal-btn btn-cancelar" onclick="fecharModal()">Cancelar</button>
+                <button class="modal-btn btn-entrar" onclick="verificarSenha()">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão que abre o modal -->
+    <button class="btn-restrito" onclick="abrirModal()">🔒 Área Restrita</button>
 
     <header>
         <img src="https://i.ibb.co/tMYkXHps/Chat-GPT-Image-19-de-mai-de-2026-11-06-18-Photoroom-1.png" alt="NGI Labs Logo" class="logo">
@@ -191,7 +284,6 @@
                 <span>ContraCHECK</span>
             </a>
 
-            <!-- Corrigi a falta da classe card-link aqui -->
             <a href="simupai.html" class="card-link">
                 <span class="icon">💸</span>
                 <span>Simulador de Aposentadoria(PLACEHOLDER)</span>
@@ -216,6 +308,21 @@
                 <span class="icon">🏥</span>
                 <span>Simulador Aux. Saúde</span>
             </a>
+            
+            <a href="organomaker.html" class="card-link">
+                <span class="icon">🧑‍💼</span>
+                <span>Organomaker</span>
+            </a>
+
+            <a href="fluxomaker.html" class="card-link">
+                <span class="icon">⚙️</span>
+                <span>Fluxomaker</span>
+            </a>       
+
+            <a href="dash.html" class="card-link">
+                <span class="icon">📶</span>
+                <span>Fluxomaker</span>
+            </a> 
 
             <a href="https://drive.google.com/file/d/1DvvFcZNtRu1w9sGBYhRnQv4-UisYZzPl/view?usp=sharing" class="card-link">
                 <span class="icon">⏬</span>
@@ -234,17 +341,40 @@
 
     <!-- Script de validação da senha -->
     <script>
-        function acessarAreaRestrita() {
-            // Pede a senha ao usuário
-            let senha = prompt("🔒 Por favor, insira a senha para acessar a Área Restrita:");
+        const modal = document.getElementById('modalSenha');
+        const input = document.getElementById('inputSenha');
+        const msgErro = document.getElementById('msgErro');
+
+        function abrirModal() {
+            modal.style.display = 'flex';
+            input.value = ''; // Limpa o campo ao abrir
+            msgErro.style.display = 'none'; // Esconde mensagem de erro antiga
+            setTimeout(() => input.focus(), 100); // Foca no campo automaticamente
+        }
+
+        function fecharModal() {
+            modal.style.display = 'none';
+        }
+
+        function verificarSenha() {
+            const senhaDigitada = input.value;
             
-            // Verifica a senha digitada
-            if (senha === "ngilabsdgf") { 
-                // Coloque o link real da página restrita abaixo
+            // Defina sua senha aqui
+            if (senhaDigitada === "ngilabsdgf") { 
+                // Coloque o link da sua área restrita aqui
                 window.location.href = "hml.html"; 
-            } else if (senha !== null) {
-                // Se errar a senha e não tiver clicado em cancelar
-                alert("❌ Senha incorreta! Acesso negado.");
+            } else {
+                // Mostra a mensagem de erro
+                msgErro.style.display = 'block';
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        // Permite apertar a tecla "Enter" para enviar a senha
+        function verificarEnter(event) {
+            if (event.key === 'Enter') {
+                verificarSenha();
             }
         }
     </script>
