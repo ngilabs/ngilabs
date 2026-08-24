@@ -22,6 +22,30 @@
             padding: 10px 20px; /* Ajustado padding superior para dar consistência */
         }
 
+        /* --- BOTÃO ÁREA RESTRITA --- */
+        .btn-restrito {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #004d61;
+            color: #ffffff;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.2s;
+            z-index: 10;
+        }
+
+        .btn-restrito:hover {
+            background-color: #003645;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
         /* Topo Centralizado com o meio */
         header {
             width: 100%;
@@ -137,9 +161,22 @@
             font-weight: 600;
             letter-spacing: 1.5px;
         }
+        
+        /* Ajuste para mobile no botão */
+        @media (max-width: 600px) {
+            .btn-restrito {
+                top: 10px;
+                right: 10px;
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- Botão Área Restrita -->
+    <button class="btn-restrito" onclick="acessarAreaRestrita()">🔒 Área Restrita</button>
 
     <header>
         <img src="https://i.ibb.co/tMYkXHps/Chat-GPT-Image-19-de-mai-de-2026-11-06-18-Photoroom-1.png" alt="NGI Labs Logo" class="logo">
@@ -154,9 +191,10 @@
                 <span>ContraCHECK</span>
             </a>
 
-            <a href="PLACEHOLDER">
-                <span class="icon"></span>
-                <span>Simulador de Aposentadoria</span>
+            <!-- Corrigi a falta da classe card-link aqui -->
+            <a href="simupai.html" class="card-link">
+                <span class="icon">💸</span>
+                <span>Simulador de Aposentadoria(PLACEHOLDER)</span>
             </a>
 
             <a href="simupai.html" class="card-link">
@@ -176,7 +214,7 @@
 
             <a href="simsaude.html" class="card-link">
                 <span class="icon">🏥</span>
-                <span>Calendário DGF</span>
+                <span>Simulador Aux. Saúde</span>
             </a>
             
             <a href="organomaker.html" class="card-link">
@@ -209,5 +247,21 @@
         <div class="footer-text">DGF • NUGOV • TJPE</div>
     </footer>
 
+    <!-- Script de validação da senha -->
+    <script>
+        function acessarAreaRestrita() {
+            // Pede a senha ao usuário
+            let senha = prompt("🔒 Por favor, insira a senha para acessar a Área Restrita:");
+            
+            // Verifica a senha digitada
+            if (senha === "123456") { 
+                // Coloque o link real da página restrita abaixo
+                window.location.href = "link_da_area_restrita.html"; 
+            } else if (senha !== null) {
+                // Se errar a senha e não tiver clicado em cancelar
+                alert("❌ Senha incorreta! Acesso negado.");
+            }
+        }
+    </script>
 </body>
 </html>
