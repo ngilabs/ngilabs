@@ -1,26 +1,24 @@
 export default function middleware(request) {
   const url = new URL(request.url);
 
-  // 1. Verifica se a pessoa está tentando acessar a página restrita
-  if (url.pathname.startsWith('/hml')) {
+  // 1. Escreva aqui TODAS as páginas que você quer bloquear o acesso direto
+  const paginasBloqueadas = ['/hml', '/aposentados', '/caldata', '/calendario', '/dash', '/efetivo', '/fluxomaker', '/organomaker', '/simulador', '/simupai', '/simusaude', '/transformador', '/impacto'];
+
+  // Verifica se a página que a pessoa quer acessar está na lista acima
+  const tentarAcessarBloqueada = paginasBloqueadas.some(pagina => url.pathname.startsWith(pagina));
+
+  if (tentarAcessarBloqueada) {
     
-    // 2. Pega o "Referer" (a página de onde o usuário veio)
     const deOndeVeio = request.headers.get('referer');
-    
-    // 3. Pega o domínio do seu site atual (ex: seusite.vercel.app)
     const hostDoSeuSite = request.headers.get('host');
 
-    // 4. A LÓGICA DE BLOQUEIO:
-    // Se "deOndeVeio" for nulo (ou seja, a pessoa digitou direto na barra ou usou um favorito)
-    // OU se a pessoa veio de um site diferente (não contém o seu domínio)
+    // Se a pessoa digitou na barra ou veio de outro site, bloqueia!
     if (!deOndeVeio || !deOndeVeio.includes(hostDoSeuSite)) {
       
-      // Bloqueia e redireciona a pessoa de volta para a página inicial (ou para o externo.html)
+      // Joga a pessoa de volta para a sua "Porta de Entrada" (externo)
       url.pathname = '/externo'; 
       return Response.redirect(url);
     }
-    
-    // Se passou pela verificação acima, significa que ela clicou no link dentro do seu site. Acesso liberado!
   }
 }
 
