@@ -2,7 +2,7 @@ export default function middleware(request) {
   const url = new URL(request.url);
 
   // 1. Escreva aqui TODAS as páginas que você quer bloquear o acesso direto
-  const paginasBloqueadas = ['/hml', '/aposentados', '/caldata', '/calendario', '/dash', '/efetivo', '/fluxomaker', '/organomaker', '/simulador', '/simupai', '/simusaude', '/transformador', '/impacto'];
+  const paginasBloqueadas = ['/hml', '/dgf', '/aposentados', '/calcdata', '/calendario', '/dash', '/efetivo', '/fluxomaker', '/organomaker', '/simulador', '/simupai', '/simusaude', '/transformador', '/impacto'];
 
   // Verifica se a página que a pessoa quer acessar está na lista acima
   const tentarAcessarBloqueada = paginasBloqueadas.some(pagina => url.pathname.startsWith(pagina));
