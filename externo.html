@@ -199,5 +199,36 @@
         <div class="footer-text">DGF • NUGOV • TJPE</div>
     </footer>
 
+<script>
+    // Desabilita o clique com o botão direito (menu de contexto)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    });
+
+    // Desabilita atalhos do teclado para código-fonte e inspecionar elemento
+    document.addEventListener('keydown', function(e) {
+        // Bloqueia F12
+        if (e.key === 'F12' || e.keyCode === 123) {
+            e.preventDefault();
+        }
+        // Bloqueia Ctrl+U (Ver código-fonte)
+        if (e.ctrlKey && (e.key === 'u' || e.key === 'U' || e.keyCode === 85)) {
+            e.preventDefault();
+        }
+        // Bloqueia Ctrl+Shift+I / Ctrl+Shift+J (Ferramentas de Desenvolvedor)
+        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.keyCode === 73 || e.keyCode === 74)) {
+            e.preventDefault();
+        }
+        // Bloqueia Ctrl+S (Salvar página)
+        if (e.ctrlKey && (e.key === 's' || e.key === 'S' || e.keyCode === 83)) {
+            e.preventDefault();
+        }
+        // Bloqueia Ctrl+P (Imprimir página, opcional, apague se não quiser)
+        if (e.ctrlKey && (e.key === 'p' || e.key === 'P' || e.keyCode === 80)) {
+            e.preventDefault();
+        }
+    });
+</script>
+    
 </body>
 </html>
