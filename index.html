@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NGI Labs - Home</title>
+    <title>NGI Labs - Hub de Acesso</title>
     <style>
         * {
             margin: 0;
@@ -96,13 +96,14 @@
             padding: 30px 20px;
             border-radius: 8px;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 15px;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
         }
 
         .card-link:hover {
@@ -111,7 +112,7 @@
         }
 
         .icon {
-            font-size: 2.5rem;
+            font-size: 3rem;
         }
 
         footer {
@@ -250,13 +251,12 @@
 </head>
 <body>
 
-    <!-- Janela Modal de Senha -->
+    <!-- Janela Modal Dinâmica de Senha -->
     <div class="modal-overlay" id="modalSenha">
         <div class="modal-box">
-            <h2>🔒 Área Restrita</h2>
+            <h2>🔒 Autenticação</h2>
             <p style="color: #64748b; margin-bottom: 15px; font-size: 0.9rem;">Insira a senha de acesso:</p>
             
-            <!-- type="password" é o que esconde a senha -->
             <input type="password" id="inputSenha" placeholder="••••••••" onkeypress="verificarEnter(event)">
             
             <p class="erro-senha" id="msgErro">Senha incorreta. Tente novamente.</p>
@@ -268,51 +268,28 @@
         </div>
     </div>
 
-    <!-- Botão que abre o modal -->
-    <button class="btn-restrito" onclick="abrirModal()">🔒 Área Restrita</button>
+    <!-- Botão que abre o modal para Área Restrita (hml.html) -->
+    <button class="btn-restrito" onclick="abrirModal('hml.html', 'ngilabsdgf')">🔒 Área Restrita</button>
 
     <header>
         <img src="https://i.ibb.co/tMYkXHps/Chat-GPT-Image-19-de-mai-de-2026-11-06-18-Photoroom-1.png" alt="NGI Labs Logo" class="logo">
     </header>
 
     <main class="container-projetos">
-        <h1>Projetos</h1>
+        <h1>Portal de Acesso</h1>
          
         <div class="grid-links">
-            <a href="https://larbac90.github.io/simulador/" class="card-link">
-                <span class="icon">🪙</span>
-                <span>ContraCHECK</span>
+            <!-- Botão Externo (Acesso Livre) -->
+            <a href="externo.html" class="card-link">
+                <span class="icon">🌍</span>
+                <span>Usuários Externos</span>
             </a>
 
-            <a href="simupai.html" class="card-link">
-                <span class="icon">💸</span>
-                <span>Simulador de Aposentadoria(PLACEHOLDER)</span>
+            <!-- Botão Interno (Requer Senha) -->
+            <a onclick="abrirModal('dgf.html', 'acessodgf')" class="card-link">
+                <span class="icon">🏢</span>
+                <span>Área Interna</span>
             </a>
-
-            <a href="simupai.html" class="card-link">
-                <span class="icon">💸</span>
-                <span>SimuPAI</span>
-            </a>
-            
-            <a href="calcdata.html" class="card-link">
-                <span class="icon">📅</span>
-                <span>CalcData</span>
-            </a>
-
-            <a href="calendario.html" class="card-link">
-                <span class="icon">☑️</span>
-                <span>Calendário DGF</span>
-            </a>
-
-            <a href="simusaude.html" class="card-link">
-                <span class="icon">🏥</span>
-                <span>Simulador Aux. Saúde</span>
-            </a>
-
-            <a href="https://drive.google.com/file/d/1DvvFcZNtRu1w9sGBYhRnQv4-UisYZzPl/view?usp=sharing" class="card-link">
-                <span class="icon">⏬</span>
-                <span>Download<br>PSAL 1994 - 1998</span>
-            </a> 
         </div>
     </main>
 
@@ -324,13 +301,20 @@
         <div class="footer-text">DGF • NUGOV • TJPE</div>
     </footer>
 
-    <!-- Script de validação da senha -->
+    <!-- Script de validação da senha atualizado -->
     <script>
         const modal = document.getElementById('modalSenha');
         const input = document.getElementById('inputSenha');
         const msgErro = document.getElementById('msgErro');
+        
+        let urlDestinoAtual = "";
+        let senhaCorretaAtual = "";
 
-        function abrirModal() {
+        // Agora a função recebe qual URL abrir e qual senha exigir
+        function abrirModal(urlDestino, senhaCorreta) {
+            urlDestinoAtual = urlDestino;
+            senhaCorretaAtual = senhaCorreta;
+            
             modal.style.display = 'flex';
             input.value = ''; // Limpa o campo ao abrir
             msgErro.style.display = 'none'; // Esconde mensagem de erro antiga
@@ -344,19 +328,15 @@
         function verificarSenha() {
             const senhaDigitada = input.value;
             
-            // Defina sua senha aqui
-            if (senhaDigitada === "ngilabsdgf") { 
-                // Coloque o link da sua área restrita aqui
-                window.location.href = "hml.html"; 
+            if (senhaDigitada === senhaCorretaAtual) { 
+                window.location.href = urlDestinoAtual; 
             } else {
-                // Mostra a mensagem de erro
                 msgErro.style.display = 'block';
                 input.value = '';
                 input.focus();
             }
         }
 
-        // Permite apertar a tecla "Enter" para enviar a senha
         function verificarEnter(event) {
             if (event.key === 'Enter') {
                 verificarSenha();
