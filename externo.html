@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGI Labs - Home</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px 20px; 
+        }
+
+        /* --- BOTÃO VOLTAR --- */
+        .btn-voltar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #004d61;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s, transform 0.2s;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-voltar:hover {
+            background-color: #003645;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        header {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            width: 100%;
+            max-width: 700px;
+            height: auto;
+            display: block;
+            margin-top: 40px; 
+        }
+
+        .container-projetos {
+            background-color: rgba(0, 77, 97, 0.92);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 77, 97, 0.25), 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            margin-top: 20px; 
+        }
+
+        .container-projetos h1 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .grid-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .card-link {
+            background-color: #ffffff;
+            color: #004d61;
+            text-decoration: none;
+            padding: 30px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .card-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .icon {
+            font-size: 2.5rem;
+        }
+
+        footer {
+            margin-top: 30px; 
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            text-align: center;
+        }
+
+        .footer-logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 25px;
+        }
+
+        .footer-logo {
+            height: 45px; 
+            width: auto;
+            display: block;
+            opacity: 0.85;
+            transition: opacity 0.2s;
+        }
+
+        .footer-logo:hover {
+            opacity: 1;
+        }
+
+        .footer-text {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+        }
+        
+        @media (max-width: 600px) {
+            .btn-voltar {
+                top: 10px;
+                left: 10px;
+                font-size: 0.8rem;
+                padding: 8px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Botão Voltar -->
+    <a href="index.html" class="btn-voltar">⬅ Voltar</a>
+
+    <header>
+        <img src="https://i.ibb.co/tMYkXHps/Chat-GPT-Image-19-de-mai-de-2026-11-06-18-Photoroom-1.png" alt="NGI Labs Logo" class="logo">
+    </header>
+
+    <main class="container-projetos">
+        <h1>Projetos</h1>
+         
+        <div class="grid-links">
+            <a href="simupai.html" class="card-link">
+                <span class="icon">💸</span>
+                <span>Simulador de Aposentadoria(PLACEHOLDER)</span>
+            </a>
+
+            <a href="simupai.html" class="card-link">
+                <span class="icon">💸</span>
+                <span>SimuPAI</span>
+            </a>
+            <a href="simusaude.html" class="card-link">
+                <span class="icon">🏥</span>
+                <span>Simulador Aux. Saúde</span>
+            </a> 
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-logos">
+            <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo" alt="Logo 1"> 
+            <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo" alt="Logo DGF">
+        </div>
+        <div class="footer-text">DGF • NUGOV • TJPE</div>
+    </footer>
+
+</body>
+</html>
