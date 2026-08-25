@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Aposentadoria - TJPE (Regras Anteriores à EC 103/19)</title>
+    <!-- html2canvas para exportação de imagem -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-blue: #004b87;
+            --secondary-blue: #003366;
+            --bg-color: #f4f6f8;
+            --card-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --border-color: #e2e8f0;
+            --success-green: #38a169;
+            --success-light: #f0fff4;
+            --warning-orange: #dd6b20;
+            --danger-red: #e53e3e;
+            --danger-light: #fff5f5;
+            --gray-light: #edf2f7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        header {
+            background-color: var(--primary-blue);
+            color: white;
+            padding: 24px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .app-header { position: relative; }
+        .header-content {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            gap: 18px;
+            min-height: 60px;
+        }
+        .header-text {
+            grid-column: 2;
+            text-align: center;
+            min-width: 0;
+        }
+        header h1 { font-size: clamp(1.45rem, 2.2vw, 1.8rem); margin-bottom: 8px; }
+        header p { font-size: clamp(0.82rem, 1.15vw, 0.95rem); opacity: 0.9; }
+        .header-tool-link {
+            grid-column: 3;
+            justify-self: end;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: min(100%, 210px);
+            min-height: 42px;
+            padding: 9px 14px;
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.28);
+            border-radius: 7px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 700;
+            transition: 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            white-space: nowrap;
+        }
+        .header-tool-link:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.45); transform: translateY(-1px); }
+        .header-tool-link:focus-visible { outline: 3px solid rgba(255,255,255,0.45); outline-offset: 2px; }
+        .header-tool-icon { font-size: 1rem; line-height: 1; }
+        .header-tool-text { white-space: nowrap; }
+
+        @media (max-width: 1050px) {
+            header { padding: 20px; }
+            .header-content {
+                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-areas:
+                    "text tool";
+                gap: 16px;
+            }
+            .header-text { grid-area: text; }
+            .header-tool-link { grid-area: tool; width: auto; min-width: 190px; }
+        }
+
+        @media (max-width: 760px) {
+            header { padding: 20px 16px; }
+            .header-content {
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+                min-height: 0;
+            }
+            .header-text { width: 100%; }
+            .header-tool-link {
+                width: min(100%, 260px);
+                min-width: 0;
+            }
+        }
+
+        @media (max-width: 430px) {
+            header h1 { font-size: 1.3rem; }
+            header p { font-size: 0.8rem; }
+            .header-tool-link { width: 100%; max-width: 280px; min-height: 40px; }
+        }
+
+        .main-content {
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            color: var(--primary-blue);
+            border-bottom: 2px solid var(--gray-light);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group { display: flex; flex-direction: column; position: relative; }
+
+        /* CONTROLES DE DECISÃO */
+        .toggle-card {
+            background: #fff; border: 1px solid var(--border-color);
+            border-radius: 8px; padding: 15px 18px 15px 20px; margin-top: 20px;
+            display: grid; grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center; gap: 20px;
+        }
+        .toggle-card.toggle-positive { border-left: 4px solid var(--primary-blue); }
+        .toggle-card.toggle-negative { border-left: 4px solid var(--warning-orange); }
+        .toggle-card.is-expanded { padding-bottom: 20px; }
+        .toggle-section-content {
+            grid-column: 1 / -1;
+            width: 100%;
+            margin-top: 4px;
+            padding-top: 18px;
+            border-top: 1px dashed var(--border-color);
+        }
+        .toggle-section-content .form-grid { margin-top: 0; }
+        .toggle-content { min-width: 0; }
+        .toggle-title {
+            font-size: 1rem; font-weight: 700; color: var(--text-main);
+            line-height: 1.3; display: flex; align-items: center; gap: 7px;
+            margin-bottom: 3px;
+        }
+        .toggle-description {
+            color: var(--text-muted); font-size: 0.82rem; line-height: 1.35;
+        }
+        .toggle-card .radio-group.toggle-options {
+            margin-top: 0; display: inline-flex; gap: 4px; align-items: center;
+            padding: 4px; background: var(--gray-light); border: 1px solid var(--border-color);
+            border-radius: 8px; justify-content: flex-end;
+        }
+        .toggle-options .toggle-option {
+            position: relative; margin: 0; padding: 8px 18px; min-width: 72px;
+            justify-content: center; border-radius: 6px; cursor: pointer;
+            font-size: 0.9rem; font-weight: 600; color: var(--text-muted);
+            transition: 0.2s;
+        }
+        .toggle-options .toggle-option input[type="radio"] {
+            position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;
+        }
+        .toggle-options .toggle-option:has(input:checked) {
+            background: #fff; color: var(--primary-blue);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .toggle-negative .toggle-options .toggle-option:has(input:checked) {
+            color: var(--warning-orange);
+        }
+
+        @media (max-width: 700px) {
+            .toggle-card { grid-template-columns: 1fr; gap: 12px; }
+            .toggle-card .radio-group.toggle-options { justify-content: stretch; width: 100%; }
+            .toggle-options .toggle-option { flex: 1; }
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tooltip-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 16px; height: 16px; background-color: var(--gray-light);
+            color: var(--text-muted); border-radius: 50%; font-size: 0.7rem;
+            font-weight: bold; cursor: help; border: 1px solid var(--border-color);
+            position: relative; flex-shrink: 0; z-index: 100;
+        }
+
+        .tooltip-icon:hover::after {
+            content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
+            transform: translateX(-50%); background-color: var(--text-main); color: #fff;
+            padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; white-space: normal;
+            width: max-content; max-width: 260px; text-align: center; line-height: 1.4;
+            z-index: 999; margin-bottom: 6px; font-weight: normal; box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        input[type="text"], input[type="number"], select {
+            padding: 10px 12px; border: 1px solid var(--border-color);
+            border-radius: 6px; font-size: 1rem; transition: 0.2s; width: 100%;
+        }
+
+        input:focus {
+            outline: none; border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(0, 75, 135, 0.1);
+        }
+        
+        input::placeholder { color: #a0aec0; font-size: 0.9rem; }
+
+        .radio-group { display: flex; gap: 20px; align-items: center; margin-top: 5px; }
+        .radio-group label { font-weight: normal; font-size: 1rem; cursor: pointer; display: flex; gap: 6px; margin: 0; }
+        .radio-group input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-blue); }
+
+        /* Seletor segmentado para Sexo */
+        .sex-options {
+            display: inline-flex; gap: 4px; align-items: center;
+            padding: 4px; background: var(--gray-light); border: 1px solid var(--border-color);
+            border-radius: 8px; width: fit-content; margin-top: 0;
+        }
+        .sex-option {
+            position: relative; margin: 0; padding: 8px 20px; min-width: 108px;
+            justify-content: center; border-radius: 6px; cursor: pointer;
+            font-size: 0.9rem; font-weight: 600; color: var(--text-muted);
+            transition: 0.2s; user-select: none;
+        }
+        .sex-option input[type="radio"] {
+            position: absolute; opacity: 0; width: 1px; height: 1px;
+            pointer-events: none;
+        }
+        .sex-option:has(input:checked) {
+            background: #fff; color: var(--primary-blue);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+        }
+        .sex-option:has(input:focus-visible) {
+            outline: 2px solid var(--primary-blue);
+            outline-offset: 1px;
+        }
+
+        @media (max-width: 700px) {
+            .sex-options { width: 100%; }
+            .sex-option { flex: 1; min-width: 0; }
+        }
+
+        /* ACTIONS BAR AJUSTADA COM ALINHAMENTO STRETCH */
+        .actions-bar { display: flex; gap: 15px; margin-top: 30px; align-items: stretch; flex-wrap: wrap; }
+        .btn-primary, .btn-secondary {
+            border: none; padding: 14px 24px; font-size: 1rem; font-weight: 600;
+            border-radius: 6px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-primary { background-color: var(--primary-blue); color: white; flex: 1.5 1 200px; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--secondary-blue); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-secondary { background-color: var(--gray-light); color: var(--text-main); border: 1px solid var(--border-color); flex: 1 1 150px; }
+        .btn-secondary:hover { background-color: var(--border-color); }
+
+        .alert-box {
+            background-color: #fff3cd; color: #856404; padding: 12px 16px;
+            border-radius: 6px; border-left: 4px solid #ffeeba; margin-bottom: 20px;
+            font-size: 0.9rem; display: flex; align-items: center; gap: 10px;
+        }
+        .validation-warning {
+            color: var(--danger-red); background-color: var(--danger-light);
+            padding: 12px 16px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 20px;
+            display: none; border: 1px solid #fed7d7;
+        }
+        .info-box {
+            background-color: var(--success-light);
+            border: 1px solid #c6f6d5;
+            padding: 15px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .btn-add-period {
+            width: 100%; margin-top: 10px; font-size: 0.85rem; padding: 10px;
+            border: 1px dashed var(--border-color); background: transparent;
+            color: var(--text-muted); border-radius: 6px; cursor: pointer; font-weight: 600;
+        }
+        .btn-add-period:hover { background: var(--gray-light); color: var(--primary-blue); border-color: var(--primary-blue); }
+        .btn-remove-icon {
+            background: none; border: none; color: var(--danger-red); cursor: pointer;
+            font-size: 1rem; padding: 0 5px; transition: 0.2s;
+        }
+        .btn-remove-icon:hover { transform: scale(1.2); }
+
+        .results-section { display: none; margin-top: 40px; }
+        .results-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+        
+        .result-card {
+            border: 1px solid var(--border-color); border-radius: 8px; padding: 20px;
+            background: #fff; position: relative; display: flex; flex-direction: column;
+            order: 0;
+        }
+        
+        .result-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; 
+            background-color: var(--border-color); border-radius: 8px 0 0 8px;
+        }
+        .result-card.success::before { background-color: var(--success-green); }
+        .result-card.future::before { background-color: var(--warning-orange); }
+        .result-card.ineligible::before { background-color: var(--danger-red); }
+
+        /* NOVA ORDEM VISUAL VIA CSS FLEXBOX */
+        .card-header { 
+            order: 1; font-weight: 800; font-size: 1.2rem; margin-bottom: 24px; color: var(--secondary-blue); 
+        }
+        .checklist { 
+            order: 2; list-style: none; font-size: 0.85rem; flex-grow: 1; margin-bottom: 15px; 
+        }
+        .card-date { 
+            order: 3; font-size: 1.6rem; font-weight: 800; margin-bottom: 15px; text-align: center; 
+        }
+        .benefits-title {
+            order: 4; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 6px;
+        }
+        .badges-wrapper { 
+            order: 5; display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; 
+        }
+        .progress-container { 
+            order: 6; width: 100%; background-color: var(--gray-light); border-radius: 4px; height: 8px; margin-top: auto; overflow: hidden; display: none; 
+        }
+        /* ORDEM ESPECÍFICA PARA INAPLICÁVEL */
+        .ineligible .card-date { order: 2; margin-bottom: 15px; }
+        .ineligible .checklist { order: 3; margin-bottom: 0; }
+
+        /* CORES DAS DATAS */
+        .success .card-date { color: var(--success-green); }
+        .future .card-date { color: #009c3b; } 
+        .ineligible .card-date { color: var(--danger-red); font-size: 1.2rem; }
+
+        .benefit-type { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+        .benefit-integral { background-color: var(--success-light); color: var(--success-green); border: 1px solid #c6f6d5; }
+        .benefit-media { background-color: var(--gray-light); color: var(--text-muted); border: 1px solid var(--border-color); }
+        
+        .abono-sim { background-color: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; }
+        .abono-nao { background-color: var(--danger-light); color: var(--danger-red); border: 1px solid #fed7d7; }
+
+        .checklist li { margin-bottom: 8px; display: flex; gap: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--gray-light); }
+        .check-icon { font-size: 1rem; flex-shrink: 0; }
+        .check-ok { color: var(--success-green); }
+        .check-nok { color: var(--danger-red); }
+
+        .progress-bar { height: 100%; background-color: var(--warning-orange); width: 0%; transition: width 1s; }
+        .future .progress-container, .success .progress-container { display: block; }
+        .success .progress-bar { background-color: var(--success-green); width: 100% !important; }
+
+        /* Estilos e regras para Exportação de Imagem e Impressão */
+        body.capture-mode .no-print { display: none !important; }
+        body.capture-mode #resumoDadosImpressao { display: block !important; }
+        body.capture-mode #capturaAviso { display: flex !important; }
+        body.capture-mode header { box-shadow: none; border-bottom: 2px solid var(--primary-blue); }
+
+        @media (max-width: 1199px) {
+            .results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 700px) {
+            .results-grid { grid-template-columns: 1fr; }
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { max-width: 100%; }
+            header { box-shadow: none; color: black; background: white; border-bottom: 2px solid black; }
+            .no-print { display: none !important; }
+            .main-content { box-shadow: none; padding: 0; }
+            .result-card { break-inside: avoid; border: 1px solid #ccc; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="appContainer">
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-text">
+                <h1>Simulador de Aposentadoria TJPE</h1>
+                <p>Projeção de cenários - Desenvolvido pela DGF/SGP - TJPE</p>
+            </div>
+            <a class="header-tool-link" href="https://ngilabs.github.io/ngilabs/aposentados.html" target="_blank" rel="noopener noreferrer" aria-label="Abrir simulador de contracheque de aposentado em nova aba">
+                <span class="header-tool-icon">💰</span>
+                <span class="header-tool-text">Simular Contracheque</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <div class="alert-box no-print">
+            <span>ℹ️</span>
+            <div><strong>Atenção:</strong> A presente simulação possui caráter meramente informativo. As datas e a concessão dos benefícios indicados dependem de análise técnico-jurídica pela Secretaria de Gestão de Pessoas (SGP/TJPE), à luz da legislação vigente à época da implementação dos requisitos.</div>
+        </div>
+
+        <div id="validationWarning" class="validation-warning no-print">
+            ⚠️ <strong>Aviso:</strong> A diferença entre a data de nascimento e o ingresso no serviço público é menor que 18 anos. Verifique os dados digitados.
+        </div>
+        
+        <div id="ageWarning" class="validation-warning no-print" style="border-color: #f5c6cb;">
+            🚫 <strong>Bloqueio:</strong> Idade calculada igual ou superior a 75 anos em relação ao dia atual (Aposentadoria Compulsória). Simulação interrompida.
+        </div>
+
+        <div id="overlapWarning" class="alert-box no-print" style="display: none;">
+            <span>⚠️</span>
+            <div><strong>Aviso de Concomitância:</strong> Foram detectados períodos concomitantes. Os dias coincidentes serão considerados uma única vez na soma dos tempos.</div>
+        </div>
+
+        <form id="simuladorForm" class="no-print">
+            <h2 class="section-title">Dados Pessoais e Funcionais</h2>
+            <!-- GRID 1: Dados Pessoais -->
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Sexo</label>
+                    <div class="radio-group sex-options">
+                        <label class="sex-option"><input type="radio" name="sexo" value="F" required onchange="triggerUpdate()"><span>Feminino</span></label>
+                        <label class="sex-option"><input type="radio" name="sexo" value="M" required onchange="triggerUpdate()"><span>Masculino</span></label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="dataNascimento">Data de Nascimento</label>
+                    <input type="text" id="dataNascimento" placeholder="DD/MM/AAAA" maxlength="10" required oninput="maskDate(this); triggerUpdate()">
+                </div>
+                <div class="form-group">
+                    <label for="dataTjpe">Data de Ingresso no TJPE 
+                        <span class="tooltip-icon" data-tooltip="Início do efetivo exercício no cargo atual no TJPE. O simulador calculará automaticamente o seu tempo de serviço público ininterrupto.">?</span>
+                    </label>
+                    <input type="text" id="dataTjpe" placeholder="DD/MM/AAAA" maxlength="10" required oninput="maskDate(this); triggerUpdate()">
+                </div>
+            </div>
+
+            <!-- TOGGLE + CONTEÚDO DE AVERBAÇÕES -->
+            <div class="toggle-card toggle-positive form-group" id="toggleAverbCard">
+                <div class="toggle-content">
+                    <div class="toggle-title">➕ Tempos averbados anteriores?</div>
+                    <div class="toggle-description">Períodos anteriores de serviço público ou INSS.</div>
+                </div>
+                <div class="radio-group toggle-options">
+                    <label class="toggle-option"><input type="radio" name="hasAverb" value="S" onchange="toggleAverb()"><span>Sim</span></label>
+                    <label class="toggle-option"><input type="radio" name="hasAverb" value="N" onchange="toggleAverb()" checked><span>Não</span></label>
+                </div>
+
+                <div id="sectionAverb" class="toggle-section-content" style="display: none;">
+                    <div class="form-grid">
+                        <div class="form-group" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px;">
+                            <label style="color: var(--primary-blue); border-bottom: 1px dashed var(--gray-light); padding-bottom: 8px; margin-bottom: 12px;">
+                                Tempo Público (Outros Órgãos)
+                                <span class="tooltip-icon" data-tooltip="Tempo averbado de União, Estados ou Municípios. Informe o período exato (De / Até).">?</span>
+                            </label>
+                            <div id="containerAverbPublico">
+                                <div class="period-item" id="pub_1" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <input type="text" class="averb-publico-inicio" placeholder="Início (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+                                    <input type="text" class="averb-publico-fim" placeholder="Fim (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+                                    <button type="button" class="btn-remove-icon" style="visibility: hidden;">❌</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-add-period" onclick="addAverbPublico()">➕ Adicionar período público</button>
+                        </div>
+
+                        <div class="form-group" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px;">
+                            <label style="color: var(--warning-orange); border-bottom: 1px dashed var(--gray-light); padding-bottom: 8px; margin-bottom: 12px;">
+                                Tempo Privado (INSS)
+                                <span class="tooltip-icon" data-tooltip="Tempo celetista. Informe o período exato (De / Até).">?</span>
+                            </label>
+                            <div id="containerAverbPrivado">
+                                <div class="period-item" id="priv_1" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <input type="text" class="averb-privado-inicio" placeholder="Início (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+                                    <input type="text" class="averb-privado-fim" placeholder="Fim (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+                                    <button type="button" class="btn-remove-icon" style="visibility: hidden;">❌</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-add-period" onclick="addAverbPrivado()">➕ Adicionar período privado</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOGGLE + CONTEÚDO DE DEDUÇÕES -->
+            <div class="toggle-card toggle-negative form-group" id="toggleDeducCard">
+                <div class="toggle-content">
+                    <div class="toggle-title">➖ Tempos a subtrair do TJPE?</div>
+                    <div class="toggle-description">Licenças sem vencimento e faltas injustificadas.</div>
+                </div>
+                <div class="radio-group toggle-options">
+                    <label class="toggle-option"><input type="radio" name="hasDeduc" value="S" onchange="toggleDeduc()"><span>Sim</span></label>
+                    <label class="toggle-option"><input type="radio" name="hasDeduc" value="N" onchange="toggleDeduc()" checked><span>Não</span></label>
+                </div>
+
+                <div id="sectionDeduc" class="toggle-section-content" style="display: none;">
+                    <div class="form-grid">
+                        <div class="form-group" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px;">
+                            <label style="color: var(--danger-red); border-bottom: 1px dashed var(--gray-light); padding-bottom: 8px; margin-bottom: 12px;">
+                                Licenças sem Vencimento
+                                <span class="tooltip-icon" data-tooltip="Períodos de licença onde não houve contribuição previdenciária.">?</span>
+                            </label>
+                            <div id="containerLicencas">
+                                <div class="period-item" id="lic_1" style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <input type="text" class="averb-licenca-inicio" placeholder="Início (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+                                    <input type="text" class="averb-licenca-fim" placeholder="Fim (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+                                    <button type="button" class="btn-remove-icon" style="visibility: hidden;">❌</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn-add-period" onclick="addLicenca()">➕ Adicionar licença</button>
+                        </div>
+
+                        <div class="form-group" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px;">
+                            <label style="color: var(--warning-orange); border-bottom: 1px dashed var(--gray-light); padding-bottom: 8px; margin-bottom: 12px;">
+                                Faltas Injustificadas
+                                <span class="tooltip-icon" data-tooltip="Soma total de dias de faltas que não computam para aposentadoria.">?</span>
+                            </label>
+                            <input type="number" id="faltasDias" placeholder="Quantidade total de dias" min="0" oninput="triggerUpdate()" style="margin-top: 5px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GRID 3: Resumo dos Tempos (Caixas de Resultados) -->
+            <div style="margin-top: 25px;">
+                <!-- Grid de Totais Numéricos -->
+                <div class="form-grid">
+                    <!-- Total Público Bruto -->
+                    <div class="form-group info-box" style="background-color: #ebf8ff; border-color: #bee3f8; align-items: center;">
+                        <label style="color: var(--primary-blue); margin-bottom: 4px;">
+                            Total Público Bruto
+                            <span class="tooltip-icon" data-tooltip="Soma dos dias públicos averbados mais os dias corridos no TJPE até hoje (sem descontos).">?</span>
+                        </label>
+                        <div id="badgeTotalPublico" style="font-weight: bold; font-size: 1.15rem; color: var(--text-main);">0 dias</div>
+                    </div>
+
+                    <!-- Total Privado -->
+                    <div class="form-group info-box" style="background-color: #fffaf0; border-color: #feebc8; align-items: center;">
+                        <label style="color: var(--warning-orange); margin-bottom: 4px;">
+                            Total Privado
+                            <span class="tooltip-icon" data-tooltip="Soma total dos dias celetistas (INSS) averbados.">?</span>
+                        </label>
+                        <div id="badgeTotalPrivado" style="font-weight: bold; font-size: 1.15rem; color: var(--text-main);">0 dias</div>
+                    </div>
+
+                    <!-- Dias Subtraídos (Condicional) -->
+                    <div class="form-group info-box" id="boxSubtraidos" style="background-color: var(--danger-light); border-color: #fed7d7; align-items: center; display: none;">
+                        <label style="color: var(--danger-red); margin-bottom: 4px;">
+                            Dias Subtraídos
+                            <span class="tooltip-icon" data-tooltip="Soma de licenças sem vencimento e faltas informadas.">?</span>
+                        </label>
+                        <div id="badgeTotalSubtraidos" style="font-weight: bold; font-size: 1.15rem; color: var(--danger-red);">0 dias</div>
+                    </div>
+
+                    <!-- Total Geral (Líquido) -->
+                    <div class="form-group info-box" style="background-color: #f4f6f8; border-color: var(--border-color); align-items: center;">
+                        <label style="color: var(--text-main); margin-bottom: 4px;">
+                            Total Geral (Contribuição)
+                            <span class="tooltip-icon" data-tooltip="Tempo de Contribuição Líquido até a data de hoje. Soma dos tempos descontadas as faltas, licenças e eventuais dias sobrepostos.">?</span>
+                        </label>
+                        <div id="badgeTotalGeral" style="font-weight: bold; font-size: 1.15rem; color: var(--text-main);">0 dias</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BARRA DE AÇÕES COM A CAIXA DE INGRESSO -->
+            <div class="actions-bar">
+                <div class="info-box" style="flex: 1.1 1 200px; padding: 8px 15px; margin: 0; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; border-color: #c6f6d5; background-color: var(--success-light);">
+                    <label style="color: var(--success-green); margin-bottom: 2px; font-size: 0.85rem;">
+                        Ingresso Serv. Público
+                        <span class="tooltip-icon" data-tooltip="A data mais antiga averbada que possui continuidade em relação à sua entrada no TJPE. O desconto de licenças e faltas não altera este vínculo.">?</span>
+                    </label>
+                    <div id="boxIngressoResult" style="font-weight: bold; font-size: 1.1rem; color: var(--text-main); line-height: 1.2;">
+                        Aguardando...
+                    </div>
+                </div>
+                <button type="button" class="btn-secondary" onclick="resetForm()">🔄 Nova Simulação</button>
+                <button type="button" id="btnCalcular" class="btn-primary" onclick="calcularAposentadoria()">Calcular Cenários</button>
+            </div>
+        </form>
+
+        <div class="results-section" id="resultsSection">
+            <h2 class="section-title" style="font-weight: bold;">
+                <span>Resultados da Simulação</span>
+                <div class="no-print" style="display: flex; gap: 10px;">
+                    <button id="btnExportImage" onclick="exportarImagem()" style="padding: 8px 14px; background: var(--secondary-blue); color: white; border: none; border-radius: 6px; cursor:pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s;">📸 Salvar Imagem</button>
+                    <button onclick="window.print()" style="padding: 8px 14px; background: var(--gray-light); color: var(--text-main); border: 1px solid var(--border-color); border-radius: 6px; cursor:pointer; font-weight: 600; font-size: 0.9rem; transition: 0.2s;">🖨️ Imprimir</button>
+                </div>
+            </h2>
+            
+            <div id="capturaAviso" class="alert-box" style="display: none;">
+                <span>ℹ️</span>
+                <div><strong>Atenção:</strong> A presente simulação possui caráter meramente informativo. As datas e a concessão dos benefícios indicados dependem de análise técnico-jurídica pela Secretaria de Gestão de Pessoas (SGP/TJPE), à luz da legislação vigente à época da implementação dos requisitos.</div>
+            </div>
+
+            <div id="resumoDadosImpressao" style="display: none; margin-bottom: 25px; font-size: 0.95rem; padding: 20px; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);"></div>
+
+            <div class="results-grid" id="cenariosGrid">
+                
+                <div class="result-card" id="cardB">
+                    <div class="card-header">Art. 6º da EC 41/2003</div>
+                    
+                    <ul class="checklist" id="checkB"></ul>
+                    <div class="card-date" id="dateB">--/--/----</div>
+                    
+                    <div class="benefits-title">Proventos e Direitos:</div>
+                    <div class="badges-wrapper">
+                        <div class="benefit-type benefit-integral">
+                            💲 Integralidade e Paridade
+                            <span class="tooltip-icon" data-tooltip="Garante o valor do último salário na ativa e os mesmos reajustes concedidos aos servidores na ativa.">?</span>
+                        </div>
+                        <div class="benefit-type abono-nao">❌ Sem Abono de Permanência</div>
+                    </div>
+                    
+                    <div class="progress-container"><div class="progress-bar" id="progB"></div></div>
+                </div>
+
+                <div class="result-card" id="cardC">
+                    <div class="card-header">Art. 3º da EC 47/2005</div>
+                    
+                    <ul class="checklist" id="checkC"></ul>
+                    <div class="card-date" id="dateC">--/--/----</div>
+                    
+                    <div class="benefits-title">Proventos e Direitos:</div>
+                    <div class="badges-wrapper">
+                        <div class="benefit-type benefit-integral">
+                            💲 Integralidade e Paridade
+                            <span class="tooltip-icon" data-tooltip="Garante o valor do último salário na ativa e os mesmos reajustes concedidos aos servidores na ativa.">?</span>
+                        </div>
+                        <div class="benefit-type abono-sim">✅ Com Abono de Permanência</div>
+                    </div>
+                    
+                    <div class="progress-container"><div class="progress-bar" id="progC"></div></div>
+                </div>
+
+                <div class="result-card" id="cardA">
+                    <div class="card-header">Art. 2º da EC 41/2003 (Pedágio)</div>
+                    
+                    <ul class="checklist" id="checkA"></ul>
+                    <div class="card-date" id="dateA">--/--/----</div>
+                    
+                    <div class="benefits-title">Proventos e Direitos:</div>
+                    <div class="badges-wrapper">
+                        <div class="benefit-type benefit-media">
+                            💲 Média (c/ Redutor) e Paridade
+                            <span class="tooltip-icon" data-tooltip="Proventos calculados pela média com aplicação de redutor de 5% para cada ano faltante para completar a idade mínima exigida na data da aposentadoria.">?</span>
+                        </div>
+                        <div class="benefit-type abono-sim">✅ Com Abono de Permanência</div>
+                    </div>
+                    
+                    <div class="progress-container"><div class="progress-bar" id="progA"></div></div>
+                </div>
+
+                <div class="result-card" id="cardD">
+                    <div class="card-header">Art. 40, CF (Regra Geral Pré-2019)</div>
+                    
+                    <ul class="checklist" id="checkD"></ul>
+                    <div class="card-date" id="dateD">--/--/----</div>
+                    
+                    <div class="benefits-title">Proventos e Direitos:</div>
+                    <div class="badges-wrapper">
+                        <div class="benefit-type benefit-media">
+                            💲 Média das Remunerações
+                            <span class="tooltip-icon" data-tooltip="Proventos calculados pela média aritmética simples das maiores remunerações utilizadas como base para as contribuições do servidor.">?</span>
+                        </div>
+                        <div class="benefit-type abono-sim">✅ Com Abono de Permanência</div>
+                    </div>
+                    
+                    <div class="progress-container"><div class="progress-bar" id="progD"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 20px; color: var(--secondary-blue); font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px;" class="no-print">
+        NGI Labs - DGF
+    </div>
+</div>
+
+<script>
+    let pubCount = 1;
+    let privCount = 1;
+    let licCount = 1;
+
+    function toggleAverb() {
+        const val = document.querySelector('input[name="hasAverb"]:checked').value;
+        const section = document.getElementById('sectionAverb');
+        const card = document.getElementById('toggleAverbCard');
+        section.style.display = val === 'S' ? 'block' : 'none';
+        card.classList.toggle('is-expanded', val === 'S');
+        triggerUpdate();
+    }
+
+    function toggleDeduc() {
+        const val = document.querySelector('input[name="hasDeduc"]:checked').value;
+        const section = document.getElementById('sectionDeduc');
+        const card = document.getElementById('toggleDeducCard');
+        section.style.display = val === 'S' ? 'block' : 'none';
+        card.classList.toggle('is-expanded', val === 'S');
+        triggerUpdate();
+    }
+
+    function maskDate(input) {
+        let v = input.value.replace(/\D/g, '');
+        if (v.length > 2) v = v.replace(/^(\d{2})(\d)/, '$1/$2');
+        if (v.length > 5) v = v.replace(/^(\d{2})\/(\d{2})(\d)/, '$1/$2/$3');
+        input.value = v;
+
+        // Nova Validação Visual
+        if (v.length === 10) {
+            const dataValida = parseDateBR(v);
+            if (!dataValida) {
+                input.style.borderColor = 'var(--danger-red)';
+                input.style.boxShadow = '0 0 0 3px rgba(229, 62, 62, 0.2)';
+                input.setAttribute('data-valid', 'false');
+            } else {
+                input.style.borderColor = 'var(--success-green)';
+                input.style.boxShadow = 'none';
+                input.setAttribute('data-valid', 'true');
+            }
+        } else {
+            // Reseta o estilo enquanto o usuário ainda está digitando
+            input.style.borderColor = 'var(--border-color)';
+            input.style.boxShadow = 'none';
+            input.removeAttribute('data-valid');
+        }
+    }
+
+    function parseDateBR(str) {
+        if (!str || str.length !== 10) return null;
+        const parts = str.split('/');
+        if (parts.length !== 3) return null;
+        
+        const d = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const y = parseInt(parts[2], 10);
+
+        // Nova Trava: Impede erros de digitação de anos absurdos
+        const anoAtual = new Date().getFullYear();
+        if (y < 1920 || y > (anoAtual + 80)) return null;
+
+        const dateObj = new Date(y, m, d);
+        if (dateObj.getFullYear() === y && dateObj.getMonth() === m && dateObj.getDate() === d) {
+            return dateObj;
+        }
+        return null;
+    }
+
+    function formatDate(date) {
+        if (!date) return "--/--/----";
+        const d = String(date.getDate()).padStart(2, '0');
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        return `${d}/${m}/${date.getFullYear()}`;
+    }
+
+    function getExactAge(birthDate, targetDate) {
+        let age = targetDate.getFullYear() - birthDate.getFullYear();
+        let m = targetDate.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && targetDate.getDate() < birthDate.getDate())) age--;
+        return age;
+    }
+
+    function diffDays(d1, d2) {
+        const _MS_PER_DAY = 1000 * 60 * 60 * 24;
+        const utc1 = Date.UTC(d1.getFullYear(), d1.getMonth(), d1.getDate());
+        const utc2 = Date.UTC(d2.getFullYear(), d2.getMonth(), d2.getDate());
+        return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+    }
+    
+    function formatDaysToReadable(days) {
+        if (days <= 0) return "0 dias";
+        const y = Math.floor(days / 365), rem = days % 365, m = Math.floor(rem / 30), d = rem % 30;
+        let parts = [];
+        if (y > 0) parts.push(`${y}a`);
+        if (m > 0) parts.push(`${m}m`);
+        if (d > 0) parts.push(`${d}d`);
+        return parts.join(" ");
+    }
+
+    function getIntervalsFromDOM(prefix) {
+        const intervals = [];
+        const inis = document.querySelectorAll(`.averb-${prefix}-inicio`);
+        const fims = document.querySelectorAll(`.averb-${prefix}-fim`);
+        
+        for (let i = 0; i < inis.length; i++) {
+            const start = parseDateBR(inis[i].value);
+            const end = parseDateBR(fims[i].value);
+            
+            if (start && end) {
+                if (start <= end) {
+                    intervals.push({start, end});
+                    // Reseta a cor caso estivesse vermelho antes
+                    inis[i].style.borderColor = 'var(--success-green)';
+                    fims[i].style.borderColor = 'var(--success-green)';
+                } else {
+                    // Se a data final for menor que a inicial, pinta de vermelho e ignora
+                    inis[i].style.borderColor = 'var(--danger-red)';
+                    fims[i].style.borderColor = 'var(--danger-red)';
+                }
+            }
+        }
+        return intervals;
+    }
+
+    function mergeIntervals(intervals) {
+        if (intervals.length === 0) return { merged: [], hasOverlap: false };
+        intervals.sort((a, b) => a.start - b.start);
+        
+        let merged = [{ start: new Date(intervals[0].start), end: new Date(intervals[0].end) }];
+        let hasOverlap = false;
+
+        for (let i = 1; i < intervals.length; i++) {
+            let current = { start: new Date(intervals[i].start), end: new Date(intervals[i].end) };
+            let lastMerged = merged[merged.length - 1];
+            let nextDay = new Date(lastMerged.end);
+            nextDay.setDate(nextDay.getDate() + 1);
+            nextDay.setHours(0,0,0,0);
+            let currentStartNorm = new Date(current.start); currentStartNorm.setHours(0,0,0,0);
+            let lastMergedEndNorm = new Date(lastMerged.end); lastMergedEndNorm.setHours(0,0,0,0);
+
+            if (currentStartNorm <= lastMergedEndNorm) {
+                hasOverlap = true;
+                if (current.end > lastMerged.end) lastMerged.end = current.end;
+            } else if (currentStartNorm.getTime() === nextDay.getTime()) {
+                lastMerged.end = current.end;
+            } else {
+                merged.push(current);
+            }
+        }
+        return { merged, hasOverlap };
+    }
+
+    function getDaysBefore(mergedIntervals, cutOffDate) {
+        let days = 0;
+        for (let iv of mergedIntervals) {
+            if (iv.start >= cutOffDate) continue; 
+            let end = iv.end < cutOffDate ? iv.end : new Date(cutOffDate.getTime() - 86400000); 
+            days += diffDays(iv.start, end) + 1;
+        }
+        return days;
+    }
+
+    // Retorna a união dos períodos efetivamente computáveis até uma data de referência.
+    // O período do TJPE entra na mesma linha temporal das averbações para impedir
+    // que qualquer dia concomitante seja contado duas vezes.
+    function buildComputableIntervals(pubIntervals, privIntervals, dataTjpe, endDate) {
+        const intervals = [
+            ...pubIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) })),
+            ...privIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) }))
+        ];
+
+        if (dataTjpe && endDate && dataTjpe <= endDate) {
+            intervals.push({ start: new Date(dataTjpe), end: new Date(endDate) });
+        }
+
+        return mergeIntervals(intervals);
+    }
+
+    function intervalsHaveOverlap(intervalsA, intervalsB) {
+        for (const a of intervalsA) {
+            for (const b of intervalsB) {
+                const start = a.start > b.start ? a.start : b.start;
+                const end = a.end < b.end ? a.end : b.end;
+                if (start <= end) return true;
+            }
+        }
+        return false;
+    }
+
+    function determineEpocaIngresso(publicIntervals, dataTjpe) {
+        let combined = publicIntervals.map(iv => ({start: new Date(iv.start), end: new Date(iv.end)}));
+        combined.push({start: new Date(dataTjpe), end: new Date(2100, 0, 1)});
+        
+        let res = mergeIntervals(combined);
+        let continuousStart = dataTjpe;
+        
+        for (let iv of res.merged) {
+            if (iv.start <= dataTjpe && iv.end >= dataTjpe) {
+                continuousStart = iv.start;
+                break;
+            }
+        }
+
+        const limit98 = new Date(1998, 11, 16);
+        const limit03 = new Date(2003, 11, 31);
+        let epoca = 'pos03';
+        if (continuousStart <= limit98) epoca = 'pre98';
+        else if (continuousStart <= limit03) epoca = 'pre03';
+        return { epoca, dataIngressoContinuo: continuousStart };
+    }
+
+    function validarDatas() {
+        const nasc = parseDateBR(document.getElementById('dataNascimento').value);
+        const tj = parseDateBR(document.getElementById('dataTjpe').value);
+        const wMenor18 = document.getElementById('validationWarning');
+        const wIdade75 = document.getElementById('ageWarning');
+        const btnCalc = document.getElementById('btnCalcular');
+        
+        wMenor18.style.display = 'none';
+        wIdade75.style.display = 'none';
+        btnCalc.disabled = false;
+
+        if (nasc) {
+            const idadeHoje = getExactAge(nasc, new Date());
+            if (idadeHoje >= 75) {
+                wIdade75.style.display = 'block';
+                btnCalc.disabled = true;
+                return false;
+            }
+            if (tj && getExactAge(nasc, tj) < 18) {
+                wMenor18.style.display = 'block';
+            }
+        }
+        return true;
+    }
+
+    function triggerUpdate() {
+        if(!validarDatas()) return;
+        
+        const dataTjpeStr = document.getElementById('dataTjpe').value;
+        const dataTjpeObj = parseDateBR(dataTjpeStr);
+
+        const hasAverb = document.querySelector('input[name="hasAverb"]:checked').value === 'S';
+        const hasDeduc = document.querySelector('input[name="hasDeduc"]:checked').value === 'S';
+
+        const pubIntervals = hasAverb ? getIntervalsFromDOM('publico') : [];
+        const privIntervals = hasAverb ? getIntervalsFromDOM('privado') : [];
+        const licIntervals = hasDeduc ? getIntervalsFromDOM('licenca') : [];
+        const faltasDias = hasDeduc ? (parseInt(document.getElementById('faltasDias').value) || 0) : 0;
+
+        const pubRes = mergeIntervals(pubIntervals);
+        const privRes = mergeIntervals(privIntervals);
+        const allAverbRes = mergeIntervals([...pubIntervals, ...privIntervals]);
+        const licRes = mergeIntervals(licIntervals);
+
+        const hojeTmp = new Date(); hojeTmp.setHours(0,0,0,0);
+        const computableTodayRes = dataTjpeObj
+            ? buildComputableIntervals(pubIntervals, privIntervals, dataTjpeObj, hojeTmp)
+            : allAverbRes;
+
+        const tjpeIntervalToday = dataTjpeObj ? [{ start: new Date(dataTjpeObj), end: new Date(hojeTmp) }] : [];
+        const overlapTJPE = tjpeIntervalToday.length > 0 && (
+            intervalsHaveOverlap(tjpeIntervalToday, pubIntervals) ||
+            intervalsHaveOverlap(tjpeIntervalToday, privIntervals)
+        );
+
+        const overlapWarning = document.getElementById('overlapWarning');
+        overlapWarning.style.display = (pubRes.hasOverlap || privRes.hasOverlap || allAverbRes.hasOverlap || overlapTJPE) ? 'flex' : 'none';
+
+        const totalPriv = privRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
+        document.getElementById('badgeTotalPrivado').innerText = totalPriv + ' dias';
+        
+        const totalLicencas = licRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
+        const totalDeduc = totalLicencas + faltasDias;
+
+        const boxSubtraidos = document.getElementById('boxSubtraidos');
+        if (totalDeduc > 0) {
+            boxSubtraidos.style.display = 'flex';
+            document.getElementById('badgeTotalSubtraidos').innerText = totalDeduc + ' dias';
+        } else {
+            boxSubtraidos.style.display = 'none';
+        }
+        
+        const boxIngresso = document.getElementById('boxIngressoResult');
+        let tsPubHoje = 0;
+        let tContHoje = 0;
+
+        if (dataTjpeObj) {
+            const infoIngresso = determineEpocaIngresso(pubIntervals, dataTjpeObj);
+            boxIngresso.innerHTML = `${formatDate(infoIngresso.dataIngressoContinuo)}`;
+            
+            const tsPubAntesTjpe = getDaysBefore(pubRes.merged, dataTjpeObj);
+
+            // Serviço público até hoje: união de TJPE + tempos públicos averbados.
+            const publicUntilTodayRes = mergeIntervals([
+                ...pubIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) })),
+                { start: new Date(dataTjpeObj), end: new Date(hojeTmp) }
+            ]);
+
+            tsPubHoje = publicUntilTodayRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
+            tContHoje = computableTodayRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc;
+        } else {
+            boxIngresso.innerHTML = "Aguardando...";
+            tsPubHoje = pubRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
+            tContHoje = allAverbRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc;
+        }
+
+        tContHoje = Math.max(0, tContHoje);
+
+        document.getElementById('badgeTotalPublico').innerText = tsPubHoje + ' dias';
+        document.getElementById('badgeTotalGeral').innerText = tContHoje + ' dias';
+        document.getElementById('resultsSection').style.display = 'none';
+    }
+
+    function addAverbPublico() {
+        pubCount++;
+        const div = document.createElement('div');
+        div.className = 'period-item'; div.id = `pub_${pubCount}`;
+        div.style = "display: flex; gap: 8px; margin-bottom: 8px;";
+        div.innerHTML = `
+            <input type="text" class="averb-publico-inicio" placeholder="Início (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+            <input type="text" class="averb-publico-fim" placeholder="Fim (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+            <button type="button" class="btn-remove-icon" onclick="removeAverb('pub_${pubCount}')" title="Remover">❌</button>
+        `;
+        document.getElementById('containerAverbPublico').appendChild(div);
+    }
+
+    function addAverbPrivado() {
+        privCount++;
+        const div = document.createElement('div');
+        div.className = 'period-item'; div.id = `priv_${privCount}`;
+        div.style = "display: flex; gap: 8px; margin-bottom: 8px;";
+        div.innerHTML = `
+            <input type="text" class="averb-privado-inicio" placeholder="Início (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+            <input type="text" class="averb-privado-fim" placeholder="Fim (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+            <button type="button" class="btn-remove-icon" onclick="removeAverb('priv_${privCount}')" title="Remover">❌</button>
+        `;
+        document.getElementById('containerAverbPrivado').appendChild(div);
+    }
+
+    function addLicenca() {
+        licCount++;
+        const div = document.createElement('div');
+        div.className = 'period-item'; div.id = `lic_${licCount}`;
+        div.style = "display: flex; gap: 8px; margin-bottom: 8px;";
+        div.innerHTML = `
+            <input type="text" class="averb-licenca-inicio" placeholder="Início (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+            <input type="text" class="averb-licenca-fim" placeholder="Fim (DD/MM/AAAA)" maxlength="10" oninput="maskDate(this); triggerUpdate()">
+            <button type="button" class="btn-remove-icon" onclick="removeAverb('lic_${licCount}')" title="Remover">❌</button>
+        `;
+        document.getElementById('containerLicencas').appendChild(div);
+    }
+
+    function removeAverb(id) {
+        const el = document.getElementById(id);
+        if (el) { el.remove(); triggerUpdate(); }
+    }
+
+    function resetForm() {
+        document.getElementById('simuladorForm').reset();
+        
+        document.querySelector('input[name="hasAverb"][value="N"]').checked = true;
+        document.querySelector('input[name="hasDeduc"][value="N"]').checked = true;
+        toggleAverb();
+        toggleDeduc();
+
+        const cPub = document.getElementById('containerAverbPublico');
+        while (cPub.children.length > 1) cPub.removeChild(cPub.lastChild);
+        const cPriv = document.getElementById('containerAverbPrivado');
+        while (cPriv.children.length > 1) cPriv.removeChild(cPriv.lastChild);
+        const cLic = document.getElementById('containerLicencas');
+        while (cLic.children.length > 1) cLic.removeChild(cLic.lastChild);
+        
+        // Reset the valid states as well.
+        document.querySelectorAll('input[type="text"]').forEach(input => {
+            input.style.borderColor = 'var(--border-color)';
+            input.style.boxShadow = 'none';
+            input.removeAttribute('data-valid');
+        });
+
+        pubCount = 1; privCount = 1; licCount = 1;
+        triggerUpdate();
+    }
+
+    function buildCheckItem(label, currentStr, requiredStr, isOk) {
+        const icon = isOk ? '<span class="check-icon check-ok">✔️</span>' : '<span class="check-icon check-nok">❌</span>';
+        return `<li>${icon} <span><strong>${label}</strong><br>Atual: ${currentStr} / Requisito: ${requiredStr}</span></li>`;
+    }
+
+    function updateUI(cardId, resultDate, checklists, inapplicableReason = "") {
+        const card = document.getElementById(cardId);
+        const dateEl = document.getElementById(cardId.replace('card', 'date'));
+        const checkEl = document.getElementById(cardId.replace('card', 'check'));
+        const progEl = document.getElementById(cardId.replace('card', 'prog'));
+        const badgesEl = card.querySelector('.badges-wrapper');
+        const benefitsTitleEl = card.querySelector('.benefits-title');
+        
+        card.classList.remove('success', 'future', 'ineligible');
+        checkEl.innerHTML = "";
+        
+        if (!resultDate) {
+            dateEl.innerText = "INAPLICÁVEL";
+            card.classList.add('ineligible');
+            checkEl.innerHTML = `<li><span class="check-icon check-nok">🚫</span> ${inapplicableReason}</li>`;
+            progEl.style.width = '0%';
+            if (badgesEl) badgesEl.style.display = 'none';
+            if (benefitsTitleEl) benefitsTitleEl.style.display = 'none';
+        } else {
+            dateEl.innerText = formatDate(resultDate);
+            if (badgesEl) badgesEl.style.display = 'flex';
+            if (benefitsTitleEl) benefitsTitleEl.style.display = 'block';
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            
+            let totalProgress = 0;
+            checklists.forEach(chk => {
+                checkEl.innerHTML += buildCheckItem(chk.label, chk.currStr, chk.reqStr, chk.ok);
+                totalProgress += chk.perc;
+            });
+            
+            const avgProgress = Math.min(100, (totalProgress / checklists.length));
+            progEl.style.width = `${avgProgress}%`;
+
+            if (resultDate <= hoje) {
+                card.classList.add('success');
+                dateEl.innerText += " (Cumprido)";
+                progEl.style.width = '100%';
+            } else {
+                card.classList.add('future');
+            }
+        }
+    }
+
+    let printData = {};
+
+    function prepararResumoImpressao() {
+        const resumo = document.getElementById('resumoDadosImpressao');
+        if(printData.nasc) {
+            let epo = "A partir de 01/01/2004";
+            if(printData.epoca === 'pre98') epo = "Até 16/12/1998";
+            else if(printData.epoca === 'pre03') epo = "Entre 17/12/1998 e 31/12/2003";
+
+            resumo.innerHTML = `
+                <div style="border-bottom: 2px solid var(--primary-blue); padding-bottom: 10px; margin-bottom: 15px;">
+                    <h3 style="color: var(--primary-blue); margin-bottom: 5px; font-size: 1.2rem;">Relatório de Simulação de Aposentadoria</h3>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin: 0;">Projeção de cenários pré-Reforma baseada nas informações inseridas.</p>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div><strong>Sexo:</strong> ${printData.sexo === 'M' ? 'Masculino' : 'Feminino'}</div>
+                    <div><strong>Nascimento:</strong> ${printData.nasc}</div>
+                    <div><strong>Ingresso TJPE:</strong> ${printData.tjpe}</div>
+                    <div><strong>Ingresso Serv. Público:</strong> ${formatDate(printData.ingressoDate)}</div>
+                    <div style="grid-column: 1 / -1; background: var(--gray-light); padding: 8px; border-radius: 4px; margin-top: 5px;">
+                        <strong>Tempos Totais:</strong> ${document.getElementById('badgeTotalPublico').innerText} (Púb. Bruto) | 
+                        ${document.getElementById('badgeTotalPrivado').innerText} (Privado) | 
+                        Subtraídos: ${document.getElementById('badgeTotalSubtraidos') ? document.getElementById('badgeTotalSubtraidos').innerText : '0 dias'} | 
+                        <strong>Geral (Contribuição):</strong> ${document.getElementById('badgeTotalGeral').innerText}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    window.addEventListener('beforeprint', () => {
+        prepararResumoImpressao();
+    });
+
+    function exportarImagem() {
+        if (!printData.nasc) return;
+
+        const btn = document.getElementById('btnExportImage');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "⏳ Gerando...";
+        btn.disabled = true;
+
+        prepararResumoImpressao();
+        
+        document.body.classList.add('capture-mode');
+
+        setTimeout(() => {
+            const container = document.getElementById('appContainer');
+            
+            html2canvas(container, {
+                scale: 2,
+                backgroundColor: '#f4f6f8',
+                useCORS: true
+            }).then(canvas => {
+                document.body.classList.remove('capture-mode');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+
+                const link = document.createElement('a');
+                link.download = `Cenarios_Aposentadoria_${printData.nasc.replace(/\//g, '-')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                console.error("Erro ao exportar imagem:", err);
+                document.body.classList.remove('capture-mode');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                alert("Ocorreu um erro ao gerar a imagem.");
+            });
+        }, 300);
+    }
+
+    function calcularAposentadoria() {
+        if(!validarDatas()) return;
+        
+        const sexoNode = document.querySelector('input[name="sexo"]:checked');
+        const dataNascimento = parseDateBR(document.getElementById('dataNascimento').value);
+        const dataTjpe = parseDateBR(document.getElementById('dataTjpe').value);
+        
+        if (!sexoNode || !dataNascimento || !dataTjpe) {
+            alert("Preencha todos os dados pessoais antes de calcular.");
+            return;
+        }
+
+        const hasAverb = document.querySelector('input[name="hasAverb"]:checked').value === 'S';
+        const hasDeduc = document.querySelector('input[name="hasDeduc"]:checked').value === 'S';
+
+        const pubIntervals = hasAverb ? getIntervalsFromDOM('publico') : [];
+        const privIntervals = hasAverb ? getIntervalsFromDOM('privado') : [];
+        const licIntervals = hasDeduc ? getIntervalsFromDOM('licenca') : [];
+        const faltasDias = hasDeduc ? (parseInt(document.getElementById('faltasDias').value) || 0) : 0;
+        
+        const licRes = mergeIntervals(licIntervals);
+        const totalLicencas = licRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
+        const totalDeduc = totalLicencas + faltasDias;
+
+        const infoIngresso = determineEpocaIngresso(pubIntervals, dataTjpe);
+        const epoca = infoIngresso.epoca;
+
+        printData = { sexo: sexoNode.value, nasc: document.getElementById('dataNascimento').value, tjpe: document.getElementById('dataTjpe').value, epoca: epoca, ingressoDate: infoIngresso.dataIngressoContinuo };
+
+        const allAverbMerged = mergeIntervals([...pubIntervals, ...privIntervals]).merged;
+        const pubMerged = mergeIntervals(pubIntervals).merged;
+
+        const sexo = sexoNode.value;
+        const reqIdadeGeral = sexo === 'M' ? 60 : 55;
+        const reqIdadePedagio = sexo === 'M' ? 53 : 48;
+        const reqContribAnos = sexo === 'M' ? 35 : 30;
+        const reqContribDias = reqContribAnos * 365;
+
+        const elegivelEC41_Art2_EC47 = (epoca === 'pre98');
+        const elegivelEC41_Art6 = (epoca === 'pre98' || epoca === 'pre03');
+
+        const limit98 = new Date(1998, 11, 17);
+        const tempoAntes1998 = getDaysBefore(allAverbMerged, limit98);
+        
+        let diasPedagio = 0;
+        if (elegivelEC41_Art2_EC47) {
+            const tempoFaltanteEm1998 = reqContribDias - tempoAntes1998;
+            if (tempoFaltanteEm1998 > 0) diasPedagio = Math.ceil(tempoFaltanteEm1998 * 0.20);
+        }
+        const reqContribComPedagio = reqContribDias + diasPedagio;
+
+        const tsPubAntesTjpe = getDaysBefore(pubMerged, dataTjpe);
+
+        const hoje = new Date(); hoje.setHours(0,0,0,0);
+        const computableTodayRes = buildComputableIntervals(pubIntervals, privIntervals, dataTjpe, hoje);
+        const publicUntilTodayRes = mergeIntervals([
+            ...pubIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) })),
+            { start: new Date(dataTjpe), end: new Date(hoje) }
+        ]);
+        const idadeAnosHoje = getExactAge(dataNascimento, hoje);
+        const tsPubHoje = publicUntilTodayRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
+        const tContHoje = Math.max(0, computableTodayRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc);
+
+        let dataAtual = new Date(dataTjpe);
+        const limitSim = new Date(dataTjpe); limitSim.setFullYear(limitSim.getFullYear() + 80);
+
+        let resultA = null, resultB = null, resultC = null, resultD = null;
+
+        while (dataAtual <= limitSim) {
+            const diasTjpe = diffDays(dataTjpe, dataAtual);
+            if (diasTjpe < 0) { dataAtual.setDate(dataAtual.getDate() + 1); continue; }
+
+            const idade = getExactAge(dataNascimento, dataAtual);
+
+            // Regra: cada dia concomitante entre TJPE e qualquer averbação
+            // deve ser contado uma única vez.
+            const computableAtDateRes = buildComputableIntervals(pubIntervals, privIntervals, dataTjpe, dataAtual);
+            const publicAtDateRes = mergeIntervals([
+                ...pubIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) })),
+                { start: new Date(dataTjpe), end: new Date(dataAtual) }
+            ]);
+            const tsPub = publicAtDateRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
+            const tCont = Math.max(0, computableAtDateRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc);
+
+            if (!resultD && idade >= reqIdadeGeral && tCont >= reqContribDias && tsPub >= (10 * 365) && diasTjpe >= (5 * 365)) resultD = new Date(dataAtual);
+            if (elegivelEC41_Art6 && !resultB && idade >= reqIdadeGeral && tCont >= reqContribDias && tsPub >= (20 * 365) && diasTjpe >= (10 * 365)) resultB = new Date(dataAtual);
+            if (elegivelEC41_Art2_EC47 && !resultA && idade >= reqIdadePedagio && tCont >= reqContribComPedagio && diasTjpe >= (5 * 365)) resultA = new Date(dataAtual);
+            if (elegivelEC41_Art2_EC47 && !resultC && tCont >= reqContribDias && tsPub >= (25 * 365) && diasTjpe >= (15 * 365)) {
+                const anosExtraContribuicao = Math.floor((tCont - reqContribDias) / 365);
+                const idadeReduzida = reqIdadeGeral - (anosExtraContribuicao > 0 ? anosExtraContribuicao : 0);
+                if (idade >= idadeReduzida) resultC = new Date(dataAtual);
+            }
+
+            if ((resultA || !elegivelEC41_Art2_EC47) && (resultB || !elegivelEC41_Art6) && (resultC || !elegivelEC41_Art2_EC47) && resultD) break;
+            dataAtual.setDate(dataAtual.getDate() + 1);
+        }
+
+        const chkIdade = (req) => ({ label: `Idade Mínima`, currStr: `${idadeAnosHoje} anos`, reqStr: `${req} anos`, ok: idadeAnosHoje >= req, perc: Math.min(100, (idadeAnosHoje/req)*100) });
+        const chkTempo = (label, currD, reqD) => ({ label: label, currStr: formatDaysToReadable(currD), reqStr: formatDaysToReadable(reqD), ok: currD >= reqD, perc: Math.min(100, (currD/reqD)*100) });
+
+        let checksB = [], checksC = [], checksA = [], checksD = [];
+
+        if (elegivelEC41_Art6) {
+            checksB = [chkIdade(reqIdadeGeral), chkTempo("Tempo de Contribuição", tContHoje, reqContribDias), chkTempo("Tempo Serv. Público", tsPubHoje, 20*365), chkTempo("Carreira (TJPE)", diasTjpeHoje, 10*365)];
+        }
+        if (elegivelEC41_Art2_EC47) {
+            const anosExtraHoje = Math.max(0, Math.floor((tContHoje - reqContribDias) / 365));
+            const idadeReqHoje = Math.max(0, reqIdadeGeral - anosExtraHoje);
+            checksC = [{ label: `Idade Mínima (C/ Redução)`, currStr: `${idadeAnosHoje} anos`, reqStr: resultC && resultC <= hoje ? `${idadeReqHoje} anos` : `Dinâmico`, ok: idadeAnosHoje >= idadeReqHoje && tContHoje >= reqContribDias, perc: Math.min(100, (idadeAnosHoje/reqIdadeGeral)*100) }];
+            checksC.push(chkTempo("Tempo de Contribuição", tContHoje, reqContribDias), chkTempo("Tempo Serv. Público", tsPubHoje, 25*365), chkTempo("Carreira (TJPE)", diasTjpeHoje, 15*365));
+            checksA = [chkIdade(reqIdadePedagio), chkTempo(`Contribuição + Pedágio (20%)`, tContHoje, reqContribComPedagio), chkTempo("Cargo Efetivo (TJPE)", diasTjpeHoje, 5*365)];
+        }
+        checksD = [chkIdade(reqIdadeGeral), chkTempo("Tempo de Contribuição", tContHoje, reqContribDias), chkTempo("Tempo Serv. Público", tsPubHoje, 10*365), chkTempo("Cargo Efetivo (TJPE)", diasTjpeHoje, 5*365)];
+
+        document.getElementById('resultsSection').style.display = 'block';
+        updateUI('cardB', resultB, checksB, "Ingresso no Serviço Público detectado posterior a 31/12/2003.");
+        updateUI('cardC', resultC, checksC, "Ingresso no Serviço Público detectado posterior a 16/12/1998.");
+        updateUI('cardA', resultA, checksA, "Ingresso no Serviço Público detectado posterior a 16/12/1998.");
+        updateUI('cardD', resultD, checksD, "");
+        
+        let validScenarios = [];
+        
+        if(resultB) validScenarios.push({id: 'cardB', date: resultB, type: 'int', abono: false});
+        if(resultC) validScenarios.push({id: 'cardC', date: resultC, type: 'int', abono: true});
+        if(resultA) validScenarios.push({id: 'cardA', date: resultA, type: 'med', abono: true});
+        if(resultD) validScenarios.push({id: 'cardD', date: resultD, type: 'med', abono: true});
+
+        const grid = document.getElementById('cenariosGrid');
+        const allCardIds = ['cardB', 'cardC', 'cardA', 'cardD'];
+
+        if (validScenarios.length > 0) {
+            validScenarios.sort((a, b) => {
+                // 1º critério: data de aposentadoria mais próxima.
+                if (a.date.getTime() !== b.date.getTime()) {
+                    return a.date - b.date;
+                }
+
+                // 1º desempate: proventos integrais antes de proventos pela média.
+                if (a.type !== b.type) {
+                    return a.type === 'int' ? -1 : 1;
+                }
+
+                // 2º desempate: com abono de permanência antes de sem abono.
+                if (a.abono !== b.abono) {
+                    return a.abono ? -1 : 1;
+                }
+
+                return 0;
+            });
+        }
+
+        const validIds = validScenarios.map(s => s.id);
+        const invalidIds = allCardIds.filter(id => !validIds.includes(id));
+
+        validIds.forEach(id => grid.appendChild(document.getElementById(id)));
+        invalidIds.forEach(id => grid.appendChild(document.getElementById(id)));
+    }
+</script>
+
+</body>
+</html>
