@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Estudo de Impacto Financeiro</title>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:"Segoe UI",sans-serif;
+    background:#eef4fb;
+    color:#0f172a;
+    min-height:100vh;
+    padding:24px;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:480px 1fr;
+    gap:24px;
+    align-items:start;
+}
+
+.card{
+    background:white;
+    border-radius:24px;
+    border:1px solid #dbe4ee;
+    box-shadow:0 10px 30px rgba(15,23,42,0.04);
+}
+
+.left-panel{
+    padding:24px;
+    position:sticky;
+    top:24px;
+}
+
+.right-panel{
+    padding:24px;
+    background: #ffffff;
+    border-radius:24px;
+}
+
+.header{
+    margin-bottom:24px;
+}
+
+.header h1{
+    font-size:28px;
+    margin-bottom:6px;
+}
+
+.header p{
+    color:#64748b;
+    font-size:14px;
+    line-height:1.5;
+}
+
+.section-title{
+    font-size:16px;
+    margin-bottom:16px;
+    font-weight:700;
+    color:#1e3a8a;
+    border-left: 4px solid #2563eb;
+    padding-left: 8px;
+}
+
+.grid-3{
+    display:grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap:12px;
+}
+
+.input-group{
+    margin-bottom:14px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:6px;
+    font-size:12px;
+    font-weight:600;
+    color:#475569;
+}
+
+input[type="number"], input[type="text"]{
+    width:100%;
+    padding:11px 12px;
+    border-radius:12px;
+    border:1px solid #cbd5e1;
+    background:white;
+    font-size:14px;
+    transition:0.2s;
+}
+
+input:focus{
+    outline:none;
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,0.12);
+}
+
+.scenario{
+    background:#f8fbff;
+    border:1px solid #dbe4ee;
+    border-radius:18px;
+    padding:16px;
+    margin-bottom:16px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
+}
+
+.scenario-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:12px;
+}
+
+.scenario-title-input{
+    font-weight:700;
+    font-size:15px;
+    color:#1e293b;
+    background:transparent;
+    border: 1px solid transparent;
+    padding: 4px 6px !important;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 220px;
+}
+
+.scenario-title-input:hover, .scenario-title-input:focus {
+    background: white;
+    border-color: #cbd5e1;
+}
+
+/* Visual original dos botões da aplicação */
+.btn{
+    border:none;
+    border-radius:14px;
+    padding:14px 18px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.2s;
+    font-size:15px;
+}
+
+.btn-primary{
+    background:#2563eb;
+    color:white;
+    width: 100%;
+    margin-top:8px;
+}
+
+.btn-primary:hover{
+    transform:translateY(-1px);
+    box-shadow:0 10px 20px rgba(37,99,235,0.18);
+}
+
+.btn-secondary{
+    background:#e2e8f0;
+    color:#334155;
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 8px;
+}
+
+.btn-secondary:hover{
+    background:#cbd5e1;
+    color:#0f172a;
+}
+
+/* Barra superior alinhada perfeitamente no esquadro do painel direito */
+.toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.impact-area{
+    background: transparent;
+}
+
+.impact-header{
+    margin-bottom:28px;
+}
+
+.table-card{
+    background:#f8fbff;
+    border:1px solid #dbe4ee;
+    border-radius:22px;
+    overflow:hidden;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#eff6ff;
+    color:#1d4ed8;
+    font-size:14px;
+    text-align:left;
+    padding:18px;
+}
+
+td{
+    padding:18px;
+    border-top:1px solid #dbe4ee;
+    background:white;
+    vertical-align:middle;
+}
+
+.badge{
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:700;
+    display:inline-flex;
+}
+
+.badge-up{
+    background:#f1f5f9;
+    color:#334155;
+}
+
+.badge-down{
+    background:#dcfce7;
+    color:#166534;
+}
+
+.txt-percent {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.txt-percent-up {
+    color: #475569;
+}
+
+.txt-percent-down {
+    color: #166534;
+}
+
+.td-cenario {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+@media(max-width:1200px){
+    .container{
+        grid-template-columns:1fr;
+    }
+    .left-panel{
+        position:relative;
+        top:auto;
+    }
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="card left-panel">
+        <div class="header">
+            <h1>📊 Estudo de Impacto</h1>
+            <p>Simulação financeira para análise comparativa de cenários.</p>
+        </div>
+
+        <div class="section-title">Cenário Atual</div>
+        
+        <div class="input-group">
+            <label>Nome do Cenário</label>
+            <input type="text" id="nomeAtualInput" value="Atual">
+        </div>
+
+        <div class="grid-3" style="margin-bottom: 20px;">
+            <div class="input-group">
+                <label>Qtd.</label>
+                <input type="number" id="qtdAtual" value="10">
+            </div>
+            <div class="input-group">
+                <label>Bolsa (R$)</label>
+                <input type="number" id="bolsaAtual" value="1200">
+            </div>
+            <div class="input-group">
+                <label>V.T. (R$)</label>
+                <input type="number" id="vtAtual" value="200">
+            </div>
+        </div>
+
+        <div class="section-title" style="margin-bottom: 16px;">Cenários Simulados</div>
+        <div id="cenarios"></div>
+
+        <button class="btn btn-primary" onclick="adicionarCenario()">
+            + Adicionar Novo Cenário
+        </button>
+    </div>
+
+    <div class="impact-area">
+        
+        <div class="toolbar">
+            <button class="btn btn-primary" style="width: auto; margin-top: 0;" onclick="salvarImagem()">
+                🖼️ Salvar Imagem
+            </button>
+        </div>
+
+        <div class="card right-panel" id="areaCaptura">
+            
+            <div class="impact-header">
+                <h1 style="font-size:30px;">📈 Comparativo Financeiro</h1>
+                <p style="color:#64748b;margin-top:6px;">
+                    Estudo comparativo entre o cenário atual e projeções futuras simuladas.
+                </p>
+            </div>
+
+            <div class="table-card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Análise / Cenário</th>
+                            <th>Bolsa</th>
+                            <th>Aux. V.T.</th>
+                            <th>Qtd.</th>
+                            <th>Mensal</th>
+                            <th>Impacto Mensal</th>
+                            <th>Anual</th>
+                            <th>Impacto Anual</th>
+                            <th>% Impacto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabelaResultados">
+                        <tr>
+                            <td>
+                                <div class="td-cenario">
+                                    <strong id="cellNomeAtual" style="font-size: 16px;">Atual</strong>
+                                </div>
+                            </td>
+                            <td id="cellBolsaAtual">R$ 0,00</td>
+                            <td id="cellVtAtual">R$ 0,00</td>
+                            <td id="cellQtdAtual">0</td>
+                            <td id="cellMensalAtual">R$ 0,00</td>
+                            <td>—</td>
+                            <td id="cellAnualAtual">R$ 0,00</td>
+                            <td>—</td>
+                            <td>—</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+let contador = 0;
+
+function moeda(valor){
+    return valor.toLocaleString('pt-BR',{
+        style:'currency',
+        currency:'BRL'
+    });
+}
+
+function porcentagem(valor){
+    return (valor >= 0 ? '+' : '') + valor.toFixed(1).replace('.',',') + '%';
+}
+
+function custo(qtd, bolsa, vt){
+    return qtd * (bolsa + vt);
+}
+
+function adicionarCenario(){
+    contador++;
+    const idAtual = contador;
+
+    const html = `
+        <div class="scenario" id="cenario-${idAtual}">
+            <div class="scenario-header">
+                <input
+                    type="text"
+                    class="scenario-title-input"
+                    value="Cenário ${idAtual}"
+                    data-id="${idAtual}"
+                >
+                <button class="btn btn-secondary" onclick="removerCenario(${idAtual})">
+                    Remover
+                </button>
+            </div>
+            <div class="grid-3">
+                <div class="input-group">
+                    <label>Qtd.</label>
+                    <input type="number" class="qtd" value="15">
+                </div>
+                <div class="input-group">
+                    <label>Bolsa (R$)</label>
+                    <input type="number" class="bolsa" value="1400">
+                </div>
+                <div class="input-group">
+                    <label>V.T. (R$)</label>
+                    <input type="number" class="vt" value="250">
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('cenarios').insertAdjacentHTML('beforeend',html);
+    bindInputs();
+    atualizar();
+}
+
+function removerCenario(id){
+    document.getElementById(`cenario-${id}`).remove();
+    atualizar();
+}
+
+function bindInputs(){
+    document.querySelectorAll('.scenario input').forEach(input=>{
+        input.oninput = atualizar;
+    });
+    
+    document.getElementById('nomeAtualInput').oninput = atualizar;
+    document.getElementById('qtdAtual').oninput = atualizar;
+    document.getElementById('bolsaAtual').oninput = atualizar;
+    document.getElementById('vtAtual').oninput = atualizar;
+}
+
+function atualizar(){
+    const nomeAtual = document.getElementById('nomeAtualInput').value;
+    const qtdAtual = Number(document.getElementById('qtdAtual').value);
+    const bolsaAtual = Number(document.getElementById('bolsaAtual').value);
+    const vtAtual = Number(document.getElementById('vtAtual').value);
+
+    const custoAtual = custo(qtdAtual,bolsaAtual,vtAtual);
+    const anualAtual = custoAtual * 12;
+
+    document.getElementById('cellNomeAtual').innerText = nomeAtual || "Atual";
+    document.getElementById('cellBolsaAtual').innerText = moeda(bolsaAtual);
+    document.getElementById('cellVtAtual').innerText = moeda(vtAtual);
+    document.getElementById('cellQtdAtual').innerText = qtdAtual;
+    document.getElementById('cellMensalAtual').innerText = moeda(custoAtual);
+    document.getElementById('cellAnualAtual').innerText = moeda(anualAtual);
+
+    const tbody = document.getElementById('tabelaResultados');
+    while (tbody.rows.length > 1) {
+        tbody.deleteRow(1);
+    }
+
+    document.querySelectorAll('.scenario').forEach((el)=>{
+        const titleInput = el.querySelector('.scenario-title-input');
+        const nome = titleInput.value;
+
+        const qtd = Number(el.querySelector('.qtd').value);
+        const bolsa = Number(el.querySelector('.bolsa').value);
+        const vt = Number(el.querySelector('.vt').value);
+
+        const mensal = custo(qtd,bolsa,vt);
+        const anual = mensal * 12;
+
+        const impactoMensal = mensal - custoAtual;
+        const impactoAnual = anual - anualAtual;
+
+        const percentualMensal = custoAtual > 0 ? (impactoMensal / custoAtual) * 100 : 0;
+
+        const rowHTML = `
+            <tr>
+                <td>
+                    <div class="td-cenario">
+                        <strong>${nome}</strong>
+                    </div>
+                </td>
+                <td>${moeda(bolsa)}</td>
+                <td>${moeda(vt)}</td>
+                <td>—</td>
+                <td>${moeda(mensal)}</td>
+                <td>
+                    <span class="badge ${impactoMensal >= 0 ? 'badge-up' : 'badge-down'}">
+                        ${moeda(impactoMensal)}
+                    </span>
+                </td>
+                <td>${moeda(anual)}</td>
+                <td>
+                    <span class="badge ${impactoAnual >= 0 ? 'badge-up' : 'badge-down'}">
+                        ${moeda(impactoAnual)}
+                    </span>
+                </td>
+                <td>
+                    <span class="txt-percent ${percentualMensal >= 0 ? 'txt-percent-up' : 'txt-percent-down'}">
+                        ${porcentagem(percentualMensal)}
+                    </span>
+                </td>
+            </tr>
+        `;
+        tbody.insertAdjacentHTML('beforeend', rowHTML);
+    });
+}
+
+function salvarImagem(){
+    // Mantendo a captura limpa apenas da div com as tabelas
+    const target = document.getElementById('areaCaptura');
+    
+    const opcoes = {
+        backgroundColor: '#ffffff', 
+        scale: 2,                  
+        logging: false,
+        useCORS: true
+    };
+
+    html2canvas(target, opcoes).then(canvas=>{
+        const link = document.createElement('a');
+        link.download = 'impacto-financeiro.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    });
+}
+
+adicionarCenario();
+adicionarCenario();
+
+</script>
+
+</body>
+</html>

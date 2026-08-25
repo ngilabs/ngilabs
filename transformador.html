@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Cenários - TJPE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================
+           TEMA EXECUTIVO (LIGHT)
+           ========================================== */
+        :root {
+            --primary: #004488;         
+            --primary-dark: #002a5c;    
+            --primary-light: #e6f0fa;   
+            --primary-alpha: rgba(0, 68, 136, 0.1);
+            
+            --success: #059669;         
+            --danger: #dc2626;          
+            --warning: #fbbf24;
+            --neutral: #64748b;
+            
+            --bg-body: #f1f5f9;         
+            --card-bg: #ffffff;
+            --panel-bg: #f8fafc;
+            
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --text-light: #94a3b8;
+            
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-body);
+            margin: 0; padding: 40px 20px;
+            min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .calibri-values { font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; }
+
+        .app-header { text-align: center; margin-bottom: 30px; color: var(--text-main); }
+        .app-header h1 { margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1px; color: var(--primary-dark); }
+        .app-header p { margin: 8px 0 0 0; color: var(--text-muted); font-size: 15px; }
+
+        /* ==========================================
+           SELETOR E MESA DE TRABALHO
+           ========================================== */
+        .modo-seletor-wrapper { display: flex; justify-content: center; margin-bottom: 20px; }
+        .modo-seletor { display: inline-flex; background: #e2e8f0; padding: 5px; border-radius: 99px; }
+        .btn-modo { background: transparent; border: none; color: var(--text-muted); padding: 10px 24px; border-radius: 99px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 8px; }
+        .btn-modo:hover:not(.active) { color: var(--text-main); }
+        .btn-modo.active { background: var(--card-bg); color: var(--primary-dark); box-shadow: var(--shadow-sm); }
+
+        .sandbox-container { width: 100%; max-width: 1200px; background: var(--card-bg); border-radius: 20px; box-shadow: var(--shadow-xl); padding: 30px; margin-bottom: 40px; position: relative; }
+        .sandbox-header-actions { display: flex; justify-content: flex-end; margin-bottom: 15px; }
+        .btn-limpar { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 6px; }
+        .btn-limpar:hover { background: var(--panel-bg); color: var(--danger); border-color: var(--danger); }
+
+        .sandbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 30px; }
+        @media (max-width: 850px) { .sandbox-grid { grid-template-columns: 1fr; } }
+        .painel { border: 1px solid var(--border-color); border-radius: 16px; padding: 20px; background: var(--panel-bg); }
+        .painel h2 { margin: 0 0 20px 0; font-size: 16px; display: flex; align-items: center; gap: 8px; font-weight: 800; text-transform: uppercase; }
+        .painel-origem h2 { color: var(--danger); }
+        .painel-destino h2 { color: var(--success); }
+
+        .sandbox-footer { background: var(--primary-dark); border-radius: 16px; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 10px 25px -5px rgba(0,68,136,0.5); flex-wrap: wrap; gap: 20px; position: sticky; bottom: 20px; z-index: 50; }
+        .live-balance { display: flex; gap: 40px; align-items: center; }
+        .live-balance-item { display: flex; flex-direction: column; }
+        .live-balance-item span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; font-weight: 700; margin-bottom: 4px; }
+        .live-balance-item strong { font-size: 20px; font-weight: 800; }
+        .live-balance-item.destaque { align-items: flex-end; }
+        .live-balance-item.destaque strong { font-size: 24px; color: #4ade80; }
+        .btn-salvar-cenario { background: var(--card-bg); color: var(--primary-dark); border: none; border-radius: 10px; padding: 14px 24px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-salvar-cenario:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+
+        /* ==========================================
+           APRESENTAÇÃO EXECUTIVA (DASHBOARD WEB)
+           ========================================== */
+        .scenarios-header-wrapper { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .scenarios-header-wrapper h2 { margin: 0; color: var(--primary-dark); font-weight: 800; font-size: 22px; }
+        .btn-exportar-todos { background: var(--primary); color: white; border: none; border-radius: 8px; padding: 10px 20px; font-weight: 600; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: var(--shadow-sm); }
+        .btn-exportar-todos:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+
+        .scenarios-wrapper { width: 100%; max-width: 1200px; display: flex; flex-direction: column; gap: 30px; margin-bottom: 50px; }
+        
+        .cenario-dashboard { background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .cd-header { padding: 20px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); }
+        .cd-title-group h3 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary-dark); padding: 4px 8px; border-radius: 6px; border: 1px dashed transparent; cursor: text; margin-left: -8px;}
+        .cd-title-group h3:hover, .cd-title-group h3:focus { border-color: var(--primary); background: var(--primary-light); outline: none; }
+        .cd-title-group p { margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        
+        .cd-actions { display: flex; gap: 10px; }
+        .cd-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .cd-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+        .cd-btn.btn-del:hover { background: #fee2e2; color: var(--danger); border-color: transparent; }
+
+        .cd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 30px; }
+        @media (max-width: 800px) { .cd-body { grid-template-columns: 1fr; } }
+        
+        .cd-col h4 { margin: 0 0 16px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .cd-col.sai h4 { color: var(--danger); }
+        .cd-col.entra h4 { color: var(--success); }
+        
+        .cd-col ul { margin: 0; padding: 0 0 0 4px; list-style-type: none; color: var(--text-main); font-size: 14px; line-height: 1.6; }
+        .cd-col li { margin-bottom: 12px; }
+
+        .cd-footer { padding: 24px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed var(--border-color); }
+        .cd-footer.viavel { background: rgba(5, 150, 105, 0.05); }
+        .cd-footer.inviavel { background: rgba(220, 38, 38, 0.05); }
+        .cd-footer.neutro { background: rgba(100, 116, 139, 0.05); }
+        
+        .cd-impact-label { font-size: 15px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text-main); }
+        .cd-impact-values { display: flex; align-items: baseline; gap: 16px; }
+        .cd-impact-values strong { font-size: 28px; line-height: 1; }
+        .cd-impact-values span { font-size: 14px; font-weight: 600; opacity: 0.8; }
+        
+        .txt-viavel { color: var(--success); }
+        .txt-inviavel { color: var(--danger); }
+        .txt-neutro { color: var(--neutral); }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-light); background: var(--card-bg); border-radius: 16px; border: 2px dashed var(--border-color); width: 100%; box-sizing: border-box; }
+        .empty-state svg { margin-bottom: 16px; }
+
+        /* ==========================================
+           LINHAS E CAMPOS (MESA DE TRABALHO)
+           ========================================== */
+        .lista-linhas { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+        .linha-cargo-box { background: var(--card-bg); padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; display: flex; flex-direction: column; gap: 10px; position: relative; }
+        .linha-cargo-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-alpha); z-index: 100; }
+        
+        .linha-top { display: grid; grid-template-columns: 60px 1fr 32px; gap: 8px; align-items: center; }
+        .linha-top-manual { grid-template-columns: 60px 1fr 100px 32px; } /* Grid específica para inputs manuais */
+
+        input[type="number"], input.busca-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 100%; height: 38px; color: var(--text-main); background-color: var(--panel-bg); font-family: inherit; box-sizing: border-box; }
+        input.busca-input { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; cursor: text; }
+        input[type="number"] { font-weight: 600; text-align: center; padding: 8px 4px; }
+        input[type="number"]:focus, input.busca-input:focus { outline: none; border-color: var(--primary); background-color: var(--card-bg); }
+
+        .dropdown-combobox { position: relative; width: 100%; }
+        .sugestoes-lista { position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; max-height: 250px; overflow-y: auto; z-index: 1000; box-shadow: var(--shadow-xl); display: none; }
+        .sugestao-item { padding: 10px 12px; font-size: 12px; cursor: pointer; border-bottom: 1px solid var(--panel-bg); }
+        .sugestao-item:hover, .sugestao-item.focado { background-color: var(--primary-light); }
+        
+        .btn-remover-linha { background: transparent; color: var(--text-light); border: none; border-radius: 6px; height: 32px; width: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; transition: 0.2s; }
+        .btn-remover-linha:hover { background: #fee2e2; color: var(--danger); }
+        .btn-adicionar { background: transparent; color: var(--text-muted); border: 2px dashed var(--border-color); border-radius: 8px; padding: 10px; cursor: pointer; font-weight: 600; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; transition: 0.2s; width: 100%; }
+        .btn-adicionar:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+        
+        .btn-adicionar-manual { background: transparent; color: var(--text-muted); border: 1px dashed var(--border-color); border-radius: 8px; padding: 6px; cursor: pointer; font-weight: 500; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 4px; transition: 0.2s; width: 100%; margin-top: 8px; }
+        .btn-adicionar-manual:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+        .toggle-switch-container { position: relative; display: inline-flex; background: var(--border-color); border-radius: 99px; padding: 2px; width: 110px; height: 26px; align-items: center; cursor: pointer; user-select: none; }
+        .toggle-slider { position: absolute; top: 2px; left: 2px; width: 52px; height: calc(100% - 4px); background: var(--card-bg); border-radius: 99px; transition: transform 0.25s; z-index: 1; box-shadow: var(--shadow-sm); }
+        .toggle-btn { flex: 1; text-align: center; font-size: 9px; font-weight: 700; color: var(--text-muted); z-index: 2; background: none; border: none; cursor: pointer; height: 100%; text-transform: uppercase; }
+        .toggle-btn.active { color: var(--primary-dark); }
+        .tooltip-icon { cursor: help; color: var(--text-light); font-size: 12px; margin-left: 6px; display: inline-flex; align-items: center; justify-content: center; background: var(--border-color); width: 18px; height: 18px; border-radius: 50%; font-weight: bold; }
+
+        footer { text-align: center; margin-top: auto; padding: 20px 0;}
+        .footer-logos { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 12px; }
+        .footer-logo { height: 32px; object-fit: contain; opacity: 0.5; filter: grayscale(100%); transition: 0.3s; }
+        .footer-logo:hover { opacity: 1; filter: grayscale(0%); }
+        .footer-text { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 2px; font-weight: 600; }
+        
+        .toast-notification { position: fixed; bottom: 30px; right: 30px; padding: 16px 24px; border-radius: 12px; background: var(--text-main); color: var(--card-bg); font-weight: 600; font-size: 14px; z-index: 2000; transform: translateY(150%); transition: transform 0.4s; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-xl); border-left: 4px solid var(--success); }
+        .toast-notification.show { transform: translateY(0); }
+        .toast-notification.warning { background: #fffbeb; color: #b45309; border-left: 4px solid var(--warning); }
+
+        /* Elemento exclusivo do PDF */
+        .pdf-header-doc { display: none; }
+
+        /* ==========================================
+           MAGICA DO CSS PARA IMPRESSÃO NATIVA (PDF)
+           ========================================== */
+        @media print {
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                box-sizing: border-box !important; 
+            }
+            
+            @page { margin: 10mm; size: A4 landscape; }
+
+            html, body { overflow: visible !important; height: auto !important; width: auto !important; margin: 0 !important; padding: 0 !important; background: white !important; }
+
+            .app-header, .modo-seletor-wrapper, .sandbox-container, footer, #toast, .empty-state, .scenarios-header-wrapper {
+                display: none !important;
+            }
+
+            body.is-printing .cenario-dashboard:not(.print-target) { display: none !important; }
+
+            .scenarios-wrapper { 
+                display: block !important; margin: 0 !important; padding: 0 !important; width: auto !important; max-width: none !important; 
+            }
+
+            .cenario-dashboard.print-target, body.is-printing-all .cenario-dashboard {
+                display: block !important; box-shadow: none !important; border: none !important; 
+                margin: 0 !important; padding: 15mm 10mm !important; 
+                width: auto !important; max-width: none !important;
+                page-break-inside: avoid;
+            }
+
+            .cd-actions, .cd-title-group h3 span { display: none !important; }
+
+            .pdf-header-doc { 
+                display: flex !important; justify-content: space-between !important; align-items: center !important;
+                border-bottom: 2px solid var(--primary) !important; padding-bottom: 10px !important; margin-bottom: 20px !important; 
+                width: auto !important;
+            }
+            .pdf-header-doc img { height: 35px !important; margin: 0 !important; }
+            .pdf-header-doc p { font-size: 14pt !important; font-weight: 800 !important; color: var(--primary) !important; text-transform: uppercase; margin: 0 !important;}
+
+            .cd-header { 
+                background: transparent !important; padding: 0 0 10px 0 !important; border-bottom: 1px solid var(--border-color) !important; 
+                text-align: left !important; display: flex !important; justify-content: space-between !important; align-items: flex-end !important; 
+                margin-bottom: 15px !important; width: auto !important;
+            }
+            .cd-title-group h3 { font-size: 18pt !important; border: none !important; padding: 0 !important; margin: 0 0 4px 0 !important; color: var(--primary-dark) !important;}
+            .cd-title-group p { font-size: 11pt !important; margin: 0 !important;}
+            
+            .cd-body { 
+                display: flex !important; gap: 20px !important; align-items: stretch !important; padding: 0 !important; margin-bottom: 20px !important; width: auto !important; 
+            }
+            
+            .cd-col { 
+                flex: 1 !important; margin-bottom: 0 !important; background: var(--panel-bg) !important; padding: 25px !important; 
+                border-radius: 12px !important; width: auto !important; page-break-inside: avoid;
+                border: 2px solid var(--border-color) !important;
+            }
+            
+            .cd-col h4 { font-size: 12pt !important; border-bottom: 1px solid var(--border-color) !important; padding-bottom: 8px !important; margin-top: 0 !important; margin-bottom: 12px !important;}
+            .cd-col.sai h4 { border-color: #fca5a5 !important; }
+            .cd-col.entra h4 { border-color: #86efac !important; }
+
+            .cd-col ul { padding-left: 0px !important; margin: 0 !important; }
+            .cd-col li { page-break-inside: avoid; margin-bottom: 10px !important; font-size: 11pt !important; line-height: 1.4 !important; } 
+            
+            .cd-footer { 
+                display: flex !important; justify-content: space-between !important; align-items: center !important;
+                border-radius: 12px !important; padding: 20px 30px !important; margin-top: 0 !important; page-break-inside: avoid; flex-direction: row !important;
+                border: 4px solid var(--border-color) !important; background-color: var(--panel-bg) !important; 
+                width: auto !important; 
+            }
+            .cd-footer.viavel { border-color: var(--success) !important; }
+            .cd-footer.inviavel { border-color: var(--danger) !important; }
+            .cd-footer.neutro { border-color: var(--neutral) !important; }
+
+            .cd-impact-label { display: block !important; margin-bottom: 0 !important; font-size: 14pt !important; }
+            .cd-impact-values { justify-content: flex-end !important; align-items: baseline !important; gap: 15px !important; }
+            .cd-impact-values strong { font-size: 20pt !important; }
+            .cd-impact-values span { font-size: 12pt !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <h1>Simulador de Transformação</h1>
+        <p>Ajuste os valores na mesa de trabalho, salve os cenários e exporte relatórios formatados.</p>
+    </div>
+
+    <div class="modo-seletor-wrapper">
+        <div class="modo-seletor">
+            <button id="btn-modo-comissionado" class="btn-modo active" onclick="setModoGlobal('comissionado')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Cargos Comissionados
+            </button>
+            <button id="btn-modo-funcao" class="btn-modo" onclick="setModoGlobal('funcao')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                Funções Gratificadas
+            </button>
+        </div>
+    </div>
+
+    <!-- MESA DE TRABALHO -->
+    <div class="sandbox-container">
+        <div class="sandbox-header-actions">
+            <button class="btn-limpar" onclick="limparMesa()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                Limpar Mesa
+            </button>
+        </div>
+        
+        <div class="sandbox-grid">
+            <div class="painel painel-origem">
+                <h2><span style="color: var(--danger);">❑</span> 1. O QUE SAI (EXTINGUIR)</h2>
+                <div class="lista-linhas" id="container-origem"></div>
+                <button class="btn-adicionar" onclick="adicionarLinha('origem', true)">+ Adicionar Cargo/Função</button>
+                <button class="btn-adicionar-manual" onclick="adicionarLinhaManual('origem', true)">+ Criar Personalizado (Nome e Valor)</button>
+            </div>
+
+            <div class="painel painel-destino">
+                <h2><span style="color: var(--success);">+</span> 2. O QUE ENTRA (CRIAR)</h2>
+                <div class="lista-linhas" id="container-destino"></div>
+                <button class="btn-adicionar" onclick="adicionarLinha('destino', true)">+ Adicionar Cargo/Função</button>
+                <button class="btn-adicionar-manual" onclick="adicionarLinhaManual('destino', true)">+ Criar Personalizado (Nome e Valor)</button>
+            </div>
+        </div>
+
+        <div class="sandbox-footer calibri-values">
+            <div class="live-balance">
+                <div class="live-balance-item">
+                    <span>Valor dos atuais extintos</span>
+                    <strong id="live-credito" style="color: #60a5fa;">R$ 0,00</strong>
+                </div>
+                <div class="live-balance-item">
+                    <span>Custo dos novos criados</span>
+                    <strong id="live-custo" style="color: #60a5fa;">R$ 0,00</strong>
+                </div>
+                <div class="live-balance-item destaque">
+                    <span id="live-impacto-titulo">IMPACTO NEUTRO</span>
+                    <strong id="live-saldo" style="color: #94a3b8;">R$ 0,00<span style="font-size: 13px; font-weight: 600; opacity: 0.8;">/mês</span></strong>
+                    <span id="live-saldo-ano" style="font-size: 14px; font-weight: 800; color: #94a3b8; margin-top: 2px; text-transform: none;">R$ 0,00 /ano</span>
+                </div>
+            </div>
+            <button class="btn-salvar-cenario" onclick="salvarCenario()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Salvar Cenário
+            </button>
+        </div>
+    </div>
+
+    <!-- ÁREA DE APRESENTAÇÃO (CENÁRIOS SALVOS) -->
+    <div class="scenarios-header-wrapper" id="scenarios-header" style="display: none;">
+        <h2>Painel de Cenários</h2>
+        <button class="btn-exportar-todos" onclick="exportarTodosNativo()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Exportar Todos
+        </button>
+    </div>
+
+    <div class="scenarios-wrapper" id="scenarios-list">
+        <div class="empty-state" id="empty-state">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            <h3>Painel de Apresentação Vazio</h3>
+            <p>Salve os cenários na mesa de trabalho para gerar os painéis executivos.</p>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-logos">
+            <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" class="footer-logo" alt="Logo TJPE">
+            <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" class="footer-logo" alt="Logo DGF">
+        </div>
+        <div class="footer-text">DGF • NUGOV • TJPE</div>
+    </footer>
+
+<div id="toast" class="toast-notification">
+    <span id="toast-message">Notificação</span>
+</div>
+
+<script>
+/* ==========================================
+   DADOS E REGRAS DE NEGÓCIO
+   ========================================== */
+const FATOR_ATUALIZACAO = 1.053;
+let modoAtualGlobal = 'comissionado';
+let contadorCenarios = 0;
+let ultimoCenarioRemovido = null; 
+let toastTimeout;
+
+const valoresComissionadosRef = {
+    "APJC":     { base: 1319.77,  rep: 1583.72  },
+    "DGAPJC":   { base: 12260.68, rep: 14712.82 },
+    "DGPJC":    { base: 13078.07, rep: 15693.68 },
+    "DASPJC":   { base: 7028.09,  rep: 8433.71  },
+    "DSPJC":    { base: 7590.35,  rep: 9108.42  },
+    "MPJC":     { base: 6559.35,  rep: 7871.22  },
+    "PJC":      { base: 8433.72,  rep: 10120.46 },
+    "PJC-II":   { base: 7590.35,  rep: 9108.42  },
+    "PJC-III":  { base: 7028.09,  rep: 8433.71  },
+    "PJC-IV":   { base: 4216.80,  rep: 5060.16  },
+    "PJC-V":    { base: 3092.36,  rep: 3710.83  },
+    "PJC-VI":   { base: 2634.71,  rep: 3161.65  },
+    "PJC-VII":  { base: 2266.58,  rep: 2719.90  },
+    "SPJC":     { base: 8996.05,  rep: 10795.26 }
+};
+
+const comissionadosData = [
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DO FÓRUM DA COMARCA DE PETROLINA", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DA CENTRAL DE JUIZADOS DA CAPITAL", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DO FÓRUM DA COMARCA DE CARUARU", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DO FÓRUM DA COMARCA DE GARANHUNS", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DO FÓRUM DA COMARCA DE JABOATÃO DOS GUARARAPES", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DO FÓRUM DA COMARCA DE OLINDA", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DO FÓRUM PAULA BATISTA", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DO FÓRUM RODOLFO AURELIANO", s: "PJC-V"},
+    {n: "ADMINISTRADOR AUXILIAR DO PRÉDIO DO FÓRUM THOMAZ DE AQUINO CYRILLO WANDERLEY", s: "PJC-V"},
+    {n: "ADMINISTRADOR DO PRÉDIO", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO CENTRAL JUIZADOS COMARCA DA CAPITAL", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM DA COMARCA DE CARUARU", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM DA COMARCA DE GARANHUNS", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM DA COMARCA DE JABOATÃO DOS GUARARAPES", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM DA COMARCA DE OLINDA", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM DA COMARCA DE PETROLINA", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM DO DISTRITO JUDICIÁRIO ESPECIAL DE F. DE NORONHA", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM PAULA BATISTA", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM RODOLFO AURELIANO", s: "PJC-IV"},
+    {n: "ADMINISTRADOR DO PRÉDIO DO FÓRUM THOMAZ DE AQUINO CYRILLO WANDERLEY", s: "PJC-IV"},
+    {n: "ADMNISTRADOR AUXILIAR DO PRÉDIO DO CENTRO INTEGRADO DA CRIANÇA E DO ADOLECENTE - CICA", s: "PJC-V"},
+    {n: "ADMNISTRADOR DO PRÉDIO DO CENTRO INTEGRADO DA CRIANÇA E DO ADOLECENTE - CICA", s: "PJC-IV"},
+    {n: "AGENTE DE TRANSPORTE E SEGURANÇA", s: "PJC-VI"},
+    {n: "ASSESSOR ADJUNTO", s: "PJC-III"},
+    {n: "ASSESSOR ADMINISTRATIVO DA SECRETARIA DE ADMINISTRAÇÃO", s: "PJC-II"},
+    {n: "ASSESSOR COMUNICAÇÃO SOCIAL DA CGJ", s: "PJC-II"},
+    {n: "ASSESSOR DE CERIMONIAL", s: "PJC-II"},
+    {n: "ASSESSOR DE COMUNICAÇÃO SOCIAL", s: "PJC-II"},
+    {n: "ASSESSOR DE GABINETE DA PRESIDÊNCIA", s: "PJC-VII"},
+    {n: "ASSESSOR DE MAGISTRADO", s: "APJC"},
+    {n: "ASSESSOR JURÍDICO", s: "PJC-II"},
+    {n: "ASSESSOR JURÍDICO DA PRESIDÊNCIA", s: "PJC-II"},
+    {n: "ASSESSOR JURÍDICO DE PRECATÓRIOS", s: "PJC-II"},
+    {n: "ASSESSOR ORÇAMENTO E FINANÇAS", s: "PJC-II"},
+    {n: "ASSESSOR OUVIDORIA JUDICIÁRIA/PJC-IV", s: "PJC-IV"},
+    {n: "ASSESSOR TÉC DA INF DA PRESIDENCIA DO TJ", s: "PJC-II"},
+    {n: "ASSESSOR TÉC DIRETORIA/ENG. ELETRICISTA/PJC-III", s: "PJC-III"},
+    {n: "ASSESSOR TÉCNICO", s: "PJC-III"},
+    {n: "ASSESSOR TÉCNICO ADMINISTRATIVO", s: "PJC-III"},
+    {n: "ASSESSOR TÉCNICO CORREGEDORIA AUX", s: "PJC-IV"},
+    {n: "ASSESSOR TÉCNICO DA CGJ", s: "PJC-II"},
+    {n: "ASSESSOR TÉCNICO DA DIRETORIA DE INFRAESTRUTURA - ENGENHARIA CIVIL", s: "PJC-III"},
+    {n: "ASSESSOR TÉCNICO DA PRESIDÊNCIA", s: "PJC-V"},
+    {n: "ASSESSOR TÉCNICO DE DIRETORIA", s: "PJC-III"},
+    {n: "ASSESSOR TÉCNICO DIRETORIA GERAL", s: "PJC-II"},
+    {n: "ASSESSOR TÉCNICO GOVERNANÇA", s: "PJC-III"},
+    {n: "ASSESSOR TÉCNICO INFORMAÇÃO CGJ", s: "PJC-II"},
+    {n: "ASSESSOR TÉCNICO JUDICIÁRIA", s: "PJC-II"},
+    {n: "ASSESSOR TÉCNICO LEGISLATIVO/PJC-III", s: "PJC-III"},
+    {n: "ASSISTENTE CHEFE DA ASSISTÊNCIA POLICIAL MILITAR E CIVIL DO TJ", s: "MPJC"},
+    {n: "ASSISTENTE TÉC INFORMAÇÃO CORREG GERAL", s: "PJC-III"},
+    {n: "ASSISTENTE TÉCNICO DA ASSESSORIA DE COMUNIC SOCIAL", s: "PJC-V"},
+    {n: "CHEFE ADJUNTO DA CENTRAL DE PERÍCIAS JUDICIAIS", s: "PJC-III"},
+    {n: "CHEFE DA CENTRAL DE PERÍCIAS JUDICIAIS", s: "PJC-II"},
+    {n: "CHEFE DE AUDITORIA DE INSPEÇÃO DA CORREGEDORIA GERAL DE JUSTIÇA", s: "PJC-IV"},
+    {n: "CHEFE DE GABINETE", s: "PJC-III"},
+    {n: "CHEFE DE GABINETE DA PRESIDÊNCIA", s: "PJC"},
+    {n: "CHEFE DO CENTRO DE APOIO PSICOSSOCIAL", s: "PJC-III"},
+    {n: "CHEFE GABINETE DA CGJ", s: "PJC-III"},
+    {n: "CHEFE GABINETE VICE-PRESIDÊNCIA", s: "PJC-III"},
+    {n: "CONSULTOR JURÍDICO", s: "SPJC"},
+    {n: "CONSULTOR JURÍDICO ADJUNTO", s: "PJC"},
+    {n: "COORD ADJ CENTRAL MANDADOS CAPITAL/PJC-III", s: "PJC-III"},
+    {n: "COORD CENTRAL MANDADOS CAPITAL/PJC-II", s: "PJC-II"},
+    {n: "COORDENADOR ADJUNTO", s: "PJC-III"},
+    {n: "COORDENADOR ADJUNTO DOS JUIZADOS ESPECIAIS", s: "PJC-III"},
+    {n: "COORDENADOR ADJUNTO INFÂNCIA E JUVENTUDE", s: "PJC-III"},
+    {n: "DIRETOR", s: "DSPJC"},
+    {n: "DIRETOR ADJUNTO", s: "DASPJC"},
+    {n: "DIRETOR ADJUNTO DE CONTABILIDADE", s: "PJC-III"},
+    {n: "DIRETOR ADJUNTO DE SAÚDE", s: "PJC-III"},
+    {n: "DIRETOR DE ATENDIMENTO AO USUÁRIO", s: "PJC-II"},
+    {n: "DIRETOR DE CONTABILIDADE", s: "PJC-II"},
+    {n: "DIRETOR DE DIRETORIA DA SECRETARIA GESTÃO DE PESSOAS", s: "PJC-II"},
+    {n: "DIRETOR DE SAÚDE", s: "PJC-II"},
+    {n: "DIRETOR DE SISTEMAS", s: "PJC-II"},
+    {n: "DIRETOR DE TERCEIRIZAÇÃO DE PROVIMENTO EM COMISSÃO", s: "PJC-II"},
+    {n: "DIRETOR GERAL ADJUNTO DO TRIBUNAL JUSTIÇA", s: "DGAPJC"},
+    {n: "DIRETOR GERAL TRIBUNAL JUSTIÇA", s: "DGPJC"},
+    {n: "DIRETOR OPERAÇÕES DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO", s: "PJC-II"},
+    {n: "OFICIAL DE GABINETE", s: "PJC-VI"},
+    {n: "SECRETÁRIO", s: "SPJC"},
+    {n: "SECRETÁRIO ADJUNTO", s: "PJC"},
+    {n: "SECRETÁRIO ADJUNTO DA AUDITORIA INTERNA", s: "PJC"},
+    {n: "SECRETÁRIO ADJUNTO DA COORDENADORIA GERAL DE PRECATÓRIOS", s: "PJC-III"},
+    {n: "SECRETÁRIO ADJUNTO GESTÃO DE PESSOAS", s: "PJC"},
+    {n: "SECRETÁRIO ADJUNTO TEC INFORMAÇÃO E COMUNICAÇÃO", s: "PJC"},
+    {n: "SECRETÁRIO CONSELHO DA MAGISTRATURA", s: "PJC-II"},
+    {n: "SECRETÁRIO DA AUDITORIA INTERNA", s: "SPJC"},
+    {n: "SECRETÁRIO DA COORDENADORIA GERAL DE PRECATÓRIOS", s: "PJC-II"},
+    {n: "SECRETÁRIO DE ADMINISTRAÇÃO", s: "SPJC"},
+    {n: "SECRETÁRIO DE ADMINISTRAÇÃO ADJUNTO", s: "PJC"},
+    {n: "SECRETÁRIO DE TECNOLOGIA DA INFORMAÇÃO E COMUNICAÇÃO", s: "SPJC"},
+    {n: "SECRETÁRIO DESEMBARGADOR", s: "PJC-IV"},
+    {n: "SECRETÁRIO EXECUTIVO", s: "PJC-II"},
+    {n: "SECRETÁRIO EXECUTIVO ADJUNTO", s: "PJC-III"},
+    {n: "SECRETÁRIO GERAL DA CGJ", s: "PJC"},
+    {n: "SECRETÁRIO GERAL DA VICE-PRESIDÊNCIA", s: "PJC"},
+    {n: "SECRETÁRIO GESTÃO DE PESSOAS", s: "SPJC"},
+    {n: "SECRETÁRIO JUDICIÁRIO", s: "SPJC"},
+    {n: "SECRETÁRIO JUDICIÁRIO ADJUNTO", s: "PJC"},
+    {n: "SUPERVISOR TÉCNICO DA SECRETARIA DE GESTÃO DE PESSOAS", s: "PJC-IV"},
+    {n: "SUPERVISOR TÉCNICO JUIZADOS ESPECIAIS", s: "PJC-IV"},
+    {n: "SUPERVISOR TÉCNICO VARA REGIONAL INFÂNCIA E JUVENTUDE/1ª", s: "PJC-IV"}
+];
+
+const funcoesGratificadasData = [
+    {n: "ADMINISTRADOR DO FORO", s: "FSJ-3", v: 1201.24},
+    {n: "APOIO ATIVIDADE JURISDICIONAL 1º GRAU", s: "FAP-AJ1G", v: 635.36},
+    {n: "APOIO ATIVIDADE JURISDICIONAL 1º GRAU - CENJUD", s: "FAP-AJ1G", v: 635.36},
+    {n: "APOIO ATIVIDADE JURISDICIONAL 1º GRAU - NUCLEO DE REVISORES E CERTIFICADORES", s: "FAP-AJ1G", v: 635.36},
+    {n: "ASSESSOR DE GESTÃO DOCUMENTAL", s: "FGAGD", v: 8268.36},
+    {n: "ASSESSOR DE MAGISTRADO", s: "FGAM", v: 3078.65},
+    {n: "ASSESSOR MAGISTRADO 2º/FGAM", s: "FGAM", v: 3078.65},
+    {n: "ASSESSOR PLANEJAMENTO E MONITORAMENTO DE CENTRAL DE PROCESSAMENTO REMOTO DE 1º GRAU", s: "FGASCPR", v: 9108.41},
+    {n: "ASSESSOR TÉCNICO DE GOVERNANÇA", s: "FGATG", v: 8433.72},
+    {n: "ASSESSORIA DA TURMA DE UNIFORMIZAÇÃO DE JURISPRUDÊNCIA", s: "FATUJ", v: 8045.93},
+    {n: "ASSESSORIA TÉCNICA DE INOVAÇÃO E INTELIGÊNCIA ARTIFICIAL", s: "FGATIA", v: 2462.90},
+    {n: "ASSISTENTE DE PLANEJAMENTO E MONITORAMENTO DE CENTRAL DE PROCESSAMENTO REMOTO DE 1º GRAU", s: "FAPMCPR", v: 2102.28},
+    {n: "ASSISTENTE TÉCNICO ASSES ESPECIAL CGJ/FGJ-2", s: "FGJ-2", v: 1501.62},
+    {n: "AUDITOR DE INSPEÇÃO/CGJ", s: "FGAI", v: 2462.90},
+    {n: "CHEFE ADJ.DIVISÃO LIQUIDAÇÃO PENAL", s: "FGJ-2", v: 1501.62},
+    {n: "CHEFE CENTRAL ATEND SEC GERAL DA CGJ", s: "FGJ-1", v: 2102.28},
+    {n: "CHEFE DE APOIO A ATIVIDADE CORREICIONAL", s: "FGJ-2", v: 1501.62},
+    {n: "CHEFE DE APOIO JUDICIARIO/ FGJ-1", s: "FGJ-1", v: 2102.28},
+    {n: "CHEFE DE DIVISÃO", s: "FGJ-1", v: 2102.28},
+    {n: "CHEFE DE NÚCLEO", s: "FGJ-1", v: 2102.28},
+    {n: "CHEFE DE NÚCLEO DA CONTADORIA REMOTA DE 1º GRAU", s: "FCNCRCPR", v: 7994.07},
+    {n: "CHEFE DE NÚCLEO DA CENTRAL DE ATENDIMENTO PROCESSUAL DO 1º GRAU", s: "FCNCAP", v: 3241.82, a: true},
+    {n: "CHEFE DE NÚCLEO DE APOIO ADMINISTRATIVO", s: "FCNAACPR", v: 3997.02},
+    {n: "CHEFE DE NÚCLEO DE BIBLIOTECA", s: "FGJ-1", v: 2102.28},
+    {n: "CHEFE DE NÚCLEO DE DIRETORIA REMOTA", s: "FCNDR", v: 3534.76},
+    {n: "CHEFE DE NÚCLEO DE MONITORAMENTO DE CENTRAL DE PROCESSAMENTO DE 1º GRAU", s: "FCNMCPR", v: 3997.02},
+    {n: "CHEFE DE NÚCLEO DE PLANEJAMENTO DE CENTRAL DE PROCESSAMENTO REMOTO DE 1º GRAU", s: "FCNPCPR", v: 3997.02},
+    {n: "CHEFE DE SEÇÃO", s: "FGJ-2", v: 1501.62},
+    {n: "CHEFE DE UNIDADE", s: "FGJ-2", v: 1501.62},
+    {n: "CHEFE DIVISÃO LIQUIDAÇÃO PENAL", s: "FGJ-1", v: 2102.28},
+    {n: "CHEFE DO CAPEMA", s: "FGCSJ-1", v: 3534.76},
+    {n: "CHEFE DO NÚCLEO DE DISTRIBUIÇÃO DE MANDADOS 2", s: "FGNDM-2", v: 1441.36},
+    {n: "CHEFE NUCLEO DISTRIB MANDADOS/FGNDM", s: "FGNDM-1", v: 1861.50},
+    {n: "CHEFE SECRETARIA ESTRUTURA DIFERENCIADA", s: "FGCSJD", v: 3997.02},
+    {n: "CHEFE SECRETARIA JUDICIARIA DA CGJ", s: "FGJ-1", v: 2102.28},
+    {n: "CHEFE UNIDADE AGRAVOS REC EXCEP CARTRIS", s: "FGJ-2", v: 1501.62},
+    {n: "CHEFE UNIDADE DIGIT, REM E BAIXA REC EXCEP CARTRIS", s: "FGJ-2", v: 1501.62},
+    {n: "CHEFE UNIDADE RECURSOS EXCEPC CARTRIS", s: "FGJ-2", v: 1501.62},
+    {n: "COMISSÃO PERMANENTE DE LICITAÇÃO (CPL)", s: "CPL", v: 3142.11},
+    {n: "CONCILIADOR CEJUSC", s: "FGCNSC", v: 1944.39},
+    {n: "CONCILIADOR JUIZADO", s: "FGCJ-1", v: 1944.39},
+    {n: "COORDENADOR DA CENTRAL DE ATENDIMENTO PROCESSUAL DO 1º GRAU", s: "FCCAP", v: 8417.76, a: true},
+    {n: "COORDENADOR DA CONTADORIA REMOTA", s: "FCCRCPR", v: 7994.07},
+    {n: "COORDENADOR DE PROCESSAMENTO REMOTO", s: "FGCNPR", v: 5328.36, a: true},
+    {n: "COORDENADOR DE UNIDADE", s: "FGJ-2", v: 1501.62},
+    {n: "COORDENADOR DO NÚCLEO DE REVISÃO E CERTIFICAÇÃO REMOTA", s: "FCNRCR", v: 3997.02},
+    {n: "COORDENADORIA DE PRECATÓRIOS", s: "PREC", v: 3997.02},
+    {n: "DIRETOR DE DIRETORIA DE PROCESSAMENTO REMOTO", s: "FGDPR", v: 8633.58},
+    {n: "DIRETOR DE GESTÃO DOCUMENTAL", s: "FGDGD", v: 8929.83},
+    {n: "DIRETOR EXECUTIVO DE DIRETORIA DE PROCESSAMENTO REMOTO", s: "FGDEPR", v: 7994.07},
+    {n: "DIRETOR EXECUTIVO DE GESTÃO DOCUMENTAL", s: "FGDEGD", v: 8268.36},
+    {n: "DIRETOR EXECUTIVO DE OPERAÇÕES", s: "FGDEO", v: 7994.07},
+    {n: "DIRETOR EXECUTIVO DE SISTEMAS", s: "FGDES", v: 7994.07},
+    {n: "DIRETOR REGIONAL", s: "FGDR", v: 8633.58},
+    {n: "FUNÇÃO DE APOIO JUDICIÁRIA", s: "FAJ-1", v: 1051.13},
+    {n: "FUNÇÃO DE ASSESSORAMENTO TÉCNICO", s: "FAT", v: 2102.28},
+    {n: "FUNÇÃO DE SECR. JUDICIÁRIA", s: "FSJ-1", v: 1201.24},
+    {n: "FUNÇÃO DE SECRETARIADO JUDICIÁRIA", s: "FSJ-1", v: 1201.24},
+    {n: "FUNÇÃO GERENCIAL JUDICIÁRIA (FGJ-1)", s: "FGJ-1", v: 2213.70, a: true},
+    {n: "FUNÇÃO GERENCIAL JUDICIÁRIA (FGJ-2)", s: "FGJ-2", v: 1501.62},
+    {n: "FUNÇÃO GERENCIAL JUDICIÁRIA (FGJ-3)", s: "FGJ-3", v: 1051.13},
+    {n: "FUNCAO GERENCIAL SECR DE SESSAO - FGSS", s: "FGSS", v: 2474.00},
+    {n: "GERENTE", s: "FGJ-1", v: 2213.70, a: true},
+    {n: "GERENTE DA DIRETORIA DE GESTÃO FINANCEIRA DE MAGISTRADOS", s: "FGGUE2", v: 1441.36},
+    {n: "GERENTE DA DIRETORIA DE GESTÃO FUNCIONAL", s: "FGGUE1", v: 3997.02},
+    {n: "GERENTE DE NÚCLEO DA CONTADORIA REMOTA DE 1º GRAU", s: "FGJ-1", v: 2102.28},
+    {n: "GERENTE DE NÚCLEO DE APOIO ADMINISTRATIVO", s: "FGJ-1", v: 2102.28},
+    {n: "GERENTE DE UNIDADE JUDICIÁRIA DO 1º GRAU", s: "FGGUJ-1", v: 1441.36},
+    {n: "GERENTE GERAL DO CARTRIS", s: "FGJ-1", v: 2102.28},
+    {n: "GESTOR DE CEJUSC", s: "FGGC", v: 1441.36},
+    {n: "GESTOR DE PROJETO", s: "FGJ-2", v: 1501.62},
+    {n: "GESTOR DE PROJETO ESTRATÉGICO I", s: "FGGPE-1", v: 8633.58},
+    {n: "GERENTE DE PROJETO ESTRATÉGICO II", s: "FGGPE-2", v: 3997.02},
+    {n: "GESTOR DE PROJETO ESTRATÉGICO III", s: "FGGPE-3", v: 2102.28},
+    {n: "GESTOR DE UNIDADE ESPECIAL 1", s: "FGGUE1", v: 3997.02},
+    {n: "GESTOR DE UNIDADE ESPECIAL 2", s: "FGGUE2", v: 1441.36},
+    {n: "GESTOR DE UNIDADE ESPECIAL DA CENTRAL JUDICIÁRIA DE PROCESSAMENTO REMOTO", s: "FGGUEC", v: 4208.86, a: true},
+    {n: "LÍDER DE EQUIPE", s: "FLJ-1", v: 1201.24},
+    {n: "LÍDER TÉCNICO", s: "FGJ-2", v: 1501.62},
+    {n: "MEMBRO DE NÚCLEO DO NUGEPNAC/FGMN-1", s: "FGMN-1", v: 1861.50},
+    {n: "REPRESENTAÇÃO DE GABINETE", s: "RG", v: 2462.90},
+    {n: "SECRETARIADO E APOIO ADMIN(CENJUD)/FSJ-1", s: "FSJ-1", v: 1201.24},
+    {n: "SECRETARIADO E APOIO ADMINISTRATIVO (FAJ-3)", s: "FAJ-3", v: 450.47},
+    {n: "SECRETARIADO E APOIO ADMINISTRATIVO (FSJ-1)", s: "FSJ-1", v: 1264.90, a: true},
+    {n: "SECRETÁRIO DE CENTRAL DE PROCESSAMENTO REMOTO DE 1º GRAU", s: "FSCPR", v: 10795.26},
+    {n: "SECRETÁRIO EXECUTIVO DE CENTRAL DE PROCESSAMENTO REMOTO DE 1º GRAU", s: "FSECPR", v: 10120.47},
+    {n: "SECRETÁRIO GERAL COGESI/ FGJ-1", s: "FGJ-1", v: 2102.28},
+    {n: "SUPERVISOR DE ATENDIMENTO DA CENTRAL DE ATENDIMENTO PROCESSUAL DO 1º GRAU", s: "FSACAP", v: 4208.86, a: true},
+    {n: "SUPERVISOR DE PROCESSAMENTO REMOTO", s: "FGSPR", v: 4208.86, a: true},
+    {n: "SUPERVISOR TÉCNICO DA CONTADORIA REMOTA", s: "FSTCR", v: 3997.02},
+    {n: "SUPERVISOR TÉCNICO DA DIRETORIA GERAL", s: "FGSTDG", v: 3997.02},
+    {n: "SUPERVISOR TÉCNICO DE TIC", s: "FGGUE-1", v: 3997.02},
+    {n: "SUPERVISOR DO NÚCLEO DE REVISORES E CERTIFICADORES", s: "FGSNRC", v: 4208.86, a: true}
+];
+
+function formatarMoeda(valor) { return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }); }
+
+function mostrarToast(mensagem, tipo = 'success', duration = 3000) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-message').innerHTML = mensagem;
+    toast.className = `toast-notification ${tipo} show`;
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => { toast.classList.remove('show'); }, duration);
+}
+
+function setModoGlobal(modo) {
+    modoAtualGlobal = modo;
+    document.getElementById('btn-modo-comissionado').classList.toggle('active', modo === 'comissionado');
+    document.getElementById('btn-modo-funcao').classList.toggle('active', modo === 'funcao');
+    limparMesa(false);
+    mostrarToast(`Mesa configurada para: ${modo === 'comissionado' ? 'Comissionados' : 'Funções'}`);
+}
+
+function limparMesa(showToast = true) {
+    document.getElementById('container-origem').innerHTML = '';
+    document.getElementById('container-destino').innerHTML = '';
+    adicionarLinha('origem');
+    adicionarLinha('destino');
+    if(showToast) mostrarToast("Mesa de trabalho limpa.");
+}
+
+function adicionarLinha(tipo, focus = false) {
+    const container = document.getElementById(`container-${tipo}`);
+    const box = document.createElement('div');
+    box.className = 'linha-cargo-box';
+
+    box.innerHTML = `
+        <div class="linha-top">
+            <input type="number" class="calibri-values" value="1" min="1" oninput="calcularSandbox()">
+            <div class="dropdown-combobox">
+                <input type="text" class="busca-input" placeholder="Buscar..." onfocus="abrirListaCompleta(this);" oninput="filtrarListaAoDigitar(this);" onkeydown="navegarLista(event, this)">
+                <div class="sugestoes-lista"></div>
+            </div>
+            <button class="btn-remover-linha" onclick="removerLinha(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        <div class="detalhes-comissionado" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border-color); justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div class="toggle-switch-container">
+                <div class="toggle-slider"></div>
+                <button type="button" onclick="setVinculo(this, 'puro')" class="toggle-btn active">Puro</button>
+                <button type="button" onclick="setVinculo(this, 'efetivo')" class="toggle-btn">Efetivo</button>
+            </div>
+            <span class="tooltip-icon wrap-base-rep" title="Puro: Base + Representação&#10;Efetivo: Apenas Representação">?</span>
+            <div class="valores-breakdown" style="font-size: 12px; text-align: right; color: var(--text-muted); display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                <span class="wrap-base-rep">Base: <span class="v-base" style="font-weight: 600;">R$ 0</span> • Repr: <span class="v-rep" style="font-weight: 600;">R$ 0</span> | </span>
+                <span style="font-size: 15px; color: var(--text-main);">Total: <span class="v-total" style="font-weight: 700;">R$ 0</span></span>
+            </div>
+        </div>
+    `;
+    container.appendChild(box);
+    calcularSandbox();
+    if(focus) { const input = box.querySelector('.busca-input'); if(input) input.focus(); }
+}
+
+function adicionarLinhaManual(tipo, focus = false) {
+    const container = document.getElementById(`container-${tipo}`);
+    const box = document.createElement('div');
+    box.className = 'linha-cargo-box';
+
+    box.innerHTML = `
+        <div class="linha-top linha-top-manual">
+            <input type="number" class="calibri-values" value="1" min="1" oninput="atualizarBreakdownManual(this); calcularSandbox()">
+            <input type="text" class="busca-input nome-manual" placeholder="Nome personalizado..." data-tipo="manual" oninput="calcularSandbox()">
+            <input type="number" step="0.01" class="valor-manual calibri-values" placeholder="Valor unit. R$" oninput="atualizarBreakdownManual(this); calcularSandbox()">
+            <button class="btn-remover-linha" onclick="removerLinha(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
+        <div class="detalhes-comissionado" style="display: flex; padding-top: 10px; border-top: 1px dashed var(--border-color); justify-content: flex-end; align-items: center;">
+            <div class="valores-breakdown" style="font-size: 12px; text-align: right; color: var(--text-muted); display: flex; align-items: center; gap: 8px; width: 100%;">
+                <span style="background: var(--warning); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; margin-right: auto;">PERSONALIZADO</span>
+                <span style="font-size: 15px; color: var(--text-main);">Total: <span class="v-total" style="font-weight: 700;">R$ 0,00</span></span>
+            </div>
+        </div>
+    `;
+    container.appendChild(box);
+    calcularSandbox();
+    if(focus) { const input = box.querySelector('.nome-manual'); if(input) input.focus(); }
+}
+
+function atualizarBreakdownManual(element) {
+    const box = element.closest('.linha-cargo-box');
+    const val = parseFloat(box.querySelector('.valor-manual').value) || 0;
+    const qtd = parseInt(box.querySelector('input[type="number"]').value) || 0;
+    const totalSpan = box.querySelector('.v-total');
+    totalSpan.innerText = formatarMoeda(val * qtd);
+}
+
+function removerLinha(botao) {
+    botao.closest('.linha-cargo-box').remove();
+    calcularSandbox();
+}
+
+function setVinculo(button, value) {
+    const box = button.closest('.linha-cargo-box');
+    const slider = button.parentElement.querySelector('.toggle-slider');
+    const buttons = button.parentElement.querySelectorAll('.toggle-btn');
+    buttons.forEach(btn => btn.classList.remove('active'));
+    button.classList.add('active');
+    slider.style.transform = value === 'puro' ? 'translateX(0)' : 'translateX(54px)';
+    box.setAttribute('data-vinculo', value);
+    atualizarBreakdownLinha(box);
+    calcularSandbox();
+}
+
+function atualizarBreakdownLinha(box) {
+    const input = box.querySelector('.busca-input');
+    const tipo = input.getAttribute('data-tipo');
+    const totalSpan = box.querySelector('.v-total');
+    
+    if (tipo === 'comissionado') {
+        const baseVal = parseFloat(input.getAttribute('data-base')) || 0;
+        const repVal = parseFloat(input.getAttribute('data-rep')) || 0;
+        const vinculo = box.getAttribute('data-vinculo') || 'puro';
+        const baseSpan = box.querySelector('.v-base');
+        const repSpan = box.querySelector('.v-rep');
+        
+        baseSpan.innerText = formatarMoeda(baseVal * FATOR_ATUALIZACAO);
+        repSpan.innerText = formatarMoeda(repVal * FATOR_ATUALIZACAO);
+        totalSpan.innerText = formatarMoeda((vinculo === 'puro' ? baseVal + repVal : repVal) * FATOR_ATUALIZACAO);
+        
+        if (vinculo === 'puro') {
+            baseSpan.style.textDecoration = 'none'; baseSpan.style.opacity = '1';
+            totalSpan.style.textDecoration = 'none'; totalSpan.style.opacity = '1'; totalSpan.style.color = 'var(--text-main)';
+        } else {
+            baseSpan.style.textDecoration = 'line-through'; baseSpan.style.opacity = '0.5';
+            totalSpan.style.textDecoration = 'none'; totalSpan.style.opacity = '1'; totalSpan.style.color = 'var(--text-main)';
+        }
+    } else if (tipo === 'funcao') {
+        const val = parseFloat(input.getAttribute('data-valor')) || 0;
+        const isAtualizado = input.getAttribute('data-atualizado') === 'true';
+        const fator = isAtualizado ? 1 : FATOR_ATUALIZACAO;
+
+        totalSpan.innerText = formatarMoeda(val * fator);
+        totalSpan.style.textDecoration = 'none'; 
+        totalSpan.style.opacity = '1'; 
+        totalSpan.style.color = 'var(--text-main)';
+    }
+}
+
+function abrirListaCompleta(input) {
+    document.querySelectorAll('.sugestoes-lista').forEach(l => l.style.display = 'none');
+    const lista = input.parentElement.querySelector('.sugestoes-lista');
+    lista.style.display = 'block';
+    renderDropdown(lista, "");
+    input.select();
+}
+
+function filtrarListaAoDigitar(input) {
+    const lista = input.parentElement.querySelector('.sugestoes-lista');
+    lista.style.display = 'block';
+    renderDropdown(lista, input.value);
+}
+
+function renderDropdown(listaElement, termo) {
+    const busca = termo.toLowerCase().trim();
+    let html = '';
+
+    if (modoAtualGlobal === "comissionado") {
+        comissionadosData.forEach(c => {
+            const ref = valoresComissionadosRef[c.s] || { base: 0, rep: 0 };
+            if (c.s.toLowerCase().includes(busca) || c.n.toLowerCase().includes(busca) || busca === "") {
+                html += `<div class="sugestao-item" data-codigo="${c.s}" data-base="${ref.base}" data-rep="${ref.rep}" data-tipo="comissionado" data-label="[${c.s}] ${c.n}" onclick="selecionarOpcao(this)"><span style="font-weight: 600;">${c.s}</span> - <span style="color: var(--text-muted);">${c.n}</span></div>`;
+            }
+        });
+    } else {
+        funcoesGratificadasData.forEach(f => {
+            if (f.s.toLowerCase().includes(busca) || f.n.toLowerCase().includes(busca) || busca === "") {
+                const atualizadoStatus = f.a ? 'true' : 'false';
+                html += `<div class="sugestao-item" data-codigo="${f.s}" data-valor="${f.v}" data-atualizado="${atualizadoStatus}" data-tipo="funcao" data-label="[${f.s}] ${f.n}" onclick="selecionarOpcao(this)"><span style="font-weight: 600;">${f.s}</span> - <span style="color: var(--text-muted);">${f.n}</span></div>`;
+            }
+        });
+    }
+    listaElement.innerHTML = html || '<div style="padding:16px; color:var(--text-light); font-size:12px; text-align:center;">Nenhum item...</div>';
+}
+
+function navegarLista(e, input) {
+    const lista = input.parentElement.querySelector('.sugestoes-lista');
+    if (lista.style.display !== 'block') return;
+    const itens = Array.from(lista.querySelectorAll('.sugestao-item'));
+    if (!itens.length) return;
+    
+    let index = itens.findIndex(i => i.classList.contains('focado'));
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (index >= 0) itens[index].classList.remove('focado'); index = (index + 1) % itens.length; itens[index].classList.add('focado'); itens[index].scrollIntoView({block: 'nearest'}); } 
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (index >= 0) itens[index].classList.remove('focado'); index = (index - 1 + itens.length) % itens.length; itens[index].classList.add('focado'); itens[index].scrollIntoView({block: 'nearest'}); } 
+    else if (e.key === 'Enter') { e.preventDefault(); if (index >= 0) selecionarOpcao(itens[index]); }
+}
+
+function selecionarOpcao(itemElement) {
+    const box = itemElement.closest('.linha-cargo-box');
+    const input = box.querySelector('.busca-input');
+    const lista = box.querySelector('.sugestoes-lista');
+    const tipo = itemElement.getAttribute('data-tipo');
+    const label = itemElement.getAttribute('data-label');
+    
+    input.value = label;
+    input.setAttribute('title', label); 
+    input.setAttribute('data-tipo', tipo);
+    lista.style.display = 'none';
+    const detalhesDiv = box.querySelector('.detalhes-comissionado');
+
+    if (tipo === 'comissionado') {
+        input.setAttribute('data-base', itemElement.getAttribute('data-base'));
+        input.setAttribute('data-rep', itemElement.getAttribute('data-rep'));
+        if (!box.getAttribute('data-vinculo')) box.setAttribute('data-vinculo', 'puro');
+        box.querySelector('.toggle-switch-container').style.display = 'inline-flex';
+        box.querySelectorAll('.wrap-base-rep').forEach(el => el.style.display = 'inline-flex');
+        detalhesDiv.style.display = 'flex';
+        atualizarBreakdownLinha(box);
+    } else {
+        input.setAttribute('data-valor', itemElement.getAttribute('data-valor'));
+        input.setAttribute('data-atualizado', itemElement.getAttribute('data-atualizado')); 
+        box.querySelector('.toggle-switch-container').style.display = 'none';
+        box.querySelectorAll('.wrap-base-rep').forEach(el => el.style.display = 'none');
+        detalhesDiv.style.display = 'flex';
+        atualizarBreakdownLinha(box);
+    }
+    calcularSandbox();
+}
+
+function extrairInfoLinha(box) {
+    const qtd = parseInt(box.querySelector('input[type="number"]').value) || 0;
+    const input = box.querySelector('.busca-input');
+    const nome = input.value;
+    const vinculo = box.getAttribute('data-vinculo') || 'puro';
+    const tipo = input.getAttribute('data-tipo');
+    let val = 0;
+    
+    if (tipo === 'comissionado') {
+        const base = parseFloat(input.getAttribute('data-base')) || 0;
+        const rep = parseFloat(input.getAttribute('data-rep')) || 0;
+        val = (vinculo === 'puro' ? base + rep : rep) * FATOR_ATUALIZACAO;
+    } else if (tipo === 'funcao') {
+        const isAtualizado = input.getAttribute('data-atualizado') === 'true';
+        const fator = isAtualizado ? 1 : FATOR_ATUALIZACAO;
+        val = (parseFloat(input.getAttribute('data-valor')) || 0) * fator;
+    } else if (tipo === 'manual') {
+        val = parseFloat(box.querySelector('.valor-manual').value) || 0;
+    }
+    
+    return { qtd, nome, vinculo, valor: val, total: qtd * val, valido: val > 0 && nome !== "", tipo: tipo };
+}
+
+/* ==========================================
+   LÓGICA MATEMÁTICA E RÓTULOS DINÂMICOS
+   ========================================== */
+function calcularSandbox() {
+    let credito = 0; let custo = 0;
+    document.querySelectorAll('#container-origem .linha-cargo-box').forEach(box => { credito += extrairInfoLinha(box).total; });
+    document.querySelectorAll('#container-destino .linha-cargo-box').forEach(box => { custo += extrairInfoLinha(box).total; });
+
+    const saldo = credito - custo;
+    const absSaldo = Math.abs(saldo);
+
+    document.getElementById('live-credito').innerText = formatarMoeda(credito);
+    document.getElementById('live-custo').innerText = formatarMoeda(custo);
+    
+    const tituloImpacto = document.getElementById('live-impacto-titulo');
+    const saldoEl = document.getElementById('live-saldo');
+    const saldoAnoEl = document.getElementById('live-saldo-ano');
+    
+    if (saldo > 0) {
+        tituloImpacto.innerText = "🟢 ECONOMIA GERADA";
+        saldoEl.style.color = 'var(--success)';
+        saldoAnoEl.style.color = 'var(--success)';
+    } else if (saldo < 0) {
+        tituloImpacto.innerText = "🔴 AUMENTO DE CUSTO";
+        saldoEl.style.color = 'var(--danger)';
+        saldoAnoEl.style.color = 'var(--danger)';
+    } else {
+        tituloImpacto.innerText = "⚪ IMPACTO NEUTRO";
+        saldoEl.style.color = 'var(--neutral)';
+        saldoAnoEl.style.color = 'var(--neutral)';
+    }
+
+    saldoEl.innerHTML = `${formatarMoeda(absSaldo)} <span style="font-size: 13px; font-weight: 600; opacity: 0.8;">/mês</span>`;
+    saldoAnoEl.innerText = `${formatarMoeda(absSaldo * 12)} /ano`;
+}
+
+function gerenciarEmptyState() {
+    const list = document.getElementById('scenarios-list');
+    const emptyState = document.getElementById('empty-state');
+    const header = document.getElementById('scenarios-header');
+    const temCenarios = list.querySelectorAll('.cenario-dashboard').length > 0;
+    
+    emptyState.style.display = temCenarios ? 'none' : 'block';
+    header.style.display = temCenarios ? 'flex' : 'none';
+}
+
+function apagarCenario(id) {
+    const card = document.getElementById(`cenario-${id}`);
+    ultimoCenarioRemovido = card.cloneNode(true);
+    card.remove();
+    gerenciarEmptyState();
+    mostrarToast("Cenário excluído. <a href='#' onclick='desfazerExclusao(event)' style='color: #4ade80; text-decoration: underline; margin-left: 8px;'>Desfazer</a>", "warning", 6000);
+}
+
+function desfazerExclusao(e) {
+    e.preventDefault();
+    if (ultimoCenarioRemovido) {
+        document.getElementById('scenarios-list').appendChild(ultimoCenarioRemovido);
+        ultimoCenarioRemovido = null;
+        gerenciarEmptyState();
+        mostrarToast("Cenário restaurado!");
+    }
+}
+
+function salvarCenario() {
+    let creditos = 0; let custos = 0;
+    let descOrigem = []; let descDestino = [];
+
+    const processarLinha = (box, arrDesc, isOrigem) => {
+        const info = extrairInfoLinha(box);
+        if (info.valido) {
+            if (isOrigem) creditos += info.total; else custos += info.total;
+            
+            let vText = '';
+            if (info.tipo === 'comissionado') {
+                vText = info.vinculo === 'puro' ? '(Puro)' : '(Efetivo)';
+            } else if (info.tipo === 'manual') {
+                vText = '<span style="color:var(--warning); font-weight:700;">[Personalizado]</span>';
+            }
+
+            let valUnit = formatarMoeda(info.valor);
+            let valMes = formatarMoeda(info.total);
+            let valAno = formatarMoeda(info.total * 12);
+            
+            arrDesc.push(`
+                <li style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
+                    <div style="margin-bottom: 4px;">
+                        <strong>${info.qtd}x</strong> ${info.nome} <span style="opacity:0.6; font-weight:normal; font-size:12px;">${vText}</span>
+                    </div>
+                    <div style="color: var(--text-muted); font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05);">
+                            Unidade: <strong style="color: var(--text-main);">${valUnit}</strong>
+                        </span>
+                        <span>
+                            Total: <strong style="color: var(--text-main);">${valMes}</strong> <span style="opacity:0.7; font-size:11px;">/mês</span>
+                        </span>
+                        <span style="opacity: 0.3;">|</span>
+                        <span>
+                            <strong style="color: var(--text-main);">${valAno}</strong> <span style="opacity:0.7; font-size:11px;">/ano</span>
+                        </span>
+                    </div>
+                </li>
+            `);
+        }
+    };
+
+    document.querySelectorAll('#container-origem .linha-cargo-box').forEach(box => processarLinha(box, descOrigem, true));
+    document.querySelectorAll('#container-destino .linha-cargo-box').forEach(box => processarLinha(box, descDestino, false));
+
+    if (descOrigem.length === 0 && descDestino.length === 0) {
+        mostrarToast("Preencha ao menos um cargo/função para salvar.", "warning");
+        return;
+    }
+
+    contadorCenarios++;
+    const id = contadorCenarios;
+    const saldo = creditos - custos;
+    const absSaldo = Math.abs(saldo); 
+
+    let labelImpacto = "IMPACTO NEUTRO";
+    let colorClass = "txt-neutro";
+    let bgClass = "neutro";
+
+    if (saldo > 0) {
+        labelImpacto = "ECONOMIA GERADA";
+        colorClass = "txt-viavel";
+        bgClass = "viavel";
+    } else if (saldo < 0) {
+        labelImpacto = "AUMENTO DE CUSTO";
+        colorClass = "txt-inviavel";
+        bgClass = "inviavel";
+    }
+
+    let htmlListaOrigem = descOrigem.length > 0 ? `<ul>${descOrigem.join('')}</ul>` : '<span style="color: var(--text-light); margin-left: 16px;">Nenhum item</span>';
+    let htmlListaDestino = descDestino.length > 0 ? `<ul>${descDestino.join('')}</ul>` : '<span style="color: var(--text-light); margin-left: 16px;">Nenhum item</span>';
+
+    const cardHTML = `
+        <div class="cenario-dashboard" id="cenario-${id}">
+            <!-- PDF Header Oculto Web -->
+            <div class="pdf-header-doc">
+                <img src="https://i.ibb.co/FkLCjrFV/Capturar-removebg-preview-1.png" alt="Logo">
+                <p>Relatório de Simulação de Transformação</p>
+                <img src="https://i.ibb.co/yc32bwv5/Logo-DGF-upscaled-Photoroom.png" alt="Logo DGF">
+            </div>
+
+            <!-- Topo do Card -->
+            <div class="cd-header">
+                <div class="cd-title-group">
+                    <h3 contenteditable="true" onblur="if(this.innerText.trim()==='') this.innerText='Cenário ${id}'">Cenário ${id} <span style="font-size: 14px; color: var(--text-light);">✎</span></h3>
+                    <p>Total Extinto: ${formatarMoeda(creditos)} &nbsp;|&nbsp; Custo dos Novos: ${formatarMoeda(custos)}</p>
+                </div>
+                <div class="cd-actions">
+                    <button class="cd-btn" onclick="exportarNativo(${id})" title="Exportar Relatório PDF">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Exportar Relatório
+                    </button>
+                    <button class="cd-btn btn-del" onclick="apagarCenario(${id})" title="Excluir">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Corpo -->
+            <div class="cd-body">
+                <div class="cd-col sai">
+                    <h4>Sai (Extinguidos)</h4>
+                    ${htmlListaOrigem}
+                </div>
+                <div class="cd-col entra">
+                    <h4>Entra (Criados)</h4>
+                    ${htmlListaDestino}
+                </div>
+            </div>
+
+            <!-- Rodapé / Impacto -->
+            <div class="cd-footer ${bgClass} calibri-values">
+                <div class="cd-impact-label ${colorClass}">${labelImpacto}</div>
+                <div class="cd-impact-values ${colorClass}">
+                    <strong>${formatarMoeda(absSaldo)}</strong> <span>/mês</span>
+                    <span style="opacity: 0.4;">|</span>
+                    <span style="font-size: 18px;">${formatarMoeda(absSaldo * 12)} <span style="font-size:12px;">/ano</span></span>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('scenarios-list').insertAdjacentHTML('beforeend', cardHTML);
+    gerenciarEmptyState();
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    mostrarToast(`Cenário ${id} salvo com sucesso!`);
+}
+
+/* ==========================================
+   FUNÇÕES NATIVAS DE IMPRESSÃO (PDF)
+   ========================================== */
+function exportarNativo(id) {
+    const box = document.getElementById(`cenario-${id}`);
+    const tituloEl = box.querySelector('h3').innerText.replace('✎','').trim();
+    const nomeArquivo = tituloEl.replace(/\s+/g, '_');
+
+    document.querySelectorAll('.print-target').forEach(el => el.classList.remove('print-target'));
+    
+    box.classList.add('print-target');
+    document.body.classList.add('is-printing');
+
+    const originalTitle = document.title;
+    document.title = `Relatorio_${nomeArquivo}`;
+
+    mostrarToast("⚠️ Selecione Salvar em PDF e clique em Salvar", "success", 4000);
+
+    setTimeout(() => { window.print(); }, 500);
+
+    window.addEventListener('afterprint', function onAfterPrint() {
+        document.body.classList.remove('is-printing');
+        box.classList.remove('print-target');
+        document.title = originalTitle;
+        window.removeEventListener('afterprint', onAfterPrint);
+    });
+}
+
+function exportarTodosNativo() {
+    document.body.classList.add('is-printing-all');
+    
+    const originalTitle = document.title;
+    document.title = `Relatorio_Completo_Cenarios`;
+    
+    mostrarToast("⚠️ Selecione Salvar em PDF e clique em Salvar", "success", 4000);
+    
+    setTimeout(() => { window.print(); }, 500);
+
+    window.addEventListener('afterprint', function onAfterPrint() {
+        document.body.classList.remove('is-printing-all');
+        document.title = originalTitle;
+        window.removeEventListener('afterprint', onAfterPrint);
+    });
+}
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.dropdown-combobox')) {
+        document.querySelectorAll('.sugestoes-lista').forEach(l => l.style.display = 'none');
+    }
+});
+
+window.onload = () => {
+    adicionarLinha('origem');
+    adicionarLinha('destino');
+    calcularSandbox();
+    gerenciarEmptyState();
+};
+</script>
+</body>
+</html>
