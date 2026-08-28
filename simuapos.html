@@ -440,7 +440,7 @@
 
         <div id="overlapWarning" class="alert-box no-print" style="display: none;">
             <span>⚠️</span>
-            <div><strong>Aviso de Concomitância:</strong> Foram detectados períodos concomitantes. Os dias coincidentes serão considerados uma única vez na soma dos tempos.</div>
+            <div><strong>Aviso de Concomitância:</strong> Foram detectados períodos averbados sobrepostos. Os dias coincidentes foram unificados na soma para evitar contagem duplicada.</div>
         </div>
 
         <form id="simuladorForm" class="no-print">
@@ -870,33 +870,6 @@
         return days;
     }
 
-    // Retorna a união dos períodos efetivamente computáveis até uma data de referência.
-    // O período do TJPE entra na mesma linha temporal das averbações para impedir
-    // que qualquer dia concomitante seja contado duas vezes.
-    function buildComputableIntervals(pubIntervals, privIntervals, dataTjpe, endDate) {
-        const intervals = [
-            ...pubIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) })),
-            ...privIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) }))
-        ];
-
-        if (dataTjpe && endDate && dataTjpe <= endDate) {
-            intervals.push({ start: new Date(dataTjpe), end: new Date(endDate) });
-        }
-
-        return mergeIntervals(intervals);
-    }
-
-    function intervalsHaveOverlap(intervalsA, intervalsB) {
-        for (const a of intervalsA) {
-            for (const b of intervalsB) {
-                const start = a.start > b.start ? a.start : b.start;
-                const end = a.end < b.end ? a.end : b.end;
-                if (start <= end) return true;
-            }
-        }
-        return false;
-    }
-
     function determineEpocaIngresso(publicIntervals, dataTjpe) {
         let combined = publicIntervals.map(iv => ({start: new Date(iv.start), end: new Date(iv.end)}));
         combined.push({start: new Date(dataTjpe), end: new Date(2100, 0, 1)});
@@ -960,22 +933,11 @@
 
         const pubRes = mergeIntervals(pubIntervals);
         const privRes = mergeIntervals(privIntervals);
-        const allAverbRes = mergeIntervals([...pubIntervals, ...privIntervals]);
+        const allRes = mergeIntervals([...pubIntervals, ...privIntervals]);
         const licRes = mergeIntervals(licIntervals);
 
-        const hojeTmp = new Date(); hojeTmp.setHours(0,0,0,0);
-        const computableTodayRes = dataTjpeObj
-            ? buildComputableIntervals(pubIntervals, privIntervals, dataTjpeObj, hojeTmp)
-            : allAverbRes;
-
-        const tjpeIntervalToday = dataTjpeObj ? [{ start: new Date(dataTjpeObj), end: new Date(hojeTmp) }] : [];
-        const overlapTJPE = tjpeIntervalToday.length > 0 && (
-            intervalsHaveOverlap(tjpeIntervalToday, pubIntervals) ||
-            intervalsHaveOverlap(tjpeIntervalToday, privIntervals)
-        );
-
         const overlapWarning = document.getElementById('overlapWarning');
-        overlapWarning.style.display = (pubRes.hasOverlap || privRes.hasOverlap || allAverbRes.hasOverlap || overlapTJPE) ? 'flex' : 'none';
+        overlapWarning.style.display = (pubRes.hasOverlap || privRes.hasOverlap || allRes.hasOverlap) ? 'flex' : 'none';
 
         const totalPriv = privRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
         document.getElementById('badgeTotalPrivado').innerText = totalPriv + ' dias';
@@ -1000,19 +962,17 @@
             boxIngresso.innerHTML = `${formatDate(infoIngresso.dataIngressoContinuo)}`;
             
             const tsPubAntesTjpe = getDaysBefore(pubRes.merged, dataTjpeObj);
-
-            // Serviço público até hoje: união de TJPE + tempos públicos averbados.
-            const publicUntilTodayRes = mergeIntervals([
-                ...pubIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) })),
-                { start: new Date(dataTjpeObj), end: new Date(hojeTmp) }
-            ]);
-
-            tsPubHoje = publicUntilTodayRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
-            tContHoje = computableTodayRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc;
+            const tContAntesTjpe = getDaysBefore(allRes.merged, dataTjpeObj);
+            
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            const diasTjpeHoje = Math.max(0, diffDays(dataTjpeObj, hoje));
+            
+            tsPubHoje = tsPubAntesTjpe + diasTjpeHoje;
+            tContHoje = tContAntesTjpe + diasTjpeHoje - totalDeduc;
         } else {
             boxIngresso.innerHTML = "Aguardando...";
             tsPubHoje = pubRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
-            tContHoje = allAverbRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc;
+            tContHoje = allRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc;
         }
 
         tContHoje = Math.max(0, tContHoje);
@@ -1241,7 +1201,8 @@
 
         printData = { sexo: sexoNode.value, nasc: document.getElementById('dataNascimento').value, tjpe: document.getElementById('dataTjpe').value, epoca: epoca, ingressoDate: infoIngresso.dataIngressoContinuo };
 
-        const allAverbMerged = mergeIntervals([...pubIntervals, ...privIntervals]).merged;
+        const allIntervals = [...pubIntervals, ...privIntervals];
+        const allMerged = mergeIntervals(allIntervals).merged;
         const pubMerged = mergeIntervals(pubIntervals).merged;
 
         const sexo = sexoNode.value;
@@ -1254,7 +1215,7 @@
         const elegivelEC41_Art6 = (epoca === 'pre98' || epoca === 'pre03');
 
         const limit98 = new Date(1998, 11, 17);
-        const tempoAntes1998 = getDaysBefore(allAverbMerged, limit98);
+        const tempoAntes1998 = getDaysBefore(allMerged, limit98);
         
         let diasPedagio = 0;
         if (elegivelEC41_Art2_EC47) {
@@ -1263,17 +1224,14 @@
         }
         const reqContribComPedagio = reqContribDias + diasPedagio;
 
+        const tContAntesTjpe = getDaysBefore(allMerged, dataTjpe);
         const tsPubAntesTjpe = getDaysBefore(pubMerged, dataTjpe);
 
         const hoje = new Date(); hoje.setHours(0,0,0,0);
-        const computableTodayRes = buildComputableIntervals(pubIntervals, privIntervals, dataTjpe, hoje);
-        const publicUntilTodayRes = mergeIntervals([
-            ...pubIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) })),
-            { start: new Date(dataTjpe), end: new Date(hoje) }
-        ]);
+        const diasTjpeHoje = Math.max(0, diffDays(dataTjpe, hoje));
         const idadeAnosHoje = getExactAge(dataNascimento, hoje);
-        const tsPubHoje = publicUntilTodayRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
-        const tContHoje = Math.max(0, computableTodayRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc);
+        const tsPubHoje = tsPubAntesTjpe + diasTjpeHoje;
+        const tContHoje = Math.max(0, tContAntesTjpe + diasTjpeHoje - totalDeduc);
 
         let dataAtual = new Date(dataTjpe);
         const limitSim = new Date(dataTjpe); limitSim.setFullYear(limitSim.getFullYear() + 80);
@@ -1285,16 +1243,10 @@
             if (diasTjpe < 0) { dataAtual.setDate(dataAtual.getDate() + 1); continue; }
 
             const idade = getExactAge(dataNascimento, dataAtual);
-
-            // Regra: cada dia concomitante entre TJPE e qualquer averbação
-            // deve ser contado uma única vez.
-            const computableAtDateRes = buildComputableIntervals(pubIntervals, privIntervals, dataTjpe, dataAtual);
-            const publicAtDateRes = mergeIntervals([
-                ...pubIntervals.map(iv => ({ start: new Date(iv.start), end: new Date(iv.end) })),
-                { start: new Date(dataTjpe), end: new Date(dataAtual) }
-            ]);
-            const tsPub = publicAtDateRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0);
-            const tCont = Math.max(0, computableAtDateRes.merged.reduce((acc, iv) => acc + (diffDays(iv.start, iv.end) + 1), 0) - totalDeduc);
+            
+            // Regra: as deduções afetam SOMENTE o tempo de contribuição (tCont)
+            const tsPub = tsPubAntesTjpe + diasTjpe;
+            const tCont = Math.max(0, tContAntesTjpe + diasTjpe - totalDeduc);
 
             if (!resultD && idade >= reqIdadeGeral && tCont >= reqContribDias && tsPub >= (10 * 365) && diasTjpe >= (5 * 365)) resultD = new Date(dataAtual);
             if (elegivelEC41_Art6 && !resultB && idade >= reqIdadeGeral && tCont >= reqContribDias && tsPub >= (20 * 365) && diasTjpe >= (10 * 365)) resultB = new Date(dataAtual);
