@@ -1,536 +1,1604 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudo de Impacto Orçamentário e Financeiro</title>
+    
+    <!-- Script de captura de imagem em alta definição -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-<title>Estudo de Impacto Financeiro</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #2563eb;
+            --primary-dark: #0f172a;
+            --accent: #0284c7;
+            --accent-light: #38bdf8;
+            --success: #16a34a;
+            --success-bg: #dcfce7;
+            --warning: #d97706;
+            --warning-bg: #fef3c7;
+            --danger: #dc2626;
+            --danger-bg: #fee2e2;
+            --card-bg: #ffffff;
+            --border: #cbd5e1;
+            --border-light: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --radius: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07);
+        }
 
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
 
-<style>
+        body {
+            background-color: #f1f5f9;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 12px 16px 24px 16px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
+        /* Topo Corporativo Alinhado à Esquerda */
+        .app-header {
+            width: 100%;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #1e3a8a 100%);
+            border-radius: var(--radius-lg);
+            padding: 16px 24px;
+            color: white;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
 
-body{
-    font-family:"Segoe UI",sans-serif;
-    background:#eef4fb;
-    color:#0f172a;
-    min-height:100vh;
-    padding:24px;
-}
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
 
-.container{
-    display:grid;
-    grid-template-columns:480px 1fr;
-    gap:24px;
-    align-items:start;
-}
+        .header-icon {
+            background: rgba(255, 255, 255, 0.12);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            flex-shrink: 0;
+        }
 
-.card{
-    background:white;
-    border-radius:24px;
-    border:1px solid #dbe4ee;
-    box-shadow:0 10px 30px rgba(15,23,42,0.04);
-}
+        .header-titles h1 {
+            font-size: 19px;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
 
-.left-panel{
-    padding:24px;
-    position:sticky;
-    top:24px;
-}
+        .header-titles p {
+            color: #94a3b8;
+            font-size: 12px;
+        }
 
-.right-panel{
-    padding:24px;
-    background: #ffffff;
-    border-radius:24px;
-}
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
-.header{
-    margin-bottom:24px;
-}
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 14px;
+            font-size: 12.5px;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
 
-.header h1{
-    font-size:28px;
-    margin-bottom:6px;
-}
+        .btn-header {
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.25);
+        }
 
-.header p{
-    color:#64748b;
-    font-size:14px;
-    line-height:1.5;
-}
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.24);
+        }
 
-.section-title{
-    font-size:16px;
-    margin-bottom:16px;
-    font-weight:700;
-    color:#1e3a8a;
-    border-left: 4px solid #2563eb;
-    padding-left: 8px;
-}
+        .btn-header-primary {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+        }
 
-.grid-3{
-    display:grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap:12px;
-}
+        .btn-header-primary:hover {
+            background: #1d4ed8;
+        }
 
-.input-group{
-    margin-bottom:14px;
-}
+        .btn-primary {
+            background: var(--primary-light);
+            color: white;
+            box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+        }
 
-.input-group label{
-    display:block;
-    margin-bottom:6px;
-    font-size:12px;
-    font-weight:600;
-    color:#475569;
-}
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
 
-input[type="number"], input[type="text"]{
-    width:100%;
-    padding:11px 12px;
-    border-radius:12px;
-    border:1px solid #cbd5e1;
-    background:white;
-    font-size:14px;
-    transition:0.2s;
-}
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
 
-input:focus{
-    outline:none;
-    border-color:#2563eb;
-    box-shadow:0 0 0 3px rgba(37,99,235,0.12);
-}
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
 
-.scenario{
-    background:#f8fbff;
-    border:1px solid #dbe4ee;
-    border-radius:18px;
-    padding:16px;
-    margin-bottom:16px;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
-}
+        .btn-danger-ghost {
+            background: transparent;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 6px;
+        }
 
-.scenario-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    margin-bottom:12px;
-}
+        .btn-danger-ghost:hover {
+            background: #fee2e2;
+        }
 
-.scenario-title-input{
-    font-weight:700;
-    font-size:15px;
-    color:#1e293b;
-    background:transparent;
-    border: 1px solid transparent;
-    padding: 4px 6px !important;
-    border-radius: 8px;
-    width: 100%;
-    max-width: 220px;
-}
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 11.5px;
+            border-radius: 6px;
+        }
 
-.scenario-title-input:hover, .scenario-title-input:focus {
-    background: white;
-    border-color: #cbd5e1;
-}
+        /* Layout Grid Principal */
+        .main-layout {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 16px;
+            align-items: start;
+        }
 
-/* Visual original dos botões da aplicação */
-.btn{
-    border:none;
-    border-radius:14px;
-    padding:14px 18px;
-    font-weight:600;
-    cursor:pointer;
-    transition:0.2s;
-    font-size:15px;
-}
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+        }
 
-.btn-primary{
-    background:#2563eb;
-    color:white;
-    width: 100%;
-    margin-top:8px;
-}
+        .card-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
 
-.btn-primary:hover{
-    transform:translateY(-1px);
-    box-shadow:0 10px 20px rgba(37,99,235,0.18);
-}
+        .card-header h2 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
 
-.btn-secondary{
-    background:#e2e8f0;
-    color:#334155;
-    padding: 6px 12px;
-    font-size: 12px;
-    border-radius: 8px;
-}
+        .card-body {
+            padding: 16px;
+        }
 
-.btn-secondary:hover{
-    background:#cbd5e1;
-    color:#0f172a;
-}
+        .left-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
 
-/* Barra superior alinhada perfeitamente no esquadro do painel direito */
-.toolbar {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 16px;
-    width: 100%;
-}
+        /* Cenário Atual Compacto */
+        .baseline-card {
+            background: #ffffff;
+            border: 1.5px solid #93c5fd;
+            border-radius: var(--radius);
+            padding: 14px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.05);
+        }
 
-.impact-area{
-    background: transparent;
-}
+        .baseline-badge-tag {
+            position: absolute;
+            top: -9px;
+            right: 14px;
+            background: #1d4ed8;
+            color: white;
+            font-size: 9.5px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            padding: 2px 8px;
+            border-radius: 999px;
+        }
 
-.impact-header{
-    margin-bottom:28px;
-}
+        .form-row-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
 
-.table-card{
-    background:#f8fbff;
-    border:1px solid #dbe4ee;
-    border-radius:22px;
-    overflow:hidden;
-}
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
 
-table{
-    width:100%;
-    border-collapse:collapse;
-}
+        .form-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
 
-th{
-    background:#eff6ff;
-    color:#1d4ed8;
-    font-size:14px;
-    text-align:left;
-    padding:18px;
-}
+        .label-badge-lock {
+            font-size: 9.5px;
+            color: #64748b;
+            background: #f1f5f9;
+            padding: 1px 4px;
+            border-radius: 4px;
+        }
 
-td{
-    padding:18px;
-    border-top:1px solid #dbe4ee;
-    background:white;
-    vertical-align:middle;
-}
+        .form-input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #ffffff;
+            font-size: 12.5px;
+            color: var(--text-main);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+            transition: all 0.15s ease;
+        }
 
-.badge{
-    padding:8px 12px;
-    border-radius:999px;
-    font-size:13px;
-    font-weight:700;
-    display:inline-flex;
-}
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
 
-.badge-up{
-    background:#f1f5f9;
-    color:#334155;
-}
+        .form-input[readonly] {
+            background: #f8fafc;
+            color: #475569;
+            cursor: not-allowed;
+            border-color: #cbd5e1;
+        }
 
-.badge-down{
-    background:#dcfce7;
-    color:#166534;
-}
+        .form-input.editable-highlight {
+            border-color: #2563eb;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-weight: 700;
+        }
 
-.txt-percent {
-    font-size: 14px;
-    font-weight: 700;
-}
+        /* Checkbox Pecúnia Duplicada */
+        .pecunia-checkbox-card {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 11px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+            margin-top: 4px;
+            margin-bottom: 8px;
+        }
 
-.txt-percent-up {
-    color: #475569;
-}
+        .pecunia-checkbox-card:hover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
 
-.txt-percent-down {
-    color: #166534;
-}
+        .pecunia-checkbox-card.active {
+            border-color: #2563eb;
+            background: #dbeafe;
+        }
 
-.td-cenario {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
+        .custom-checkbox {
+            width: 16px;
+            height: 16px;
+            accent-color: #2563eb;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
 
-@media(max-width:1200px){
-    .container{
-        grid-template-columns:1fr;
-    }
-    .left-panel{
-        position:relative;
-        top:auto;
-    }
-}
+        .checkbox-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
 
-</style>
+        .checkbox-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-2x {
+            background: #1e40af;
+            color: white;
+            font-size: 9.5px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 4px;
+        }
+
+        .checkbox-desc {
+            font-size: 10.5px;
+            color: #64748b;
+            line-height: 1.25;
+        }
+
+        .baseline-summary-row {
+            padding-top: 8px;
+            border-top: 1px dashed #cbd5e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #475569;
+        }
+
+        .baseline-summary-row strong {
+            font-size: 12px;
+            color: #0f172a;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Cenários e Presets Integrados */
+        .scenarios-container-card {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .presets-toolbar {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 4px;
+        }
+
+        .presets-toolbar-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1e40af;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .presets-chips {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .chip-btn {
+            background: white;
+            border: 1px solid #93c5fd;
+            color: #1d4ed8;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chip-btn:hover {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .scenario-item {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            transition: border-color 0.15s ease;
+        }
+
+        .scenario-item:hover {
+            border-color: #94a3b8;
+        }
+
+        .scenario-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 8px;
+        }
+
+        .scenario-name-input {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            padding: 4px 8px;
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        .scenario-name-input:focus {
+            background: white;
+            border-color: #2563eb;
+            outline: none;
+        }
+
+        .scenario-actions {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        /* Painel Direito */
+        .right-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 0;
+        }
+
+        /* KPIs */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .kpi-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 16px;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .kpi-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .kpi-subtext {
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .kpi-tag {
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 4px;
+            font-size: 10.5px;
+        }
+
+        .kpi-tag.positive {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .kpi-tag.neutral {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .kpi-tag.warning {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        /* Área do Relatório */
+        #reportCaptureArea {
+            background: #ffffff;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            padding: 20px 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .report-header {
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-light);
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .report-header-left h2 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .report-header-left p {
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .report-meta {
+            text-align: right;
+            font-size: 11.5px;
+            color: #64748b;
+            line-height: 1.35;
+        }
+
+        .report-meta strong {
+            color: #1e293b;
+        }
+
+        /* Gráfico Comparativo */
+        .chart-section {
+            background: #f8fafc;
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-bottom: 18px;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .chart-title {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1e3a8a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .chart-legend {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 11.5px;
+            color: #475569;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .chart-bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 180px 1fr 120px;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .chart-row-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .chart-bar-track {
+            background: #e2e8f0;
+            height: 22px;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .chart-bar-bolsa {
+            background: #2563eb;
+            height: 100%;
+        }
+
+        .chart-bar-vt {
+            background: #0284c7;
+            height: 100%;
+        }
+
+        .chart-row-value {
+            font-size: 12px;
+            font-weight: 700;
+            color: #0f172a;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Tabela Contábil */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead tr {
+            background: #f1f5f9;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        th {
+            padding: 10px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            color: #334155;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+        }
+
+        th.th-number, td.td-number {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        th.th-center, td.td-center {
+            text-align: center;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        tbody tr.row-current {
+            background: #eff6ff;
+            font-weight: 600;
+        }
+
+        tbody tr.row-current:hover {
+            background: #e0f2fe;
+        }
+
+        td {
+            padding: 10px 8px;
+            color: #1e293b;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .scenario-pill-name {
+            font-weight: 700;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .badge-base {
+            background: #1e40af;
+            color: white;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+
+        .impact-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            padding: 3px 6px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .impact-badge.increase {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .impact-badge.decrease {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .impact-badge.neutral {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .percent-badge {
+            font-weight: 800;
+            font-size: 11.5px;
+        }
+
+        .percent-increase {
+            color: #b91c1c;
+        }
+
+        .percent-decrease {
+            color: #15803d;
+        }
+
+        .percent-neutral {
+            color: #64748b;
+        }
+
+        .governance-footer {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 11px;
+            color: #64748b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .governance-footer strong {
+            color: #334155;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #0f172a;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-md);
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 9999;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.25s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .app-header, .left-sidebar, .toast {
+                display: none !important;
+            }
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            #reportCaptureArea {
+                border: none;
+                box-shadow: none;
+                padding: 0;
+            }
+            @page {
+                size: A4 landscape;
+                margin: 1.2cm;
+            }
+        }
+
+        @media (max-width: 1100px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
 </head>
 <body>
 
-<div class="container">
-
-    <div class="card left-panel">
-        <div class="header">
-            <h1>📊 Estudo de Impacto</h1>
-            <p>Simulação financeira para análise comparativa de cenários.</p>
-        </div>
-
-        <div class="section-title">Cenário Atual</div>
-        
-        <div class="input-group">
-            <label>Nome do Cenário</label>
-            <input type="text" id="nomeAtualInput" value="Atual">
-        </div>
-
-        <div class="grid-3" style="margin-bottom: 20px;">
-            <div class="input-group">
-                <label>Qtd.</label>
-                <input type="number" id="qtdAtual" value="10">
-            </div>
-            <div class="input-group">
-                <label>Bolsa (R$)</label>
-                <input type="number" id="bolsaAtual" value="1200">
-            </div>
-            <div class="input-group">
-                <label>V.T. (R$)</label>
-                <input type="number" id="vtAtual" value="200">
+    <!-- Header Corporativo (Sem tag 'Proposta Executiva') -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="header-icon">🏛️</div>
+            <div class="header-titles">
+                <h1>Estudo de Impacto Orçamentário e Financeiro</h1>
+                <p>Simulador comparativo de custos com bolsas de estágio e auxílio-transporte em pecúnia</p>
             </div>
         </div>
 
-        <div class="section-title" style="margin-bottom: 16px;">Cenários Simulados</div>
-        <div id="cenarios"></div>
+        <div class="header-actions">
+            <button class="btn btn-header" onclick="copiarTabelaExcel()">📋 Copiar p/ Excel</button>
+            <button class="btn btn-header" onclick="imprimirRelatorio()">🖨️ Imprimir / PDF</button>
+            <button class="btn btn-header-primary" onclick="exportarImagemPNG()">📸 Salvar Imagem HD</button>
+        </div>
+    </header>
 
-        <button class="btn btn-primary" onclick="adicionarCenario()">
-            + Adicionar Novo Cenário
-        </button>
+    <!-- Layout Grid Principal -->
+    <main class="main-layout">
+
+        <!-- Painel Lateral Esquerdo -->
+        <aside class="left-sidebar">
+
+            <!-- Card 1: Cenário Atual (Baseline) -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>⚙️ Cenário Atual (Baseline)</h2>
+                    <span style="background: #dbeafe; color: #1e40af; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;">OFICIAL</span>
+                </div>
+                
+                <div class="card-body">
+                    <div class="baseline-card">
+                        <div class="baseline-badge-tag">REFERÊNCIA</div>
+
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label for="nomeAtual">Nome do Cenário</label>
+                            <input type="text" id="nomeAtual" class="form-input" value="Quadro Atual (Baseline)">
+                        </div>
+
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label for="qtdAtual">
+                                    Qtd. Vagas
+                                    <span style="color: #2563eb;">*</span>
+                                </label>
+                                <input type="number" id="qtdAtual" class="form-input editable-highlight" min="1" step="1" value="10" title="Quantidade de estagiários no cenário atual">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bolsaAtual">
+                                    Bolsa (R$)
+                                    <span class="label-badge-lock">🔒 Fixo</span>
+                                </label>
+                                <input type="number" id="bolsaAtual" class="form-input" value="1600" readonly title="Valor fixo estabelecido em R$ 1.600,00">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="vtDiarioAtual">
+                                    Pecúnia Dia
+                                    <span class="label-badge-lock">🔒 Fixo</span>
+                                </label>
+                                <input type="number" id="vtDiarioAtual" class="form-input" value="11.20" step="0.10" readonly title="Valor fixo estabelecido em R$ 11,20 por dia">
+                            </div>
+                        </div>
+
+                        <!-- Checkbox Pecúnia Duplicada -->
+                        <div class="pecunia-checkbox-card" id="cardPecuniaAtual" onclick="togglePecuniaAtual()">
+                            <input type="checkbox" id="chkPecuniaAtual" class="custom-checkbox" onchange="atualizarTudo()">
+                            <div class="checkbox-info">
+                                <span class="checkbox-title">
+                                    Pecúnia Duplicada (2x)
+                                    <span class="badge-2x">R$ 22,40 / dia</span>
+                                </span>
+                                <span class="checkbox-desc">
+                                    Dobra a cota diária (22 dias úteis × R$ 22,40 = <strong>R$ 492,80/mês</strong>).
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Resumo do Custo Unitário -->
+                        <div class="baseline-summary-row">
+                            <span>Custo Unitário Total:</span>
+                            <strong id="resumoCustoUnitarioAtual">R$ 1.846,40 / vaga</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Cenários Simulados & Presets Integrados -->
+            <div class="card scenarios-container-card">
+                <div class="card-header">
+                    <h2>📈 Cenários Simulados</h2>
+                    <button class="btn btn-secondary btn-sm" onclick="adicionarCenario()">
+                        + Novo Cenário
+                    </button>
+                </div>
+
+                <div class="card-body" style="padding-top: 12px;">
+
+                    <!-- Barra de Presets Rápidos -->
+                    <div class="presets-toolbar">
+                        <div class="presets-toolbar-title">⚡ Simulação Rápida (Presets):</div>
+                        <div class="presets-chips">
+                            <button class="chip-btn" onclick="aplicarPreset('reajuste_bolsa')">
+                                <span>📈 Bolsa R$ 1.800 (+12,5%)</span>
+                                <span>+</span>
+                            </button>
+                            <button class="chip-btn" onclick="aplicarPreset('expansao_vagas')">
+                                <span>👥 Expansão (+5 Vagas)</span>
+                                <span>+</span>
+                            </button>
+                            <button class="chip-btn" onclick="aplicarPreset('pecunia_dupla_total')">
+                                <span>🚌 Pecúnia Duplicada Geral (2x)</span>
+                                <span>+</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Container dos Cenários -->
+                    <div id="cenariosContainer" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;"></div>
+
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="adicionarCenario()">
+                        + Adicionar Projeção
+                    </button>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- Painel Central/Direito -->
+        <section class="right-content">
+
+            <!-- KPIs -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        <span>Orçamento Anual (Atual)</span>
+                        <span>📊</span>
+                    </div>
+                    <div class="kpi-value" id="kpiAnualAtual">R$ 0,00</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-tag neutral" id="kpiMensalAtual">R$ 0,00 / mês</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        <span>Maior Projeção Anual</span>
+                        <span>📈</span>
+                    </div>
+                    <div class="kpi-value" id="kpiMaiorProjecao">R$ 0,00</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-tag warning" id="kpiDeltaMax">+ R$ 0,00</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        <span>Custo Médio per Capita</span>
+                        <span>👤</span>
+                    </div>
+                    <div class="kpi-value" id="kpiCustoPerCapita">R$ 0,00</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-tag neutral">Bolsa + Transporte</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-label">
+                        <span>Headcount de Vagas</span>
+                        <span>🎯</span>
+                    </div>
+                    <div class="kpi-value" id="kpiHeadcount">0 vagas</div>
+                    <div class="kpi-subtext">
+                        <span class="kpi-tag neutral" id="kpiHeadcountDelta">Cenário base</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Área Oficial de Captura e Relatório (Sem campo 'Destinatário') -->
+            <div id="reportCaptureArea">
+
+                <!-- Cabeçalho do Relatório -->
+                <div class="report-header">
+                    <div class="report-header-left">
+                        <h2>🏛️ Estudo de Impacto Financeiro e Orçamentário</h2>
+                        <p>Análise de impacto orçamentário decorrente de revisão de valores de bolsas de estágio e auxílio-transporte em pecúnia.</p>
+                    </div>
+                    <div class="report-meta">
+                        <div><strong>Data da Análise:</strong> <span id="reportDate">16/09/2026</span></div>
+                        <div><strong>Base Legal:</strong> Lei Federal nº 11.788/2008</div>
+                    </div>
+                </div>
+
+                <!-- Gráfico Comparativo -->
+                <div class="chart-section">
+                    <div class="chart-header">
+                        <div class="chart-title">
+                            📊 Comparativo de Custo Mensal por Cenário
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #2563eb;"></span>
+                                <span>Bolsa-Auxílio</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background: #0284c7;"></span>
+                                <span>Auxílio-Transporte (Pecúnia)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chart-bars-container" id="chartBarsContainer"></div>
+                </div>
+
+                <!-- Tabela Comparativa Detalhada -->
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cenário / Projeção</th>
+                                <th class="th-center">Qtd.</th>
+                                <th class="th-number">Bolsa (R$)</th>
+                                <th class="th-number">Pecúnia Dia</th>
+                                <th class="th-center">Pecúnia 2x</th>
+                                <th class="th-number">Transp. Mês</th>
+                                <th class="th-number">Custo Unit.</th>
+                                <th class="th-number">Custo Mensal</th>
+                                <th class="th-number">Impacto Mensal</th>
+                                <th class="th-number">Custo Anual</th>
+                                <th class="th-number">Impacto Anual</th>
+                                <th class="th-center">% Impacto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaResultadosBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- Rodapé de Governança -->
+                <div class="governance-footer">
+                    <div>
+                        <strong>Premissas de Cálculo:</strong> Auxílio-transporte calculado em pecúnia com base regulamentar em <strong>22 dias úteis</strong> por mês.
+                        "Pecúnia Duplicada (2x)" corresponde a 2 cotas diárias (R$ 22,40/dia) para integração de linhas de transporte.
+                    </div>
+                    <div>
+                        <strong>Documento para Tomada de Decisão</strong>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Toast de Notificação -->
+    <div id="toastNotification" class="toast">
+        <span id="toastIcon">✅</span>
+        <span id="toastMessage">Operação realizada com sucesso!</span>
     </div>
 
-    <div class="impact-area">
-        
-        <div class="toolbar">
-            <button class="btn btn-primary" style="width: auto; margin-top: 0;" onclick="salvarImagem()">
-                🖼️ Salvar Imagem
-            </button>
-        </div>
+    <!-- Script com as Regras de Negócio e Reatividade -->
+    <script>
+        const DIAS_UTEIS_MES = 22;
+        let cenarioContador = 0;
 
-        <div class="card right-panel" id="areaCaptura">
-            
-            <div class="impact-header">
-                <h1 style="font-size:30px;">📈 Comparativo Financeiro</h1>
-                <p style="color:#64748b;margin-top:6px;">
-                    Estudo comparativo entre o cenário atual e projeções futuras simuladas.
-                </p>
-            </div>
+        function formatarMoeda(valor) {
+            return Number(valor || 0).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
 
-            <div class="table-card">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Análise / Cenário</th>
-                            <th>Bolsa</th>
-                            <th>Aux. V.T.</th>
-                            <th>Qtd.</th>
-                            <th>Mensal</th>
-                            <th>Impacto Mensal</th>
-                            <th>Anual</th>
-                            <th>Impacto Anual</th>
-                            <th>% Impacto</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabelaResultados">
-                        <tr>
-                            <td>
-                                <div class="td-cenario">
-                                    <strong id="cellNomeAtual" style="font-size: 16px;">Atual</strong>
-                                </div>
-                            </td>
-                            <td id="cellBolsaAtual">R$ 0,00</td>
-                            <td id="cellVtAtual">R$ 0,00</td>
-                            <td id="cellQtdAtual">0</td>
-                            <td id="cellMensalAtual">R$ 0,00</td>
-                            <td>—</td>
-                            <td id="cellAnualAtual">R$ 0,00</td>
-                            <td>—</td>
-                            <td>—</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
+        function formatarPercentual(valor) {
+            const sinal = valor > 0 ? '+' : '';
+            return sinal + Number(valor || 0).toFixed(2).replace('.', ',') + '%';
+        }
 
-<script>
+        function togglePecuniaAtual() {
+            const chk = document.getElementById('chkPecuniaAtual');
+            chk.checked = !chk.checked;
+            atualizarTudo();
+        }
 
-let contador = 0;
+        document.getElementById('chkPecuniaAtual').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
 
-function moeda(valor){
-    return valor.toLocaleString('pt-BR',{
-        style:'currency',
-        currency:'BRL'
-    });
-}
+        function adicionarCenario(nomeDefault = null, qtdDefault = null, bolsaDefault = null, vtDiarioDefault = null, pecuniaDuplaDefault = false) {
+            cenarioContador++;
+            const id = cenarioContador;
 
-function porcentagem(valor){
-    return (valor >= 0 ? '+' : '') + valor.toFixed(1).replace('.',',') + '%';
-}
+            const nome = nomeDefault || `Projeção ${id}`;
+            const qtd = qtdDefault !== null ? qtdDefault : (Number(document.getElementById('qtdAtual').value) || 10);
+            const bolsa = bolsaDefault !== null ? bolsaDefault : 1800;
+            const vtDiario = vtDiarioDefault !== null ? vtDiarioDefault : 11.20;
+            const checkedAttr = pecuniaDuplaDefault ? 'checked' : '';
 
-function custo(qtd, bolsa, vt){
-    return qtd * (bolsa + vt);
-}
+            const html = `
+                <div class="scenario-item" id="cenarioSimulado-${id}">
+                    <div class="scenario-top-bar">
+                        <input type="text" class="scenario-name-input" value="${nome}" placeholder="Nome do Cenário">
+                        <div class="scenario-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="duplicarCenario(${id})" title="Duplicar Projeção" style="padding: 3px 7px;">📑</button>
+                            <button class="btn btn-danger-ghost" onclick="removerCenario(${id})" title="Remover Projeção">✕</button>
+                        </div>
+                    </div>
 
-function adicionarCenario(){
-    contador++;
-    const idAtual = contador;
+                    <div class="form-row-3">
+                        <div class="form-group">
+                            <label>Qtd. Vagas</label>
+                            <input type="number" class="form-input sim-qtd" value="${qtd}" min="1" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Bolsa (R$)</label>
+                            <input type="number" class="form-input sim-bolsa" value="${bolsa}" min="0" step="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Pecúnia Dia</label>
+                            <input type="number" class="form-input sim-vt" value="${vtDiario.toFixed(2)}" min="0" step="0.10">
+                        </div>
+                    </div>
 
-    const html = `
-        <div class="scenario" id="cenario-${idAtual}">
-            <div class="scenario-header">
-                <input
-                    type="text"
-                    class="scenario-title-input"
-                    value="Cenário ${idAtual}"
-                    data-id="${idAtual}"
-                >
-                <button class="btn btn-secondary" onclick="removerCenario(${idAtual})">
-                    Remover
-                </button>
-            </div>
-            <div class="grid-3">
-                <div class="input-group">
-                    <label>Qtd.</label>
-                    <input type="number" class="qtd" value="15">
+                    <div class="pecunia-checkbox-card" id="cardPecuniaSim-${id}" onclick="togglePecuniaSim(${id})">
+                        <input type="checkbox" class="custom-checkbox sim-pecunia-dupla" id="chkPecuniaSim-${id}" ${checkedAttr} onchange="atualizarTudo()">
+                        <div class="checkbox-info">
+                            <span class="checkbox-title">
+                                Pecúnia Duplicada (2x)
+                                <span class="badge-2x" id="badgePecuniaSim-${id}">R$ 22,40 / dia</span>
+                            </span>
+                            <span class="checkbox-desc">Dobra a cota diária de auxílio-transporte.</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Bolsa (R$)</label>
-                    <input type="number" class="bolsa" value="1400">
-                </div>
-                <div class="input-group">
-                    <label>V.T. (R$)</label>
-                    <input type="number" class="vt" value="250">
-                </div>
-            </div>
-        </div>
-    `;
+            `;
 
-    document.getElementById('cenarios').insertAdjacentHTML('beforeend',html);
-    bindInputs();
-    atualizar();
-}
+            document.getElementById('cenariosContainer').insertAdjacentHTML('beforeend', html);
 
-function removerCenario(id){
-    document.getElementById(`cenario-${id}`).remove();
-    atualizar();
-}
+            const chk = document.getElementById(`chkPecuniaSim-${id}`);
+            chk.addEventListener('click', function(e) { e.stopPropagation(); });
 
-function bindInputs(){
-    document.querySelectorAll('.scenario input').forEach(input=>{
-        input.oninput = atualizar;
-    });
-    
-    document.getElementById('nomeAtualInput').oninput = atualizar;
-    document.getElementById('qtdAtual').oninput = atualizar;
-    document.getElementById('bolsaAtual').oninput = atualizar;
-    document.getElementById('vtAtual').oninput = atualizar;
-}
+            bindInputs();
+            atualizarTudo();
+        }
 
-function atualizar(){
-    const nomeAtual = document.getElementById('nomeAtualInput').value;
-    const qtdAtual = Number(document.getElementById('qtdAtual').value);
-    const bolsaAtual = Number(document.getElementById('bolsaAtual').value);
-    const vtAtual = Number(document.getElementById('vtAtual').value);
+        function togglePecuniaSim(id) {
+            const chk = document.getElementById(`chkPecuniaSim-${id}`);
+            if (chk) {
+                chk.checked = !chk.checked;
+                atualizarTudo();
+            }
+        }
 
-    const custoAtual = custo(qtdAtual,bolsaAtual,vtAtual);
-    const anualAtual = custoAtual * 12;
+        function duplicarCenario(id) {
+            const card = document.getElementById(`cenarioSimulado-${id}`);
+            if (!card) return;
 
-    document.getElementById('cellNomeAtual').innerText = nomeAtual || "Atual";
-    document.getElementById('cellBolsaAtual').innerText = moeda(bolsaAtual);
-    document.getElementById('cellVtAtual').innerText = moeda(vtAtual);
-    document.getElementById('cellQtdAtual').innerText = qtdAtual;
-    document.getElementById('cellMensalAtual').innerText = moeda(custoAtual);
-    document.getElementById('cellAnualAtual').innerText = moeda(anualAtual);
+            const nome = card.querySelector('.scenario-name-input').value + ' (Cópia)';
+            const qtd = Number(card.querySelector('.sim-qtd').value);
+            const bolsa = Number(card.querySelector('.sim-bolsa').value);
+            const vtDiario = Number(card.querySelector('.sim-vt').value);
+            const pecuniaDupla = card.querySelector('.sim-pecunia-dupla').checked;
 
-    const tbody = document.getElementById('tabelaResultados');
-    while (tbody.rows.length > 1) {
-        tbody.deleteRow(1);
-    }
+            adicionarCenario(nome, qtd, bolsa, vtDiario, pecuniaDupla);
+            mostrarToast('Projeção duplicada com sucesso!');
+        }
 
-    document.querySelectorAll('.scenario').forEach((el)=>{
-        const titleInput = el.querySelector('.scenario-title-input');
-        const nome = titleInput.value;
+        function removerCenario(id) {
+            const card = document.getElementById(`cenarioSimulado-${id}`);
+            if (card) {
+                card.remove();
+                atualizarTudo();
+                mostrarToast('Projeção removida.');
+            }
+        }
 
-        const qtd = Number(el.querySelector('.qtd').value);
-        const bolsa = Number(el.querySelector('.bolsa').value);
-        const vt = Number(el.querySelector('.vt').value);
+        function bindInputs() {
+            document.querySelectorAll('.left-sidebar input').forEach(input => {
+                input.oninput = atualizarTudo;
+            });
+        }
 
-        const mensal = custo(qtd,bolsa,vt);
-        const anual = mensal * 12;
+        function aplicarPreset(tipo) {
+            const qtdAtual = Number(document.getElementById('qtdAtual').value) || 10;
+            const bolsaAtual = 1600;
+            const vtAtual = 11.20;
 
-        const impactoMensal = mensal - custoAtual;
-        const impactoAnual = anual - anualAtual;
+            if (tipo === 'reajuste_bolsa') {
+                adicionarCenario('Bolsa R$ 1.800 (+12,5%)', qtdAtual, 1800, vtAtual, false);
+                mostrarToast('Preset de Reajuste de Bolsa adicionado!');
+            } else if (tipo === 'expansao_vagas') {
+                adicionarCenario(`Expansão (${qtdAtual + 5} Vagas)`, qtdAtual + 5, bolsaAtual, vtAtual, false);
+                mostrarToast('Preset de Expansão de Vagas adicionado!');
+            } else if (tipo === 'pecunia_dupla_total') {
+                adicionarCenario('Pecúnia Duplicada Geral (2x)', qtdAtual, bolsaAtual, vtAtual, true);
+                mostrarToast('Preset de Pecúnia Duplicada Geral adicionado!');
+            }
+        }
 
-        const percentualMensal = custoAtual > 0 ? (impactoMensal / custoAtual) * 100 : 0;
+        function atualizarTudo() {
+            const nomeAtual = document.getElementById('nomeAtual').value || "Quadro Atual (Baseline)";
+            const qtdAtual = Math.max(1, Number(document.getElementById('qtdAtual').value) || 1);
+            const bolsaAtual = 1600;
+            const vtDiarioAtualBase = 11.20;
+            const pecuniaDuplaAtual = document.getElementById('chkPecuniaAtual').checked;
 
-        const rowHTML = `
-            <tr>
+            const cardPecuniaAtual = document.getElementById('cardPecuniaAtual');
+            if (pecuniaDuplaAtual) cardPecuniaAtual.classList.add('active');
+            else cardPecuniaAtual.classList.remove('active');
+
+            const fatorPecuniaAtual = pecuniaDuplaAtual ? 2 : 1;
+            const vtDiarioEfetivoAtual = vtDiarioAtualBase * fatorPecuniaAtual;
+            const vtMensalUnitarioAtual = vtDiarioEfetivoAtual * DIAS_UTEIS_MES;
+            const custoUnitarioAtual = bolsaAtual + vtMensalUnitarioAtual;
+            const mensalTotalAtual = qtdAtual * custoUnitarioAtual;
+            const anualTotalAtual = mensalTotalAtual * 12;
+
+            document.getElementById('resumoCustoUnitarioAtual').innerText = 
+                `${formatarMoeda(custoUnitarioAtual)} / vaga (${formatarMoeda(bolsaAtual)} + ${formatarMoeda(vtMensalUnitarioAtual)})`;
+
+            const cenariosSimulados = [];
+            let maiorCustoMensal = mensalTotalAtual;
+            let maiorCustoAnual = anualTotalAtual;
+            let maxVagas = qtdAtual;
+
+            document.querySelectorAll('.scenario-item').forEach(card => {
+                const idMatch = card.id.match(/\d+/);
+                const id = idMatch ? idMatch[0] : null;
+
+                const nome = card.querySelector('.scenario-name-input').value || `Projeção ${id}`;
+                const qtd = Math.max(1, Number(card.querySelector('.sim-qtd').value) || 1);
+                const bolsa = Math.max(0, Number(card.querySelector('.sim-bolsa').value) || 0);
+                const vtDiario = Math.max(0, Number(card.querySelector('.sim-vt').value) || 0);
+                const pecuniaDupla = card.querySelector('.sim-pecunia-dupla').checked;
+
+                const cardPecuniaSim = document.getElementById(`cardPecuniaSim-${id}`);
+                const badgePecuniaSim = document.getElementById(`badgePecuniaSim-${id}`);
+                if (badgePecuniaSim) {
+                    badgePecuniaSim.innerText = `${formatarMoeda(vtDiario * (pecuniaDupla ? 2 : 1))} / dia`;
+                }
+                if (cardPecuniaSim) {
+                    if (pecuniaDupla) cardPecuniaSim.classList.add('active');
+                    else cardPecuniaSim.classList.remove('active');
+                }
+
+                const fator = pecuniaDupla ? 2 : 1;
+                const vtDiarioEfetivo = vtDiario * fator;
+                const vtMensalUnitario = vtDiarioEfetivo * DIAS_UTEIS_MES;
+                const custoUnitario = bolsa + vtMensalUnitario;
+                const mensalTotal = qtd * custoUnitario;
+                const anualTotal = mensalTotal * 12;
+
+                const impactoMensal = mensalTotal - mensalTotalAtual;
+                const impactoAnual = anualTotal - anualTotalAtual;
+                const percentualImpacto = mensalTotalAtual > 0 ? (impactoMensal / mensalTotalAtual) * 100 : 0;
+
+                if (mensalTotal > maiorCustoMensal) {
+                    maiorCustoMensal = mensalTotal;
+                    maiorCustoAnual = anualTotal;
+                }
+                if (qtd > maxVagas) {
+                    maxVagas = qtd;
+                }
+
+                cenariosSimulados.push({
+                    id, nome, qtd, bolsa, vtDiario, pecuniaDupla,
+                    vtMensalUnitario, custoUnitario, mensalTotal, anualTotal,
+                    impactoMensal, impactoAnual, percentualImpacto,
+                    bolsaTotal: qtd * bolsa,
+                    vtTotal: qtd * vtMensalUnitario
+                });
+            });
+
+            document.getElementById('kpiAnualAtual').innerText = formatarMoeda(anualTotalAtual);
+            document.getElementById('kpiMensalAtual').innerText = `${formatarMoeda(mensalTotalAtual)} / mês`;
+            document.getElementById('kpiMaiorProjecao').innerText = formatarMoeda(maiorCustoAnual);
+
+            const deltaMax = maiorCustoAnual - anualTotalAtual;
+            const kpiDeltaEl = document.getElementById('kpiDeltaMax');
+            if (deltaMax > 0) {
+                kpiDeltaEl.innerText = `+ ${formatarMoeda(deltaMax)} / ano`;
+                kpiDeltaEl.className = 'kpi-tag warning';
+            } else if (deltaMax < 0) {
+                kpiDeltaEl.innerText = `${formatarMoeda(deltaMax)} / ano`;
+                kpiDeltaEl.className = 'kpi-tag positive';
+            } else {
+                kpiDeltaEl.innerText = `R$ 0,00`;
+                kpiDeltaEl.className = 'kpi-tag neutral';
+            }
+
+            document.getElementById('kpiCustoPerCapita').innerText = formatarMoeda(custoUnitarioAtual);
+            document.getElementById('kpiHeadcount').innerText = `${qtdAtual} ${qtdAtual === 1 ? 'vaga' : 'vagas'}`;
+            document.getElementById('kpiHeadcountDelta').innerText = maxVagas > qtdAtual ? `até ${maxVagas} vagas simuladas` : `quadro base`;
+
+            const tbody = document.getElementById('tabelaResultadosBody');
+            tbody.innerHTML = '';
+
+            const trAtual = document.createElement('tr');
+            trAtual.className = 'row-current';
+            trAtual.innerHTML = `
                 <td>
-                    <div class="td-cenario">
-                        <strong>${nome}</strong>
+                    <div class="scenario-pill-name">
+                        <strong>${nomeAtual}</strong>
+                        <span class="badge-base">BASE</span>
                     </div>
                 </td>
-                <td>${moeda(bolsa)}</td>
-                <td>${moeda(vt)}</td>
-                <td>—</td>
-                <td>${moeda(mensal)}</td>
-                <td>
-                    <span class="badge ${impactoMensal >= 0 ? 'badge-up' : 'badge-down'}">
-                        ${moeda(impactoMensal)}
-                    </span>
+                <td class="td-center"><strong>${qtdAtual}</strong></td>
+                <td class="td-number">${formatarMoeda(bolsaAtual)}</td>
+                <td class="td-number">${formatarMoeda(vtDiarioAtualBase)}</td>
+                <td class="td-center">
+                    ${pecuniaDuplaAtual ? '<span class="badge-2x">SIM (2x)</span>' : '<span style="color: #94a3b8;">NÃO</span>'}
                 </td>
-                <td>${moeda(anual)}</td>
-                <td>
-                    <span class="badge ${impactoAnual >= 0 ? 'badge-up' : 'badge-down'}">
-                        ${moeda(impactoAnual)}
-                    </span>
-                </td>
-                <td>
-                    <span class="txt-percent ${percentualMensal >= 0 ? 'txt-percent-up' : 'txt-percent-down'}">
-                        ${porcentagem(percentualMensal)}
-                    </span>
-                </td>
-            </tr>
-        `;
-        tbody.insertAdjacentHTML('beforeend', rowHTML);
-    });
-}
+                <td class="td-number">${formatarMoeda(vtMensalUnitarioAtual)}</td>
+                <td class="td-number"><strong>${formatarMoeda(custoUnitarioAtual)}</strong></td>
+                <td class="td-number"><strong>${formatarMoeda(mensalTotalAtual)}</strong></td>
+                <td class="td-number"><span class="impact-badge neutral">Referência</span></td>
+                <td class="td-number"><strong>${formatarMoeda(anualTotalAtual)}</strong></td>
+                <td class="td-number"><span class="impact-badge neutral">Referência</span></td>
+                <td class="td-center"><span class="percent-badge percent-neutral">0,00%</span></td>
+            `;
+            tbody.appendChild(trAtual);
 
-function salvarImagem(){
-    // Mantendo a captura limpa apenas da div com as tabelas
-    const target = document.getElementById('areaCaptura');
-    
-    const opcoes = {
-        backgroundColor: '#ffffff', 
-        scale: 2,                  
-        logging: false,
-        useCORS: true
-    };
+            cenariosSimulados.forEach(c => {
+                const tr = document.createElement('tr');
 
-    html2canvas(target, opcoes).then(canvas=>{
-        const link = document.createElement('a');
-        link.download = 'impacto-financeiro.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-    });
-}
+                let badgeClass = 'neutral';
+                let percentClass = 'percent-neutral';
+                if (c.impactoMensal > 0) {
+                    badgeClass = 'increase';
+                    percentClass = 'percent-increase';
+                } else if (c.impactoMensal < 0) {
+                    badgeClass = 'decrease';
+                    percentClass = 'percent-decrease';
+                }
 
-adicionarCenario();
-adicionarCenario();
+                tr.innerHTML = `
+                    <td><div class="scenario-pill-name"><span>${c.nome}</span></div></td>
+                    <td class="td-center">${c.qtd}</td>
+                    <td class="td-number">${formatarMoeda(c.bolsa)}</td>
+                    <td class="td-number">${formatarMoeda(c.vtDiario)}</td>
+                    <td class="td-center">
+                        ${c.pecuniaDupla ? '<span class="badge-2x">SIM (2x)</span>' : '<span style="color: #94a3b8;">NÃO</span>'}
+                    </td>
+                    <td class="td-number">${formatarMoeda(c.vtMensalUnitario)}</td>
+                    <td class="td-number"><strong>${formatarMoeda(c.custoUnitario)}</strong></td>
+                    <td class="td-number"><strong>${formatarMoeda(c.mensalTotal)}</strong></td>
+                    <td class="td-number">
+                        <span class="impact-badge ${badgeClass}">
+                            ${c.impactoMensal > 0 ? '+' : ''}${formatarMoeda(c.impactoMensal)}
+                        </span>
+                    </td>
+                    <td class="td-number"><strong>${formatarMoeda(c.anualTotal)}</strong></td>
+                    <td class="td-number">
+                        <span class="impact-badge ${badgeClass}">
+                            ${c.impactoAnual > 0 ? '+' : ''}${formatarMoeda(c.impactoAnual)}
+                        </span>
+                    </td>
+                    <td class="td-center">
+                        <span class="percent-badge ${percentClass}">
+                            ${formatarPercentual(c.percentualImpacto)}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
 
-</script>
+            renderizarGrafico(
+                {
+                    nome: nomeAtual,
+                    bolsaTotal: qtdAtual * bolsaAtual,
+                    vtTotal: qtdAtual * vtMensalUnitarioAtual,
+                    mensalTotal: mensalTotalAtual
+                },
+                cenariosSimulados,
+                maiorCustoMensal
+            );
+        }
 
+        function renderizarGrafico(atual, simulados, maxCusto) {
+            const container = document.getElementById('chartBarsContainer');
+            container.innerHTML = '';
+
+            const todosCenarios = [atual, ...simulados];
+            const maxVal = Math.max(1, maxCusto * 1.05);
+
+            todosCenarios.forEach((cenario, idx) => {
+                const pctBolsa = ((cenario.bolsaTotal || 0) / maxVal) * 100;
+                const pctVt = ((cenario.vtTotal || 0) / maxVal) * 100;
+
+                const row = document.createElement('div');
+                row.className = 'chart-row';
+                row.innerHTML = `
+                    <div class="chart-row-label" title="${cenario.nome}">
+                        ${idx === 0 ? '📍 ' : ''}${cenario.nome}
+                    </div>
+                    <div class="chart-bar-track">
+                        <div class="chart-bar-bolsa" style="width: ${pctBolsa}%;" title="Bolsa: ${formatarMoeda(cenario.bolsaTotal)}"></div>
+                        <div class="chart-bar-vt" style="width: ${pctVt}%;" title="Transporte: ${formatarMoeda(cenario.vtTotal)}"></div>
+                    </div>
+                    <div class="chart-row-value">${formatarMoeda(cenario.mensalTotal)}/mês</div>
+                `;
+                container.appendChild(row);
+            });
+        }
+
+        function exportarImagemPNG() {
+            mostrarToast('Gerando imagem executiva em alta resolução...');
+
+            const target = document.getElementById('reportCaptureArea');
+            const opt = {
+                backgroundColor: '#ffffff',
+                scale: 2.2,
+                useCORS: true,
+                logging: false
+            };
+
+            html2canvas(target, opt).then(canvas => {
+                const link = document.createElement('a');
+                const timestamp = new Date().toISOString().slice(0, 10);
+                link.download = `Estudo_Impacto_Financeiro_${timestamp}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                mostrarToast('Imagem exportada com sucesso!');
+            }).catch(err => {
+                console.error(err);
+                mostrarToast('Falha ao exportar imagem. Tente usar Imprimir / PDF.');
+            });
+        }
+
+        function imprimirRelatorio() {
+            window.print();
+        }
+
+        function copiarTabelaExcel() {
+            const table = document.querySelector('table');
+            let tsv = '';
+
+            for (let i = 0; i < table.rows.length; i++) {
+                const row = table.rows[i];
+                const cols = [];
+                for (let j = 0; j < row.cells.length; j++) {
+                    let text = row.cells[j].innerText.replace(/[\n\r]+/g, ' ').trim();
+                    cols.push(text);
+                }
+                tsv += cols.join('\t') + '\n';
+            }
+
+            navigator.clipboard.writeText(tsv).then(() => {
+                mostrarToast('Tabela copiada! Cole diretamente no Excel ou Word.');
+            }).catch(err => {
+                console.error(err);
+                mostrarToast('Não foi possível copiar automaticamente.');
+            });
+        }
+
+        function mostrarToast(mensagem, icone = '✅') {
+            const toast = document.getElementById('toastNotification');
+            document.getElementById('toastMessage').innerText = mensagem;
+            document.getElementById('toastIcon').innerText = icone;
+
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+
+        function inicializarSistema() {
+            const dataHoje = new Date().toLocaleDateString('pt-BR');
+            const reportDateEl = document.getElementById('reportDate');
+            if (reportDateEl) reportDateEl.innerText = dataHoje;
+
+            bindInputs();
+
+            // Limpa qualquer cenário residual antes de popular
+            const container = document.getElementById('cenariosContainer');
+            if (container) container.innerHTML = '';
+
+            const qtdAtual = Number(document.getElementById('qtdAtual').value) || 10;
+            adicionarCenario('Projeção A: Reajuste Bolsa R$ 1.800', qtdAtual, 1800, 11.20, false);
+            adicionarCenario('Projeção B: Bolsa R$ 1.800 + Pecúnia 2x', qtdAtual, 1800, 11.20, true);
+
+            atualizarTudo();
+        }
+
+        // Executa tanto no DOMContentLoaded quanto imediatamente como fallback
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', inicializarSistema);
+        } else {
+            inicializarSistema();
+        }
+    </script>
 </body>
 </html>
