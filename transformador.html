@@ -214,13 +214,14 @@
             color: var(--text-main);
         }
         .cd-analise-detalhes {
-            font-size: 12.5px;
+            font-size: 13px;
             line-height: 1.5;
-            color: var(--text-muted);
-            background: rgba(255, 255, 255, 0.85);
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid rgba(0, 0, 0, 0.06);
+            color: var(--text-main);
+            background: #ffffff;
+            padding: 14px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
         }
 
         /* PAINEL DE CONCLUSÃO E CAPACIDADE */
@@ -353,7 +354,8 @@
         /* ==========================================
            ESTILOS DO CONJUNTO DE CARGOS CRIADOS
            ========================================== */
-        .conclusao-conjunto-card {
+        /* Estilos na Mesa de Trabalho (Sandbox - Quadro Azul) */
+        .sandbox-footer .conclusao-conjunto-card {
             background: rgba(0, 0, 0, 0.32);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 12px;
@@ -364,7 +366,7 @@
             gap: 10px;
         }
 
-        .conclusao-conjunto-topo {
+        .sandbox-footer .conclusao-conjunto-topo {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -374,7 +376,7 @@
             padding-bottom: 8px;
         }
 
-        .badge-conjunto-tag {
+        .sandbox-footer .badge-conjunto-tag {
             display: inline-flex;
             align-items: center;
             gap: 6px;
@@ -389,14 +391,39 @@
             text-transform: uppercase;
         }
 
-        .conjunto-composicao-lista {
+        .sandbox-footer .badge-conjunto-inviavel {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            border-color: rgba(248, 113, 113, 0.4);
+        }
+
+        .sandbox-footer .conjunto-custo-base-text {
+            font-size: 12.5px;
+            color: #cbd5e1;
+        }
+
+        .sandbox-footer .conjunto-custo-base-text strong {
+            color: #ffffff;
+        }
+
+        .sandbox-footer .conjunto-custo-base-text.custo-inviavel {
+            color: #fca5a5;
+        }
+
+        .sandbox-footer .conjunto-subtitulo {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .sandbox-footer .conjunto-composicao-lista {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             margin: 4px 0;
         }
 
-        .conjunto-chip {
+        .sandbox-footer .conjunto-chip {
             background: rgba(255, 255, 255, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 6px;
@@ -405,18 +432,56 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+            color: #ffffff;
         }
 
-        .conjunto-chip strong {
+        .sandbox-footer .conjunto-chip strong {
             color: #60a5fa;
         }
 
-        .conjunto-acoes-wrapper {
+        .sandbox-footer .conjunto-capacidade-bloco {
+            font-size: 13.5px;
+            line-height: 1.5;
+            margin-top: 4px;
+            color: #e2e8f0;
+        }
+
+        .sandbox-footer .conjunto-capacidade-bloco strong {
+            color: #ffffff;
+        }
+
+        .sandbox-footer .conjunto-status-extra {
+            font-size: 13px;
+            color: #86efac;
+            margin-top: 4px;
+        }
+
+        .sandbox-footer .conjunto-status-limite {
+            font-size: 13px;
+            color: #93c5fd;
+            margin-top: 4px;
+        }
+
+        .sandbox-footer .conjunto-avulso-bloco {
+            font-size: 12.5px;
+            color: #cbd5e1;
+            border-top: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-top: 8px;
+            margin-top: 6px;
+        }
+
+        .sandbox-footer .conjunto-aviso-deficit {
+            font-size: 13px;
+            color: #fca5a5;
+            margin-top: 4px;
+        }
+
+        .sandbox-footer .conjunto-acoes-wrapper {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
             gap: 8px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
 
         .btn-multiplicar-conjunto {
@@ -459,6 +524,164 @@
         }
 
         /* ==========================================
+           ESTILOS DO CONJUNTO DENTRO DO CARD SALVO (TEMA LIGHT EXECUTIVO)
+           ========================================== */
+        .cd-analise-box .conclusao-conjunto-card {
+            background: #f8fafc !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 10px !important;
+            padding: 16px 18px !important;
+            margin-top: 4px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 10px !important;
+            color: var(--text-main) !important;
+            box-shadow: none !important;
+        }
+
+        .cd-analise-box .conclusao-conjunto-card.card-inviavel {
+            background: #fff5f5 !important;
+            border-color: #fca5a5 !important;
+        }
+
+        .cd-analise-box .conclusao-conjunto-topo {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+            border-bottom: 1px dashed var(--border-color) !important;
+            padding-bottom: 10px !important;
+        }
+
+        .cd-analise-box .badge-conjunto-tag {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            background: #e0f2fe !important;
+            color: #0369a1 !important;
+            border: 1px solid #bae6fd !important;
+            padding: 5px 12px !important;
+            border-radius: 6px !important;
+            font-size: 11.5px !important;
+            font-weight: 800 !important;
+            letter-spacing: 0.5px !important;
+            text-transform: uppercase !important;
+        }
+
+        .cd-analise-box .badge-conjunto-inviavel {
+            background: #fee2e2 !important;
+            color: #b91c1c !important;
+            border-color: #fca5a5 !important;
+        }
+
+        .cd-analise-box .conjunto-custo-base-text {
+            font-size: 13px !important;
+            color: var(--text-muted) !important;
+            font-weight: 600 !important;
+        }
+
+        .cd-analise-box .conjunto-custo-base-text strong {
+            color: var(--primary-dark) !important;
+            font-weight: 800 !important;
+        }
+
+        .cd-analise-box .conjunto-custo-base-text.custo-inviavel strong {
+            color: var(--danger) !important;
+        }
+
+        .cd-analise-box .conjunto-subtitulo {
+            font-size: 12px !important;
+            color: var(--text-muted) !important;
+            font-weight: 700 !important;
+            margin-bottom: 6px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        .cd-analise-box .conjunto-composicao-lista {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important;
+            margin: 4px 0 !important;
+        }
+
+        .cd-analise-box .conjunto-chip {
+            background: #ffffff !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 6px !important;
+            padding: 5px 11px !important;
+            font-size: 12px !important;
+            color: var(--text-main) !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+        }
+
+        .cd-analise-box .conjunto-chip strong {
+            color: var(--primary) !important;
+            font-weight: 800 !important;
+        }
+
+        .cd-analise-box .conjunto-capacidade-bloco {
+            font-size: 13.5px !important;
+            line-height: 1.6 !important;
+            color: var(--text-main) !important;
+            margin-top: 4px !important;
+        }
+
+        .cd-analise-box .conjunto-capacidade-bloco strong {
+            color: var(--primary-dark) !important;
+        }
+
+        .cd-analise-box .conjunto-status-extra {
+            font-size: 13px !important;
+            color: #047857 !important;
+            font-weight: 600 !important;
+            background: #ecfdf5 !important;
+            border: 1px solid #a7f3d0 !important;
+            padding: 8px 12px !important;
+            border-radius: 6px !important;
+            margin-top: 6px !important;
+        }
+
+        .cd-analise-box .conjunto-status-limite {
+            font-size: 13px !important;
+            color: #0369a1 !important;
+            font-weight: 600 !important;
+            background: #f0f9ff !important;
+            border: 1px solid #bae6fd !important;
+            padding: 8px 12px !important;
+            border-radius: 6px !important;
+            margin-top: 6px !important;
+        }
+
+        .cd-analise-box .conjunto-avulso-bloco {
+            font-size: 12.5px !important;
+            color: var(--text-muted) !important;
+            border-top: 1px dashed var(--border-color) !important;
+            padding-top: 8px !important;
+            margin-top: 8px !important;
+        }
+
+        .cd-analise-box .conjunto-avulso-bloco strong {
+            color: var(--text-main) !important;
+        }
+
+        .cd-analise-box .conclusao-destaque-capacidade {
+            background: transparent !important;
+            border: none !important;
+            padding: 0 !important;
+            color: var(--text-main) !important;
+            font-size: 13.5px !important;
+        }
+
+        .cd-analise-box .conclusao-destaque-capacidade strong {
+            color: var(--primary-dark) !important;
+        }
+
+        /* ==========================================
            APRESENTAÇÃO EXECUTIVA (DASHBOARD WEB)
            ========================================== */
         .scenarios-header-wrapper { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -486,15 +709,149 @@
         .cd-btn-copy:hover { background: #d1fae5 !important; color: #047857 !important; border-color: var(--success) !important; transform: translateY(-1px); box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2); }
         .cd-btn.btn-del:hover { background: #fee2e2; color: var(--danger); border-color: transparent; }
 
-        .cd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 30px; }
+        .cd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 26px 30px; }
         @media (max-width: 800px) { .cd-body { grid-template-columns: 1fr; } }
         
-        .cd-col h4 { margin: 0 0 16px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
-        .cd-col.sai h4 { color: var(--danger); }
-        .cd-col.entra h4 { color: var(--success); }
+        .cd-col h4 { margin: 0 0 14px 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
+        .cd-col.sai h4 { color: var(--danger); border-color: #fca5a5; }
+        .cd-col.entra h4 { color: var(--success); border-color: #86efac; }
         
-        .cd-col ul { margin: 0; padding: 0 0 0 4px; list-style-type: none; color: var(--text-main); font-size: 14px; line-height: 1.6; }
-        .cd-col li { margin-bottom: 12px; }
+        .cd-col ul { margin: 0; padding: 0; list-style-type: none; display: flex; flex-direction: column; gap: 12px; }
+
+        /* Card individual de cargo no cenário salvo */
+        .cd-item-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .cd-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .cd-item-qtd {
+            font-size: 14px;
+            color: var(--text-main);
+            margin-right: 4px;
+        }
+        .cd-item-nome {
+            font-weight: 700;
+            color: var(--primary-dark);
+            font-size: 13.5px;
+        }
+        .cd-item-vinculo {
+            opacity: 0.7;
+            font-weight: normal;
+            font-size: 12px;
+        }
+        .cd-item-val-mes {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            font-family: 'Inter', sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+        .cd-item-mes-label {
+            font-size: 11px;
+            font-weight: normal;
+            color: var(--text-muted);
+        }
+        .cd-item-footer {
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'Inter', sans-serif;
+            font-variant-numeric: tabular-nums;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 6px;
+        }
+        .cd-item-footer strong {
+            color: var(--text-main);
+        }
+
+        /* Detalhamento das verbas no card individual */
+        .cd-item-verbas {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            margin: 2px 0;
+        }
+        .verbas-remun-linha {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed var(--border-color);
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .verbas-remun-linha span:last-child {
+            font-weight: 700;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+        }
+        .verbas-auxilios-topo {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .subtotal-badge {
+            background: rgba(0, 68, 136, 0.08);
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+        .verbas-auxilios-lista {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-left: 6px;
+            border-left: 2px solid var(--primary-light);
+        }
+        .verba-aux-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+        }
+        .verba-aux-item strong {
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+        }
+        .verbas-total-multi {
+            margin-top: 6px;
+            padding-top: 5px;
+            border-top: 1px dashed var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+        .verbas-total-multi strong {
+            color: var(--primary-dark);
+            font-variant-numeric: tabular-nums;
+        }
 
         .cd-footer { padding: 24px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed var(--border-color); }
         .cd-footer.viavel { background: rgba(5, 150, 105, 0.05); }
@@ -1566,13 +1923,13 @@ function atualizarConclusaoExecutiva(credito, custo, saldo, itensOrigem, itensDe
                 <div class="conclusao-conjunto-card">
                     <div class="conclusao-conjunto-topo">
                         <span class="badge-conjunto-tag">📦 Conjunto de Cargos Criados (${itensDestino.length} tipos • ${totalCargosConfigurados} postos)</span>
-                        <span style="font-size: 12.5px; color: #cbd5e1;">Custo de 1 conjunto base: <strong style="color: #ffffff;">${formatarMoeda(custoConjuntoBase)}</strong>/mês</span>
+                        <span class="conjunto-custo-base-text">Custo de 1 conjunto base: <strong>${formatarMoeda(custoConjuntoBase)}</strong>/mês</span>
                     </div>
                     <div>
-                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Composição de 1 conjunto base (${totalPostosBase} postos):</div>
+                        <div class="conjunto-subtitulo">Composição de 1 conjunto base (${totalPostosBase} postos):</div>
                         <div class="conjunto-composicao-lista">${chipsHTML}</div>
                     </div>
-                    <div style="font-size: 13.5px; line-height: 1.5; margin-top: 4px;">
+                    <div class="conjunto-capacidade-bloco">
                         🎯 <strong>Capacidade do Conjunto:</strong> Com o crédito total liberado de <strong>${formatarMoeda(credito)}/mês</strong>, é possível criar 
                         <strong>até ${maxConjuntosPermitidos} conjunto(s) completo(s)</strong> deste modelo sem ultrapassar o valor dos extintos 
                         (custo de <strong>${formatarMoeda(custoMaxConjuntos)}/mês</strong>, preservando sobra de <strong>${formatarMoeda(sobraMaxConjuntos)}/mês</strong>).
@@ -1588,7 +1945,7 @@ function atualizarConclusaoExecutiva(credito, custo, saldo, itensOrigem, itensDe
                 }
 
                 htmlConjunto += `
-                    <div style="font-size: 13px; color: #86efac; margin-top: 2px;">
+                    <div class="conjunto-status-extra">
                         ✨ Você configurou <strong>${mdc} conjunto(s)</strong>. Portanto, ainda é possível implantar mais <strong>+${extraConjuntos} conjunto(s) completo(s)</strong> com o crédito disponível!
                     </div>
                     <div class="conjunto-acoes-wrapper">
@@ -1599,7 +1956,7 @@ function atualizarConclusaoExecutiva(credito, custo, saldo, itensOrigem, itensDe
                 `;
             } else {
                 htmlConjunto += `
-                    <div style="font-size: 13px; color: #93c5fd; margin-top: 2px;">
+                    <div class="conjunto-status-limite">
                         👌 Você utilizou exatamente o limite máximo permitido de conjuntos completos (${maxConjuntosPermitidos}x).
                     </div>
                 `;
@@ -1609,7 +1966,7 @@ function atualizarConclusaoExecutiva(credito, custo, saldo, itensOrigem, itensDe
             const cabemMais = itensDestino.filter(it => it.valor <= saldo);
             if (cabemMais.length > 0) {
                 htmlConjunto += `
-                    <div style="font-size: 12.5px; color: #cbd5e1; border-top: 1px dashed rgba(255,255,255,0.12); padding-top: 8px; margin-top: 6px;">
+                    <div class="conjunto-avulso-bloco">
                         💡 Com a sobra individual de ${formatarMoeda(saldo)}/mês, ainda seria possível adicionar postos avulsos: ${cabemMais.map(it => `<strong>+1 ${it.nome.split(' ')[0]}</strong>`).join(', ')}.
                     </div>
                 `;
@@ -1682,22 +2039,22 @@ function atualizarConclusaoExecutiva(credito, custo, saldo, itensOrigem, itensDe
             `).join('');
 
             let htmlConjunto = `
-                <div class="conclusao-conjunto-card">
+                <div class="conclusao-conjunto-card card-inviavel">
                     <div class="conclusao-conjunto-topo">
-                        <span class="badge-conjunto-tag" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border-color: rgba(248, 113, 113, 0.4);">
+                        <span class="badge-conjunto-tag badge-conjunto-inviavel">
                             📦 Conjunto de Cargos Excedido (${itensDestino.length} tipos • ${totalCargosConfigurados} postos)
                         </span>
-                        <span style="font-size: 12.5px; color: #fca5a5;">Custo de 1 conjunto base: <strong style="color: #ffffff;">${formatarMoeda(custoConjuntoBase)}</strong>/mês</span>
+                        <span class="conjunto-custo-base-text custo-inviavel">Custo de 1 conjunto base: <strong>${formatarMoeda(custoConjuntoBase)}</strong>/mês</span>
                     </div>
                     <div>
-                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Composição de 1 conjunto base (${totalPostosBase} postos):</div>
+                        <div class="conjunto-subtitulo">Composição de 1 conjunto base (${totalPostosBase} postos):</div>
                         <div class="conjunto-composicao-lista">${chipsHTML}</div>
                     </div>
             `;
 
             if (maxConjuntosPermitidos > 0) {
                 htmlConjunto += `
-                    <div style="font-size: 13.5px; line-height: 1.5; margin-top: 4px;">
+                    <div class="conjunto-capacidade-bloco">
                         📊 <strong>Capacidade em Conjuntos Completos:</strong> Com o crédito de <strong>${formatarMoeda(credito)}/mês</strong>, é possível criar no máximo 
                         <strong>${maxConjuntosPermitidos} conjunto(s) completo(s)</strong> deste modelo sem ultrapassar o valor dos extintos 
                         (custo de <strong>${formatarMoeda(custoMaxConjuntos)}/mês</strong>, garantindo sobra de <strong>${formatarMoeda(sobraMaxConjuntos)}/mês</strong>).
@@ -1738,7 +2095,7 @@ function atualizarConclusaoExecutiva(credito, custo, saldo, itensOrigem, itensDe
                 const ajustesJSON = JSON.stringify(ajustes.map(a => ({ index: a.index, qtd: a.qtdSugerida }))).replace(/"/g, '&quot;');
 
                 htmlConjunto += `
-                    <div style="font-size: 13px; color: #fca5a5; margin-top: 4px;">
+                    <div class="conjunto-aviso-deficit">
                         ⚠️ O crédito disponível (${formatarMoeda(credito)}) não cobre 1 conjunto completo deste modelo (custo: ${formatarMoeda(custoConjuntoBase)}/mês).
                     </div>
                     <div style="margin-top: 6px; font-size: 13px;">
@@ -1875,12 +2232,14 @@ function salvarCenario() {
     let creditos = 0; let custos = 0;
     let descOrigem = []; let descDestino = [];
     let totalQtdCriados = 0;
+    let totalQtdExtintos = 0;
 
     const processarLinha = (box, arrDesc, isOrigem) => {
         const info = extrairInfoLinha(box);
         if (info.valido) {
             if (isOrigem) {
                 creditos += info.total;
+                totalQtdExtintos += info.qtd;
             } else {
                 custos += info.total;
                 totalQtdCriados += info.qtd;
@@ -1900,41 +2259,39 @@ function salvarCenario() {
             let detalheVerbasHTML = '';
             if (info.tipo === 'comissionado') {
                 detalheVerbasHTML = `
-                    <div style="margin-top: 8px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; font-size: 12px;">
+                    <div class="cd-item-verbas">
                         <!-- Remuneração Base + Representação -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed var(--border-color);">
-                            <span style="color: var(--text-muted); font-weight: 600;">Remuneração (Base + Representação):</span>
-                            <span style="font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums;">
-                                ${formatarMoeda(info.base)} + ${formatarMoeda(info.rep)} = <strong>${formatarMoeda(info.remuneracao)}</strong>
-                            </span>
+                        <div class="verbas-remun-linha">
+                            <span>Remuneração (Base + Representação):</span>
+                            <span>${formatarMoeda(info.base)} + ${formatarMoeda(info.rep)} = <strong>${formatarMoeda(info.remuneracao)}</strong></span>
                         </div>
 
                         <!-- Título dos Auxílios -->
-                        <div style="font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                        <div class="verbas-auxilios-topo">
                             <span>Discriminação dos Auxílios (por cargo):</span>
-                            <span style="background: rgba(0,68,136,0.08); padding: 2px 7px; border-radius: 4px; font-size: 11px; color: var(--primary-dark); font-weight: 700;">Subtotal: ${formatarMoeda(info.totalVerbas)}</span>
+                            <span class="subtotal-badge">Subtotal: ${formatarMoeda(info.totalVerbas)}</span>
                         </div>
 
                         <!-- Lista de Auxílios Discriminados Um Embaixo do Outro -->
-                        <div style="display: flex; flex-direction: column; gap: 5px; padding-left: 6px; border-left: 2px solid var(--primary-light);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+                        <div class="verbas-auxilios-lista">
+                            <div class="verba-aux-item">
                                 <span>• <strong>Auxílio-Saúde</strong> (10% da Base + Repr.):</span>
-                                <strong style="color: var(--text-main); font-variant-numeric: tabular-nums;">${formatarMoeda(info.auxSaude)}</strong>
+                                <strong>${formatarMoeda(info.auxSaude)}</strong>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+                            <div class="verba-aux-item">
                                 <span>• <strong>Auxílio-Transporte</strong> (22 dias de transporte):</span>
-                                <strong style="color: var(--text-main); font-variant-numeric: tabular-nums;">${formatarMoeda(info.transporte)}</strong>
+                                <strong>${formatarMoeda(info.transporte)}</strong>
                             </div>
-                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+                            <div class="verba-aux-item">
                                 <span>• <strong>Auxílio-Alimentação</strong>:</span>
-                                <strong style="color: var(--text-main); font-variant-numeric: tabular-nums;">${formatarMoeda(info.alimentacao)}</strong>
+                                <strong>${formatarMoeda(info.alimentacao)}</strong>
                             </div>
                         </div>
 
                         ${info.qtd > 1 ? `
-                            <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted);">
+                            <div class="verbas-total-multi">
                                 <span>Auxílios somados para os ${info.qtd} cargos:</span>
-                                <strong style="color: var(--primary-dark); font-variant-numeric: tabular-nums;">${formatarMoeda(info.totalVerbas * info.qtd)}/mês</strong>
+                                <strong>${formatarMoeda(info.totalVerbas * info.qtd)}/mês</strong>
                             </div>
                         ` : ''}
                     </div>
@@ -1942,21 +2299,21 @@ function salvarCenario() {
             }
 
             arrDesc.push(`
-                <li style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
-                    <div style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px;">
+                <li class="cd-item-card">
+                    <div class="cd-item-header">
                         <div>
-                            <strong style="font-size: 14px; color: var(--text-main);">${info.qtd}x</strong> 
-                            <span style="font-weight: 700; color: var(--primary-dark); font-size: 13.5px;">${info.nome}</span> 
-                            <span style="opacity:0.65; font-weight:normal; font-size:12px;">${vText}</span>
+                            <strong class="cd-item-qtd">${info.qtd}x</strong> 
+                            <span class="cd-item-nome">${info.nome}</span> 
+                            <span class="cd-item-vinculo">${vText}</span>
                         </div>
-                        <div style="font-size: 13.5px; font-weight: 700; color: var(--primary-dark); font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;">
-                            ${valMes} <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">/mês</span>
+                        <div class="cd-item-val-mes">
+                            ${valMes} <span class="cd-item-mes-label">/mês</span>
                         </div>
                     </div>
                     ${detalheVerbasHTML}
-                    <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;">
-                        <span>Custo Unitário Total: <strong style="color: var(--text-main);">${valUnit}</strong></span>
-                        <span>Total Anual: <strong style="color: var(--text-main);">${valAno}</strong></span>
+                    <div class="cd-item-footer">
+                        <span>Custo Unitário Total: <strong>${valUnit}</strong></span>
+                        <span>Total Anual: <strong>${valAno}</strong></span>
                     </div>
                 </li>
             `);
@@ -2004,7 +2361,8 @@ function salvarCenario() {
     let detalheCardHTML = '';
     if (detalheEl && detalheEl.style.display !== 'none') {
         const clone = detalheEl.cloneNode(true);
-        clone.querySelectorAll('button').forEach(b => b.remove()); // Remove botões interativos na visualização estática
+        // Remove botões de ação e seus containers na visualização estática do card
+        clone.querySelectorAll('button, .conjunto-acoes-wrapper').forEach(b => b.remove());
         detalheCardHTML = clone.innerHTML;
     }
 
@@ -2046,7 +2404,7 @@ function salvarCenario() {
             <!-- Corpo -->
             <div class="cd-body">
                 <div class="cd-col sai">
-                    <h4>Sai (Extinguidos)</h4>
+                    <h4>Sai (Extinguidos - ${totalQtdExtintos} postos)</h4>
                     ${htmlListaOrigem}
                 </div>
                 <div class="cd-col entra">
@@ -2137,12 +2495,30 @@ async function capturarElemento(elemento) {
                         box-shadow: none !important;
                     }
                     .cd-title-group h3 { color: #002a5c !important; }
-                    .cd-col.sai h4 { color: #dc2626 !important; }
-                    .cd-col.entra h4 { color: #059669 !important; }
+                    .cd-col.sai h4 { color: #dc2626 !important; border-color: #fca5a5 !important; }
+                    .cd-col.entra h4 { color: #059669 !important; border-color: #86efac !important; }
                     .cd-impact-label.txt-viavel { color: #059669 !important; }
                     .cd-impact-label.txt-inviavel { color: #dc2626 !important; }
                     .cd-impact-values.txt-viavel strong { color: #059669 !important; }
                     .cd-impact-values.txt-inviavel strong { color: #dc2626 !important; }
+                    .cd-analise-box .cd-analise-detalhes { background: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+                    .cd-analise-box .conclusao-conjunto-card { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+                    .cd-analise-box .conclusao-conjunto-card.card-inviavel { background: #fff5f5 !important; border-color: #fca5a5 !important; }
+                    .cd-analise-box .badge-conjunto-tag { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
+                    .cd-analise-box .badge-conjunto-inviavel { background: #fee2e2 !important; color: #b91c1c !important; border-color: #fca5a5 !important; }
+                    .cd-analise-box .conjunto-custo-base-text { color: #475569 !important; }
+                    .cd-analise-box .conjunto-custo-base-text strong { color: #002a5c !important; }
+                    .cd-analise-box .conjunto-subtitulo { color: #475569 !important; }
+                    .cd-analise-box .conjunto-chip { background: #ffffff !important; border: 1px solid #cbd5e1 !important; color: #0f172a !important; }
+                    .cd-analise-box .conjunto-chip strong { color: #004488 !important; }
+                    .cd-analise-box .conjunto-capacidade-bloco { color: #0f172a !important; }
+                    .cd-analise-box .conjunto-capacidade-bloco strong { color: #002a5c !important; }
+                    .cd-analise-box .conjunto-status-extra { background: #ecfdf5 !important; color: #047857 !important; border: 1px solid #a7f3d0 !important; }
+                    .cd-analise-box .conjunto-status-limite { background: #f0f9ff !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
+                    .cd-analise-box .conjunto-avulso-bloco { color: #475569 !important; border-top: 1px dashed #cbd5e1 !important; }
+                    .cd-analise-box .conjunto-avulso-bloco strong { color: #0f172a !important; }
+                    .cd-item-card { background: #ffffff !important; border: 1px solid #cbd5e1 !important; }
+                    .cd-item-verbas { background: #f8fafc !important; border: 1px solid #cbd5e1 !important; }
                 `;
                 clonedDoc.head.appendChild(styleInject);
 
@@ -2323,11 +2699,30 @@ function baixarCenarioHTML(id) {
         .cd-header { padding: 20px 30px; background: var(--panel-bg); border-bottom: 1px solid var(--border-color); }
         .cd-title-group h3 { margin: 0; font-size: 22px; font-weight: 800; color: var(--primary-dark); }
         .cd-title-group p { margin: 6px 0 0; font-size: 13px; color: var(--text-muted); font-weight: 600; }
-        .cd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 30px; }
-        .cd-col h4 { margin: 0 0 16px; font-size: 13px; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
+        .cd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 26px 30px; }
+        .cd-col h4 { margin: 0 0 14px; font-size: 13px; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
         .cd-col.sai h4 { color: var(--danger); border-color: #fca5a5; }
         .cd-col.entra h4 { color: var(--success); border-color: #86efac; }
-        .cd-col ul { list-style: none; padding: 0; margin: 0; }
+        .cd-col ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+        .cd-item-card { background: #ffffff; border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); display: flex; flex-direction: column; gap: 6px; }
+        .cd-item-header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+        .cd-item-qtd { font-size: 14px; color: var(--text-main); margin-right: 4px; }
+        .cd-item-nome { font-weight: 700; color: var(--primary-dark); font-size: 13.5px; }
+        .cd-item-vinculo { opacity: 0.7; font-weight: normal; font-size: 12px; }
+        .cd-item-val-mes { font-size: 14px; font-weight: 800; color: var(--primary-dark); font-variant-numeric: tabular-nums; }
+        .cd-item-mes-label { font-size: 11px; font-weight: normal; color: var(--text-muted); }
+        .cd-item-footer { margin-top: 4px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; border-top: 1px dashed var(--border-color); padding-top: 6px; }
+        .cd-item-footer strong { color: var(--text-main); }
+        .cd-item-verbas { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 8px 12px; font-size: 12px; margin: 2px 0; }
+        .verbas-remun-linha { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding-bottom: 5px; border-bottom: 1px dashed var(--border-color); color: var(--text-muted); font-weight: 600; }
+        .verbas-remun-linha span:last-child { font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums; }
+        .verbas-auxilios-topo { font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        .subtotal-badge { background: rgba(0, 68, 136, 0.08); padding: 2px 7px; border-radius: 4px; font-size: 11px; color: var(--primary-dark); font-weight: 700; }
+        .verbas-auxilios-lista { display: flex; flex-direction: column; gap: 4px; padding-left: 6px; border-left: 2px solid var(--primary-light); }
+        .verba-aux-item { display: flex; justify-content: space-between; align-items: center; color: var(--text-muted); }
+        .verba-aux-item strong { color: var(--text-main); font-variant-numeric: tabular-nums; }
+        .verbas-total-multi { margin-top: 6px; padding-top: 5px; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); }
+        .verbas-total-multi strong { color: var(--primary-dark); font-variant-numeric: tabular-nums; }
         .cd-analise-box { margin: 0 30px 25px 30px; padding: 18px 24px; border-radius: 12px; border: 1px solid var(--border-color); }
         .cd-analise-box.viavel { background: rgba(5,150,105,0.06); border-color: rgba(5,150,105,0.3); }
         .cd-analise-box.inviavel { background: rgba(220,38,38,0.06); border-color: rgba(220,38,38,0.3); }
@@ -2336,10 +2731,22 @@ function baixarCenarioHTML(id) {
         .cd-analise-badge.txt-viavel { background: rgba(5,150,105,0.15); color: var(--success); }
         .cd-analise-badge.txt-inviavel { background: rgba(220,38,38,0.15); color: var(--danger); }
         .cd-analise-texto { font-size: 14px; line-height: 1.55; }
-        .cd-analise-detalhes { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: #ffffff; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px; }
-        .conclusao-conjunto-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-top: 8px; color: var(--text-main); }
-        .badge-conjunto-tag { background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
-        .conjunto-chip { background: #ffffff; border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; font-size: 12px; display: inline-flex; margin: 3px; }
+        .cd-analise-detalhes { font-size: 13px; line-height: 1.5; color: var(--text-main); background: #ffffff; padding: 14px 18px; border-radius: 10px; border: 1px solid var(--border-color); margin-top: 10px; }
+        .conclusao-conjunto-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-top: 8px; color: var(--text-main); display: flex; flex-direction: column; gap: 10px; }
+        .conclusao-conjunto-topo { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; }
+        .badge-conjunto-tag { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+        .badge-conjunto-inviavel { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+        .conjunto-custo-base-text { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
+        .conjunto-custo-base-text strong { color: var(--primary-dark); font-weight: 800; }
+        .conjunto-subtitulo { font-size: 12px; color: var(--text-muted); font-weight: 700; margin-bottom: 5px; }
+        .conjunto-composicao-lista { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0; }
+        .conjunto-chip { background: #ffffff; border: 1px solid var(--border-color); padding: 4px 10px; border-radius: 6px; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; }
+        .conjunto-chip strong { color: var(--primary); }
+        .conjunto-capacidade-bloco { font-size: 13.5px; line-height: 1.55; color: var(--text-main); }
+        .conjunto-status-extra { font-size: 12.5px; color: #047857; font-weight: 600; background: #ecfdf5; border: 1px solid #a7f3d0; padding: 7px 12px; border-radius: 6px; }
+        .conjunto-status-limite { font-size: 12.5px; color: #0369a1; font-weight: 600; background: #f0f9ff; border: 1px solid #bae6fd; padding: 7px 12px; border-radius: 6px; }
+        .conjunto-avulso-bloco { font-size: 12px; color: var(--text-muted); border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 6px; }
+        .conclusao-destaque-capacidade { background: transparent; border: none; padding: 0; color: var(--text-main); }
         .cd-footer { padding: 24px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed var(--border-color); }
         .cd-footer.viavel { background: rgba(5, 150, 105, 0.05); }
         .cd-footer.inviavel { background: rgba(220, 38, 38, 0.05); }
