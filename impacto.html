@@ -968,7 +968,7 @@
                                     Pecúnia Dia
                                     <span class="label-badge-lock">🔒 Fixo</span>
                                 </label>
-                                <input type="number" id="vtDiarioAtual" class="form-input" value="11.20" step="0.10" readonly title="Valor fixo estabelecido em R$ 5,60 por dia">
+                                <input type="number" id="vtDiarioAtual" class="form-input" value="5.60" step="0.10" readonly title="Valor fixo estabelecido em R$ 5,60 por dia">
                             </div>
                         </div>
 
@@ -1204,7 +1204,7 @@
             const nome = nomeDefault || `Projeção ${id}`;
             const qtd = qtdDefault !== null ? qtdDefault : (Number(document.getElementById('qtdAtual').value) || 10);
             const bolsa = bolsaDefault !== null ? bolsaDefault : 1800;
-            const vtDiario = vtDiarioDefault !== null ? vtDiarioDefault : 11.20;
+            const vtDiario = vtDiarioDefault !== null ? vtDiarioDefault : 5.60;
             const checkedAttr = pecuniaDuplaDefault ? 'checked' : '';
 
             const html = `
@@ -1294,7 +1294,7 @@
         function aplicarPreset(tipo) {
             const qtdAtual = Number(document.getElementById('qtdAtual').value) || 10;
             const bolsaAtual = 1600;
-            const vtAtual = 11.20;
+            const vtAtual = 5.60;
 
             if (tipo === 'reajuste_bolsa') {
                 adicionarCenario('Bolsa R$ 1.800 (+12,5%)', qtdAtual, 1800, vtAtual, false);
@@ -1312,7 +1312,7 @@
             const nomeAtual = document.getElementById('nomeAtual').value || "Quadro Atual (Baseline)";
             const qtdAtual = Math.max(1, Number(document.getElementById('qtdAtual').value) || 1);
             const bolsaAtual = 1600;
-            const vtDiarioAtualBase = 11.20;
+            const vtDiarioAtualBase = 5.60;
             const pecuniaDuplaAtual = document.getElementById('chkPecuniaAtual').checked;
 
             const cardPecuniaAtual = document.getElementById('cardPecuniaAtual');
@@ -1587,8 +1587,8 @@
             if (container) container.innerHTML = '';
 
             const qtdAtual = Number(document.getElementById('qtdAtual').value) || 10;
-            adicionarCenario('Projeção A: Reajuste Bolsa R$ 1.800', qtdAtual, 1800, 11.20, false);
-            adicionarCenario('Projeção B: Bolsa R$ 1.800 + Pecúnia 2x', qtdAtual, 1800, 11.20, true);
+            adicionarCenario('Projeção A: Reajuste Bolsa R$ 1.800', qtdAtual, 1800, 5.60, false);
+            adicionarCenario('Projeção B: Bolsa R$ 1.800 + Pecúnia 2x', qtdAtual, 1800, 5.60, true);
 
             atualizarTudo();
         }
