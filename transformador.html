@@ -8,6 +8,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Captura de Print / Imagem do Cenário -->
+    <script src="html2canvas.min.js"></script>
+    <script>
+        if (typeof html2canvas === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>');
+        }
+    </script>
+    
     <style>
         /* ==========================================
            TEMA EXECUTIVO (LIGHT)
@@ -20,7 +28,7 @@
             
             --success: #059669;         
             --danger: #dc2626;          
-            --warning: #fbbf24;
+            --warning: #f59e0b;
             --neutral: #64748b;
             
             --bg-body: #f1f5f9;         
@@ -74,15 +82,381 @@
         .painel-origem h2 { color: var(--danger); }
         .painel-destino h2 { color: var(--success); }
 
-        .sandbox-footer { background: var(--primary-dark); border-radius: 16px; padding: 20px 30px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 10px 25px -5px rgba(0,68,136,0.5); flex-wrap: wrap; gap: 20px; position: sticky; bottom: 20px; z-index: 50; }
-        .live-balance { display: flex; gap: 40px; align-items: center; }
+        /* ==========================================
+           QUADRO AZUL AMPLIADO (FOOTER SANDBOX)
+           ========================================== */
+        .sandbox-footer { 
+            background: linear-gradient(145deg, #00224d 0%, #003673 100%); 
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px; 
+            padding: 26px 32px; 
+            display: flex; 
+            flex-direction: column;
+            gap: 20px; 
+            color: white; 
+            box-shadow: 0 15px 35px -5px rgba(0, 42, 92, 0.45); 
+            position: relative;
+            margin-top: 20px;
+            z-index: 10;
+        }
+
+        .sandbox-footer-top {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            flex-wrap: wrap; 
+            gap: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            padding-bottom: 18px;
+        }
+
+        .live-balance { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; width: 100%; }
         .live-balance-item { display: flex; flex-direction: column; }
-        .live-balance-item span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.8; font-weight: 700; margin-bottom: 4px; }
+        .live-balance-item span { font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: #94a3b8; font-weight: 700; margin-bottom: 5px; }
         .live-balance-item strong { font-size: 20px; font-weight: 800; }
-        .live-balance-item.destaque { align-items: flex-end; }
-        .live-balance-item.destaque strong { font-size: 24px; color: #4ade80; }
-        .btn-salvar-cenario { background: var(--card-bg); color: var(--primary-dark); border: none; border-radius: 10px; padding: 14px 24px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn-salvar-cenario:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.2); }
+        .live-balance-item.destaque { 
+            margin-left: auto; 
+            align-items: flex-end; 
+            background: rgba(255, 255, 255, 0.08); 
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            padding: 10px 20px; 
+            border-radius: 12px; 
+        }
+        .live-balance-item.destaque span { color: #93c5fd; font-size: 11.5px; margin-bottom: 2px; }
+        .live-balance-item.destaque strong { font-size: 32px; color: #4ade80; font-weight: 900; line-height: 1; }
+        .live-balance-item.destaque .sub-capacidade { font-size: 12px; font-weight: 700; color: #94a3b8; margin-top: 4px; }
+        
+        .sandbox-bottom-actions { 
+            display: flex; 
+            justify-content: flex-end; 
+            align-items: center; 
+            gap: 15px; 
+            margin-top: 24px; 
+            padding-top: 18px; 
+            border-top: 1px solid var(--border-color); 
+        }
+
+        .btn-salvar-principal { 
+            background: var(--primary); 
+            color: #ffffff; 
+            border: none; 
+            border-radius: 10px; 
+            padding: 14px 28px; 
+            font-weight: 800; 
+            font-size: 14.5px; 
+            cursor: pointer; 
+            transition: all 0.25s ease; 
+            display: inline-flex; 
+            align-items: center; 
+            gap: 10px; 
+            box-shadow: 0 4px 12px rgba(0, 68, 136, 0.25); 
+        }
+        .btn-salvar-principal:hover { 
+            background: var(--primary-dark); 
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 18px rgba(0, 68, 136, 0.35); 
+        }
+
+        /* BLOCO DE VIABILIDADE NO CARD SALVO */
+        .cd-analise-box {
+            margin: 0 30px 20px 30px;
+            padding: 16px 22px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .cd-analise-box.viavel {
+            background: rgba(5, 150, 105, 0.05);
+            border-color: rgba(5, 150, 105, 0.3);
+        }
+        .cd-analise-box.inviavel {
+            background: rgba(220, 38, 38, 0.05);
+            border-color: rgba(220, 38, 38, 0.3);
+        }
+        .cd-analise-box.neutro {
+            background: rgba(100, 116, 139, 0.05);
+            border-color: rgba(100, 116, 139, 0.25);
+        }
+        .cd-analise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 8px;
+        }
+        .cd-analise-badge {
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 4px 10px;
+            border-radius: 99px;
+        }
+        .cd-analise-badge.txt-viavel {
+            background: rgba(5, 150, 105, 0.15);
+            color: var(--success);
+        }
+        .cd-analise-badge.txt-inviavel {
+            background: rgba(220, 38, 38, 0.15);
+            color: var(--danger);
+        }
+        .cd-analise-badge.txt-neutro {
+            background: rgba(100, 116, 139, 0.15);
+            color: var(--neutral);
+        }
+        .cd-analise-texto {
+            font-size: 13.5px;
+            line-height: 1.55;
+            color: var(--text-main);
+        }
+        .cd-analise-detalhes {
+            font-size: 12.5px;
+            line-height: 1.5;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.85);
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        /* PAINEL DE CONCLUSÃO E CAPACIDADE */
+        .conclusao-container {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 14px;
+            padding: 18px 22px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .conclusao-container.status-viavel {
+            background: rgba(5, 150, 105, 0.15);
+            border-color: rgba(52, 211, 153, 0.4);
+        }
+
+        .conclusao-container.status-inviavel {
+            background: rgba(220, 38, 38, 0.18);
+            border-color: rgba(248, 113, 113, 0.4);
+        }
+
+        .conclusao-container.status-neutro {
+            background: rgba(100, 116, 139, 0.15);
+            border-color: rgba(148, 163, 184, 0.25);
+        }
+
+        .conclusao-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .conclusao-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 99px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .badge-viavel {
+            background: rgba(34, 197, 94, 0.25);
+            color: #4ade80;
+            border: 1px solid rgba(74, 222, 128, 0.5);
+        }
+
+        .badge-inviavel {
+            background: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+            border: 1px solid rgba(248, 113, 113, 0.5);
+        }
+
+        .badge-neutro {
+            background: rgba(148, 163, 184, 0.25);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+        }
+
+        .conclusao-texto-principal {
+            font-size: 14.5px;
+            line-height: 1.55;
+            color: #f1f5f9;
+        }
+
+        .conclusao-destaque-capacidade {
+            background: rgba(0, 0, 0, 0.28);
+            border-radius: 10px;
+            padding: 14px 18px;
+            border-left: 4px solid var(--neutral);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 13.5px;
+            color: #e2e8f0;
+            line-height: 1.5;
+        }
+
+        .status-viavel .conclusao-destaque-capacidade {
+            border-left-color: #4ade80;
+        }
+
+        .status-inviavel .conclusao-destaque-capacidade {
+            border-left-color: #f87171;
+        }
+
+        .conclusao-destaque-capacidade strong {
+            color: #ffffff;
+        }
+
+        .btn-ajustar-qtd {
+            align-self: flex-start;
+            margin-top: 6px;
+            background: #ef4444;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.25);
+        }
+
+        .btn-ajustar-qtd:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        .btn-ajustar-qtd-proporcional {
+            background: #e11d48;
+        }
+        .btn-ajustar-qtd-proporcional:hover {
+            background: #be123c;
+        }
+
+        /* ==========================================
+           ESTILOS DO CONJUNTO DE CARGOS CRIADOS
+           ========================================== */
+        .conclusao-conjunto-card {
+            background: rgba(0, 0, 0, 0.32);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .conclusao-conjunto-topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+            padding-bottom: 8px;
+        }
+
+        .badge-conjunto-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(59, 130, 246, 0.25);
+            color: #93c5fd;
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .conjunto-composicao-lista {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 4px 0;
+        }
+
+        .conjunto-chip {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .conjunto-chip strong {
+            color: #60a5fa;
+        }
+
+        .conjunto-acoes-wrapper {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .btn-multiplicar-conjunto {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 11.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-multiplicar-conjunto:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .btn-multiplicar-conjunto.destaque {
+            background: #059669;
+            border-color: #10b981;
+        }
+
+        .btn-multiplicar-conjunto.destaque:hover {
+            background: #047857;
+        }
+
+        .btn-multiplicar-conjunto.ajuste-inviavel {
+            background: #ef4444;
+            border-color: #f87171;
+        }
+
+        .btn-multiplicar-conjunto.ajuste-inviavel:hover {
+            background: #dc2626;
+        }
 
         /* ==========================================
            APRESENTAÇÃO EXECUTIVA (DASHBOARD WEB)
@@ -96,6 +470,7 @@
         
         .cenario-dashboard { background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .cenario-dashboard.is-capturing, .cenario-dashboard.is-capturing * { animation: none !important; transition: none !important; opacity: 1 !important; }
 
         .cd-header { padding: 20px 30px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: var(--panel-bg); }
         .cd-title-group h3 { margin: 0; font-size: 20px; font-weight: 800; color: var(--primary-dark); padding: 4px 8px; border-radius: 6px; border: 1px dashed transparent; cursor: text; margin-left: -8px;}
@@ -105,6 +480,10 @@
         .cd-actions { display: flex; gap: 10px; }
         .cd-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
         .cd-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+        .cd-btn-print { background: var(--primary) !important; color: #ffffff !important; border-color: var(--primary) !important; }
+        .cd-btn-print:hover { background: var(--primary-dark) !important; color: #ffffff !important; border-color: var(--primary-dark) !important; transform: translateY(-1px); box-shadow: 0 2px 6px rgba(0, 68, 136, 0.25); }
+        .cd-btn-copy { background: #ecfdf5 !important; color: var(--success) !important; border-color: #a7f3d0 !important; }
+        .cd-btn-copy:hover { background: #d1fae5 !important; color: #047857 !important; border-color: var(--success) !important; transform: translateY(-1px); box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2); }
         .cd-btn.btn-del:hover { background: #fee2e2; color: var(--danger); border-color: transparent; }
 
         .cd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 30px; }
@@ -142,7 +521,7 @@
         .linha-cargo-box:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-alpha); z-index: 100; }
         
         .linha-top { display: grid; grid-template-columns: 60px 1fr 32px; gap: 8px; align-items: center; }
-        .linha-top-manual { grid-template-columns: 60px 1fr 100px 32px; } /* Grid específica para inputs manuais */
+        .linha-top-manual { grid-template-columns: 60px 1fr 100px 32px; }
 
         input[type="number"], input.busca-input { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; width: 100%; height: 38px; color: var(--text-main); background-color: var(--panel-bg); font-family: inherit; box-sizing: border-box; }
         input.busca-input { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; cursor: text; }
@@ -182,7 +561,7 @@
         .pdf-header-doc { display: none; }
 
         /* ==========================================
-           MAGICA DO CSS PARA IMPRESSÃO NATIVA (PDF)
+           IMPRESSÃO NATIVA (PDF)
            ========================================== */
         @media print {
             * {
@@ -247,6 +626,18 @@
             .cd-col ul { padding-left: 0px !important; margin: 0 !important; }
             .cd-col li { page-break-inside: avoid; margin-bottom: 10px !important; font-size: 11pt !important; line-height: 1.4 !important; } 
             
+            .cd-analise-box {
+                margin: 0 0 20px 0 !important;
+                padding: 15px 20px !important;
+                border-radius: 10px !important;
+                border: 2px solid var(--border-color) !important;
+                background: #f8fafc !important;
+                page-break-inside: avoid !important;
+            }
+            .cd-analise-box.viavel { border-color: #86efac !important; }
+            .cd-analise-box.inviavel { border-color: #fca5a5 !important; }
+            .cd-analise-detalhes { background: #ffffff !important; border: 1px solid #cbd5e1 !important; }
+
             .cd-footer { 
                 display: flex !important; justify-content: space-between !important; align-items: center !important;
                 border-radius: 12px !important; padding: 20px 30px !important; margin-top: 0 !important; page-break-inside: avoid; flex-direction: row !important;
@@ -269,6 +660,9 @@
     <div class="app-header">
         <h1>Simulador de Transformação</h1>
         <p>Ajuste os valores na mesa de trabalho, salve os cenários e exporte relatórios formatados.</p>
+        <div style="margin-top: 12px; display: inline-flex; align-items: center; gap: 8px; background: #e0f2fe; border: 1px solid #bae6fd; padding: 6px 16px; border-radius: 99px; font-size: 12px; color: #0369a1; font-weight: 600;">
+            <span>⚖️ <strong>Composição do Custo dos Cargos:</strong> Vencimento Base + Grat. Representação + Aux. Saúde (10%) + Transporte (22 dias = R$ 246,40) + Aux. Alimentação (R$ 1.431,32)</span>
+        </div>
     </div>
 
     <div class="modo-seletor-wrapper">
@@ -286,10 +680,18 @@
 
     <!-- MESA DE TRABALHO -->
     <div class="sandbox-container">
-        <div class="sandbox-header-actions">
+        <div class="sandbox-header-actions" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px;">
             <button class="btn-limpar" onclick="limparMesa()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Limpar Mesa
+            </button>
+            <button class="cd-btn cd-btn-copy" style="padding: 8px 14px; font-size: 13px;" onclick="copiarPrintMesa()" title="Copiar Print da Mesa atual para Área de Transferência (Ctrl+V)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Copiar Print da Mesa
+            </button>
+            <button class="btn-salvar-principal" style="padding: 8px 18px; font-size: 13px;" onclick="salvarCenario()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Salvar Cenário
             </button>
         </div>
         
@@ -309,25 +711,58 @@
             </div>
         </div>
 
+        <!-- QUADRO AZUL AMPLIADO DE VALORES, CONCLUSÃO E CAPACIDADE -->
         <div class="sandbox-footer calibri-values">
-            <div class="live-balance">
-                <div class="live-balance-item">
-                    <span>Valor dos atuais extintos</span>
-                    <strong id="live-credito" style="color: #60a5fa;">R$ 0,00</strong>
-                </div>
-                <div class="live-balance-item">
-                    <span>Custo dos novos criados</span>
-                    <strong id="live-custo" style="color: #60a5fa;">R$ 0,00</strong>
-                </div>
-                <div class="live-balance-item destaque">
-                    <span id="live-impacto-titulo">IMPACTO NEUTRO</span>
-                    <strong id="live-saldo" style="color: #94a3b8;">R$ 0,00<span style="font-size: 13px; font-weight: 600; opacity: 0.8;">/mês</span></strong>
-                    <span id="live-saldo-ano" style="font-size: 14px; font-weight: 800; color: #94a3b8; margin-top: 2px; text-transform: none;">R$ 0,00 /ano</span>
+            <!-- Linha Superior: Métricas com Destaque para Quantidade de Cargos Criados -->
+            <div class="sandbox-footer-top">
+                <div class="live-balance">
+                    <div class="live-balance-item">
+                        <span>Valor dos Extintos (Crédito)</span>
+                        <strong id="live-credito" style="color: #60a5fa;">R$ 0,00</strong>
+                    </div>
+                    <div class="live-balance-item">
+                        <span>Custo dos Criados (Despesa)</span>
+                        <strong id="live-custo" style="color: #93c5fd;">R$ 0,00</strong>
+                    </div>
+                    <div class="live-balance-item">
+                        <span id="live-impacto-titulo">Saldo Mensal (Folga / Déficit)</span>
+                        <strong id="live-saldo" style="color: #94a3b8; font-size: 19px;">R$ 0,00<span style="font-size: 12px; font-weight: 600; opacity: 0.8;">/mês</span></strong>
+                        <span id="live-saldo-ano" style="font-size: 12px; font-weight: 700; color: #94a3b8; margin-top: 2px; text-transform: none;">R$ 0,00 /ano</span>
+                    </div>
+                    <!-- DESTAQUE PRINCIPAL: QUANTIDADE DE CARGOS CRIADOS -->
+                    <div class="live-balance-item destaque">
+                        <span id="live-qtd-titulo">CARGOS CRIADOS (DESTINO)</span>
+                        <strong id="live-qtd-criados">0 cargos</strong>
+                        <span id="live-qtd-capacidade" class="sub-capacidade">Capacidade: aguardando cargos</span>
+                    </div>
                 </div>
             </div>
-            <button class="btn-salvar-cenario" onclick="salvarCenario()">
+
+            <!-- Linha Inferior: Conclusão Executiva e Sugestão de Quantidade -->
+            <div id="conclusao-painel" class="conclusao-container status-neutro">
+                <div class="conclusao-header">
+                    <span id="conclusao-badge" class="conclusao-badge badge-neutro">
+                        <span id="conclusao-icone">⚪</span>
+                        <span id="conclusao-badge-texto">Aguardando dados</span>
+                    </span>
+                    <div id="conclusao-resumo-capacidade" style="font-size: 12.5px; font-weight: 600; color: #94a3b8;"></div>
+                </div>
+                <div id="conclusao-texto" class="conclusao-texto-principal">
+                    Preencha os cargos a extinguir e os cargos a criar para visualizar a viabilidade da transformação.
+                </div>
+                <div id="conclusao-detalhe-capacidade" class="conclusao-destaque-capacidade" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- AÇÕES DA MESA DE TRABALHO (FORA DO QUADRO AZUL) -->
+        <div class="sandbox-bottom-actions" style="display: flex; justify-content: center; gap: 12px; margin-top: 20px;">
+            <button class="cd-btn cd-btn-copy" style="padding: 12px 22px; font-size: 14px;" onclick="copiarPrintMesa()" title="Copiar Print da Mesa de Trabalho para Área de Transferência (Ctrl+V)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Copiar Print da Mesa
+            </button>
+            <button class="btn-salvar-principal" onclick="salvarCenario()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                Salvar Cenário
+                Salvar Cenário no Painel
             </button>
         </div>
     </div>
@@ -366,6 +801,9 @@
    DADOS E REGRAS DE NEGÓCIO
    ========================================== */
 const FATOR_ATUALIZACAO = 1.053;
+const VALOR_TRANSPORTE_MENSAL = 246.40;   // 22 dias úteis de transporte (R$ 11,20/dia)
+const VALOR_ALIMENTACAO_MENSAL = 1431.32; // Auxílio-alimentação TJPE
+const PERCENTUAL_AUX_SAUDE = 0.10;       // 10% da soma da base + representação
 let modoAtualGlobal = 'comissionado';
 let contadorCenarios = 0;
 let ultimoCenarioRemovido = null; 
@@ -632,16 +1070,19 @@ function adicionarLinha(tipo, focus = false) {
             </div>
             <button class="btn-remover-linha" onclick="removerLinha(this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
         </div>
-        <div class="detalhes-comissionado" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border-color); justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <div class="detalhes-comissionado" style="display: none; padding-top: 10px; border-top: 1px dashed var(--border-color); justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
             <div class="toggle-switch-container">
                 <div class="toggle-slider"></div>
                 <button type="button" onclick="setVinculo(this, 'puro')" class="toggle-btn active">Puro</button>
                 <button type="button" onclick="setVinculo(this, 'efetivo')" class="toggle-btn">Efetivo</button>
             </div>
-            <span class="tooltip-icon wrap-base-rep" title="Puro: Base + Representação&#10;Efetivo: Apenas Representação">?</span>
-            <div class="valores-breakdown" style="font-size: 12px; text-align: right; color: var(--text-muted); display: flex; align-items: center; gap: 8px; margin-left: auto;">
-                <span class="wrap-base-rep">Base: <span class="v-base" style="font-weight: 600;">R$ 0</span> • Repr: <span class="v-rep" style="font-weight: 600;">R$ 0</span> | </span>
-                <span style="font-size: 15px; color: var(--text-main);">Total: <span class="v-total" style="font-weight: 700;">R$ 0</span></span>
+            <span class="tooltip-icon wrap-base-rep" title="Puro: Vencimento Base + Gratificação + Auxílios&#10;Efetivo: Apenas Gratificação + Auxílios">?</span>
+            <div class="valores-breakdown" style="font-size: 12px; text-align: right; color: var(--text-muted); display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap;">
+                <span class="wrap-base-rep">Base: <span class="v-base" style="font-weight: 600;">R$ 0</span> • Repr: <span class="v-rep" style="font-weight: 600;">R$ 0</span></span>
+                <span class="wrap-auxilios" style="background: rgba(0, 68, 136, 0.08); color: var(--primary); padding: 2px 7px; border-radius: 6px; font-weight: 600; font-size: 11.5px; cursor: help;" title="Auxílios Legais: Saúde (10% Base+Repr) + Transporte (22 dias = R$ 246,40) + Alimentação (R$ 1.431,32)">
+                    + Auxílios: <span class="v-aux" style="font-weight: 700;">R$ 0</span>
+                </span>
+                <span style="font-size: 14px; color: var(--text-main);">Total: <span class="v-total" style="font-weight: 800; color: var(--primary-dark);">R$ 0</span></span>
             </div>
         </div>
     `;
@@ -701,36 +1142,64 @@ function setVinculo(button, value) {
 
 function atualizarBreakdownLinha(box) {
     const input = box.querySelector('.busca-input');
+    if (!input) return;
     const tipo = input.getAttribute('data-tipo');
     const totalSpan = box.querySelector('.v-total');
+    if (!totalSpan) return;
+    const qtdInput = box.querySelector('input[type="number"]');
+    const qtd = parseInt(qtdInput ? qtdInput.value : 1) || 1;
     
     if (tipo === 'comissionado') {
-        const baseVal = parseFloat(input.getAttribute('data-base')) || 0;
-        const repVal = parseFloat(input.getAttribute('data-rep')) || 0;
+        const rawBase = parseFloat(input.getAttribute('data-base')) || 0;
+        const rawRep = parseFloat(input.getAttribute('data-rep')) || 0;
+        const baseVal = rawBase * FATOR_ATUALIZACAO;
+        const repVal = rawRep * FATOR_ATUALIZACAO;
         const vinculo = box.getAttribute('data-vinculo') || 'puro';
+        
         const baseSpan = box.querySelector('.v-base');
         const repSpan = box.querySelector('.v-rep');
+        const auxSpan = box.querySelector('.v-aux');
         
-        baseSpan.innerText = formatarMoeda(baseVal * FATOR_ATUALIZACAO);
-        repSpan.innerText = formatarMoeda(repVal * FATOR_ATUALIZACAO);
-        totalSpan.innerText = formatarMoeda((vinculo === 'puro' ? baseVal + repVal : repVal) * FATOR_ATUALIZACAO);
+        const somaBaseRep = baseVal + repVal;
+        const auxSaude = somaBaseRep * PERCENTUAL_AUX_SAUDE;
+        const transporte = VALOR_TRANSPORTE_MENSAL;
+        const alimentacao = VALOR_ALIMENTACAO_MENSAL;
+        const totalAuxilios = auxSaude + transporte + alimentacao;
+        
+        const remun = (vinculo === 'puro') ? somaBaseRep : repVal;
+        const custoUnitario = remun + totalAuxilios;
+        const custoTotalLinha = custoUnitario * qtd;
+        
+        if (baseSpan) baseSpan.innerText = formatarMoeda(baseVal);
+        if (repSpan) repSpan.innerText = formatarMoeda(repVal);
+        if (auxSpan) {
+            auxSpan.innerText = formatarMoeda(totalAuxilios);
+            if (auxSpan.parentElement) {
+                auxSpan.parentElement.title = `Auxílios Legais:\n• Saúde (10% Base+Repr): ${formatarMoeda(auxSaude)}\n• Transporte (22 dias): ${formatarMoeda(transporte)}\n• Alimentação: ${formatarMoeda(alimentacao)}\nTotal Auxílios: ${formatarMoeda(totalAuxilios)}`;
+            }
+        }
+        
+        if (qtd > 1) {
+            totalSpan.innerHTML = `${formatarMoeda(custoTotalLinha)} <span style="font-size:11px; font-weight:normal; opacity:0.75;">(${formatarMoeda(custoUnitario)} un.)</span>`;
+        } else {
+            totalSpan.innerText = formatarMoeda(custoUnitario);
+        }
         
         if (vinculo === 'puro') {
-            baseSpan.style.textDecoration = 'none'; baseSpan.style.opacity = '1';
-            totalSpan.style.textDecoration = 'none'; totalSpan.style.opacity = '1'; totalSpan.style.color = 'var(--text-main)';
+            if (baseSpan) { baseSpan.style.textDecoration = 'none'; baseSpan.style.opacity = '1'; }
         } else {
-            baseSpan.style.textDecoration = 'line-through'; baseSpan.style.opacity = '0.5';
-            totalSpan.style.textDecoration = 'none'; totalSpan.style.opacity = '1'; totalSpan.style.color = 'var(--text-main)';
+            if (baseSpan) { baseSpan.style.textDecoration = 'line-through'; baseSpan.style.opacity = '0.5'; }
         }
     } else if (tipo === 'funcao') {
         const val = parseFloat(input.getAttribute('data-valor')) || 0;
         const isAtualizado = input.getAttribute('data-atualizado') === 'true';
         const fator = isAtualizado ? 1 : FATOR_ATUALIZACAO;
-
-        totalSpan.innerText = formatarMoeda(val * fator);
-        totalSpan.style.textDecoration = 'none'; 
-        totalSpan.style.opacity = '1'; 
-        totalSpan.style.color = 'var(--text-main)';
+        const unit = val * fator;
+        if (qtd > 1) {
+            totalSpan.innerHTML = `${formatarMoeda(unit * qtd)} <span style="font-size:11px; font-weight:normal; opacity:0.75;">(${formatarMoeda(unit)} un.)</span>`;
+        } else {
+            totalSpan.innerText = formatarMoeda(unit);
+        }
     }
 }
 
@@ -801,6 +1270,7 @@ function selecionarOpcao(itemElement) {
         if (!box.getAttribute('data-vinculo')) box.setAttribute('data-vinculo', 'puro');
         box.querySelector('.toggle-switch-container').style.display = 'inline-flex';
         box.querySelectorAll('.wrap-base-rep').forEach(el => el.style.display = 'inline-flex');
+        box.querySelectorAll('.wrap-auxilios').forEach(el => el.style.display = 'inline-flex');
         detalhesDiv.style.display = 'flex';
         atualizarBreakdownLinha(box);
     } else {
@@ -808,45 +1278,103 @@ function selecionarOpcao(itemElement) {
         input.setAttribute('data-atualizado', itemElement.getAttribute('data-atualizado')); 
         box.querySelector('.toggle-switch-container').style.display = 'none';
         box.querySelectorAll('.wrap-base-rep').forEach(el => el.style.display = 'none');
+        box.querySelectorAll('.wrap-auxilios').forEach(el => el.style.display = 'none');
         detalhesDiv.style.display = 'flex';
         atualizarBreakdownLinha(box);
     }
     calcularSandbox();
 }
 
-function extrairInfoLinha(box) {
-    const qtd = parseInt(box.querySelector('input[type="number"]').value) || 0;
+function extrairInfoLinha(box, index = 0) {
+    const qtdInput = box.querySelector('input[type="number"]');
+    const qtd = parseInt(qtdInput ? qtdInput.value : 1) || 0;
     const input = box.querySelector('.busca-input');
-    const nome = input.value;
+    const nome = input ? input.value.trim() : '';
     const vinculo = box.getAttribute('data-vinculo') || 'puro';
-    const tipo = input.getAttribute('data-tipo');
+    const tipo = input ? input.getAttribute('data-tipo') : null;
+    let base = 0;
+    let rep = 0;
+    let auxSaude = 0;
+    let transporte = 0;
+    let alimentacao = 0;
+    let totalVerbas = 0;
+    let remuneracao = 0;
     let val = 0;
     
     if (tipo === 'comissionado') {
-        const base = parseFloat(input.getAttribute('data-base')) || 0;
-        const rep = parseFloat(input.getAttribute('data-rep')) || 0;
-        val = (vinculo === 'puro' ? base + rep : rep) * FATOR_ATUALIZACAO;
+        const rawBase = parseFloat(input.getAttribute('data-base')) || 0;
+        const rawRep = parseFloat(input.getAttribute('data-rep')) || 0;
+        base = rawBase * FATOR_ATUALIZACAO;
+        rep = rawRep * FATOR_ATUALIZACAO;
+        const somaBaseRep = base + rep;
+        
+        auxSaude = somaBaseRep * PERCENTUAL_AUX_SAUDE;
+        transporte = VALOR_TRANSPORTE_MENSAL;
+        alimentacao = VALOR_ALIMENTACAO_MENSAL;
+        totalVerbas = auxSaude + transporte + alimentacao;
+        
+        remuneracao = (vinculo === 'puro') ? somaBaseRep : rep;
+        val = remuneracao + totalVerbas;
     } else if (tipo === 'funcao') {
         const isAtualizado = input.getAttribute('data-atualizado') === 'true';
         const fator = isAtualizado ? 1 : FATOR_ATUALIZACAO;
         val = (parseFloat(input.getAttribute('data-valor')) || 0) * fator;
+        remuneracao = val;
     } else if (tipo === 'manual') {
         val = parseFloat(box.querySelector('.valor-manual').value) || 0;
+        remuneracao = val;
     }
     
-    return { qtd, nome, vinculo, valor: val, total: qtd * val, valido: val > 0 && nome !== "", tipo: tipo };
+    return { 
+        qtd, 
+        nome, 
+        vinculo, 
+        base,
+        rep,
+        auxSaude,
+        transporte,
+        alimentacao,
+        totalVerbas,
+        remuneracao,
+        valor: val, 
+        total: qtd * val, 
+        valido: val > 0 && nome !== "", 
+        tipo: tipo, 
+        element: box,
+        index: index
+    };
 }
 
 /* ==========================================
-   LÓGICA MATEMÁTICA E RÓTULOS DINÂMICOS
+   LÓGICA MATEMÁTICA, CONCLUSÃO E CAPACIDADE
    ========================================== */
 function calcularSandbox() {
-    let credito = 0; let custo = 0;
-    document.querySelectorAll('#container-origem .linha-cargo-box').forEach(box => { credito += extrairInfoLinha(box).total; });
-    document.querySelectorAll('#container-destino .linha-cargo-box').forEach(box => { custo += extrairInfoLinha(box).total; });
+    let credito = 0; 
+    let custo = 0;
+    const itensOrigem = [];
+    const itensDestino = [];
+
+    document.querySelectorAll('#container-origem .linha-cargo-box').forEach((box, idx) => {
+        atualizarBreakdownLinha(box);
+        const info = extrairInfoLinha(box, idx);
+        if (info.valido) {
+            credito += info.total;
+            itensOrigem.push(info);
+        }
+    });
+
+    document.querySelectorAll('#container-destino .linha-cargo-box').forEach((box, idx) => {
+        atualizarBreakdownLinha(box);
+        const info = extrairInfoLinha(box, idx);
+        if (info.valido) {
+            custo += info.total;
+            itensDestino.push(info);
+        }
+    });
 
     const saldo = credito - custo;
     const absSaldo = Math.abs(saldo);
+    const totalQtdCriados = itensDestino.reduce((a, b) => a + b.qtd, 0);
 
     document.getElementById('live-credito').innerText = formatarMoeda(credito);
     document.getElementById('live-custo').innerText = formatarMoeda(custo);
@@ -856,21 +1384,463 @@ function calcularSandbox() {
     const saldoAnoEl = document.getElementById('live-saldo-ano');
     
     if (saldo > 0) {
-        tituloImpacto.innerText = "🟢 ECONOMIA GERADA";
-        saldoEl.style.color = 'var(--success)';
-        saldoAnoEl.style.color = 'var(--success)';
+        tituloImpacto.innerText = "Folga Orçamentária (+ Sobra)";
+        saldoEl.style.color = '#4ade80';
+        saldoAnoEl.style.color = '#4ade80';
     } else if (saldo < 0) {
-        tituloImpacto.innerText = "🔴 AUMENTO DE CUSTO";
-        saldoEl.style.color = 'var(--danger)';
-        saldoAnoEl.style.color = 'var(--danger)';
+        tituloImpacto.innerText = "Déficit Orçamentário (- Falta)";
+        saldoEl.style.color = '#f87171';
+        saldoAnoEl.style.color = '#f87171';
     } else {
-        tituloImpacto.innerText = "⚪ IMPACTO NEUTRO";
-        saldoEl.style.color = 'var(--neutral)';
-        saldoAnoEl.style.color = 'var(--neutral)';
+        tituloImpacto.innerText = "Saldo Neutro (Paritário)";
+        saldoEl.style.color = '#94a3b8';
+        saldoAnoEl.style.color = '#94a3b8';
     }
 
-    saldoEl.innerHTML = `${formatarMoeda(absSaldo)} <span style="font-size: 13px; font-weight: 600; opacity: 0.8;">/mês</span>`;
+    saldoEl.innerHTML = `${formatarMoeda(absSaldo)} <span style="font-size: 12px; font-weight: 600; opacity: 0.8;">/mês</span>`;
     saldoAnoEl.innerText = `${formatarMoeda(absSaldo * 12)} /ano`;
+
+    // DESTAQUE PRINCIPAL NO QUADRO AZUL: QUANTIDADE DE CARGOS CRIADOS
+    const qtdCriadosEl = document.getElementById('live-qtd-criados');
+    const qtdCapacidadeEl = document.getElementById('live-qtd-capacidade');
+    
+    // Calcula capacidade máxima de postos de trabalho permitidos
+    let maxCargosPossiveis = 0;
+    if (itensDestino.length === 1) {
+        maxCargosPossiveis = credito > 0 ? Math.floor(credito / itensDestino[0].valor) : 0;
+    } else if (itensDestino.length > 1) {
+        const mdc = calcularMDCArray(itensDestino.map(it => it.qtd));
+        const custoConjuntoBase = itensDestino.reduce((a, b) => a + ((b.qtd / mdc) * b.valor), 0);
+        const totalPostosBase = itensDestino.reduce((a, b) => a + (b.qtd / mdc), 0);
+        const maxConjuntos = (credito > 0 && custoConjuntoBase > 0) ? Math.floor(credito / custoConjuntoBase) : 0;
+        maxCargosPossiveis = maxConjuntos * totalPostosBase;
+    }
+
+    if (totalQtdCriados === 0) {
+        qtdCriadosEl.innerText = "0 cargos";
+        qtdCriadosEl.style.color = "#94a3b8";
+        qtdCapacidadeEl.innerText = "Capacidade: aguardando cargos";
+        qtdCapacidadeEl.style.color = "#94a3b8";
+    } else {
+        qtdCriadosEl.innerText = `${totalQtdCriados} cargo${totalQtdCriados > 1 ? 's' : ''}`;
+        if (saldo >= 0) {
+            qtdCriadosEl.style.color = "#4ade80";
+            qtdCapacidadeEl.innerText = `Capacidade máx: até ${maxCargosPossiveis} permitidos`;
+            qtdCapacidadeEl.style.color = "#93c5fd";
+        } else {
+            qtdCriadosEl.style.color = "#f87171";
+            qtdCapacidadeEl.innerText = `Excede o teto! (Máx. permitido: ${maxCargosPossiveis})`;
+            qtdCapacidadeEl.style.color = "#fca5a5";
+        }
+    }
+
+    // Atualiza a Conclusão de Viabilidade e Quantidades Permitidas no Quadro Azul
+    atualizarConclusaoExecutiva(credito, custo, saldo, itensOrigem, itensDestino);
+}
+
+function atualizarConclusaoExecutiva(credito, custo, saldo, itensOrigem, itensDestino) {
+    const painel = document.getElementById('conclusao-painel');
+    const badge = document.getElementById('conclusao-badge');
+    const icone = document.getElementById('conclusao-icone');
+    const badgeTexto = document.getElementById('conclusao-badge-texto');
+    const resumoCapacidade = document.getElementById('conclusao-resumo-capacidade');
+    const textoPrincipal = document.getElementById('conclusao-texto');
+    const detalheCapacidade = document.getElementById('conclusao-detalhe-capacidade');
+
+    // 1. Estado Vazio / Inicial
+    if (itensOrigem.length === 0 && itensDestino.length === 0) {
+        painel.className = "conclusao-container status-neutro";
+        badge.className = "conclusao-badge badge-neutro";
+        icone.innerText = "⚪";
+        badgeTexto.innerText = "Aguardando Dados";
+        resumoCapacidade.innerText = "Sem itens selecionados";
+        textoPrincipal.innerHTML = "Preencha os cargos a extinguir (Origem) e os cargos a criar (Destino) para analisar a viabilidade e o limite permitido.";
+        detalheCapacidade.style.display = "none";
+        detalheCapacidade.innerHTML = "";
+        return;
+    }
+
+    // 2. Apenas Origem preenchida (crédito liberado, aguardando destino)
+    if (itensOrigem.length > 0 && itensDestino.length === 0) {
+        painel.className = "conclusao-container status-viavel";
+        badge.className = "conclusao-badge badge-viavel";
+        icone.innerText = "💰";
+        badgeTexto.innerText = "Crédito Disponível";
+        resumoCapacidade.innerText = `Teto liberado: ${formatarMoeda(credito)}/mês`;
+        textoPrincipal.innerHTML = `A extinção dos cargos indicados liberará <strong>${formatarMoeda(credito)}/mês</strong> (${formatarMoeda(credito * 12)}/ano). Adicione no painel da direita os novos cargos que deseja criar para verificar quantos é possível comportar.`;
+        detalheCapacidade.style.display = "none";
+        detalheCapacidade.innerHTML = "";
+        return;
+    }
+
+    // 3. Apenas Destino preenchido (despesa criada sem nenhum cargo extinto)
+    if (itensOrigem.length === 0 && itensDestino.length > 0) {
+        painel.className = "conclusao-container status-inviavel";
+        badge.className = "conclusao-badge badge-inviavel";
+        icone.innerText = "❌";
+        badgeTexto.innerText = "Não será possível criar (Sem cobertura)";
+        resumoCapacidade.innerText = `Déficit: ${formatarMoeda(custo)}/mês`;
+        textoPrincipal.innerHTML = `<strong>NÃO SERÁ POSSÍVEL CRIAR OS CARGOS ESCOLHIDOS.</strong> Não há nenhum cargo a extinguir configurado para compensar a despesa de <strong>${formatarMoeda(custo)}/mês</strong> (${formatarMoeda(custo * 12)}/ano).`;
+        
+        detalheCapacidade.style.display = "flex";
+        detalheCapacidade.innerHTML = `
+            <div>⚠️ <strong>Ação necessária:</strong> Para que a criação seja viável sem aumento de despesa, adicione no painel <em>1. O QUE SAI (EXTINGUIR)</em> cargos que somem pelo menos <strong>${formatarMoeda(custo)}/mês</strong>.</div>
+        `;
+        return;
+    }
+
+    // 4. Ambos preenchidos: Análise de Viabilidade e Capacidade
+    const absSaldo = Math.abs(saldo);
+
+    // ==========================================
+    // CENÁRIO A: É POSSÍVEL (SALDO >= 0, SOBROU OU IMPACTO NEUTRO)
+    // ==========================================
+    if (saldo >= 0) {
+        painel.className = "conclusao-container status-viavel";
+        badge.className = "conclusao-badge badge-viavel";
+        icone.innerText = "✅";
+        badgeTexto.innerText = "Será possível criar os cargos (Viável)";
+        resumoCapacidade.innerText = saldo > 0 ? `Sobra orçamentária: ${formatarMoeda(saldo)}/mês` : "Equilíbrio exato (R$ 0,00)";
+        
+        let textoIntro = `<strong>SERÁ POSSÍVEL CRIAR OS CARGOS ESCOLHIDOS.</strong> O valor dos cargos extintos (<strong>${formatarMoeda(credito)}/mês</strong>) é suficiente para cobrir integralmente o custo dos novos cargos (<strong>${formatarMoeda(custo)}/mês</strong>).`;
+        
+        if (saldo > 0) {
+            textoIntro += ` Resta uma <strong>economia / sobra orçamentária de ${formatarMoeda(saldo)}/mês</strong> (${formatarMoeda(saldo * 12)}/ano).`;
+        } else {
+            textoIntro += ` O saldo é perfeitamente neutro (transformação paritária).`;
+        }
+        textoPrincipal.innerHTML = textoIntro;
+
+        detalheCapacidade.style.display = "flex";
+
+        // CÁLCULO DE CONJUNTO (PACOTE DE CARGOS)
+        const totalCargosConfigurados = itensDestino.reduce((a, b) => a + b.qtd, 0);
+        const mdc = calcularMDCArray(itensDestino.map(it => it.qtd));
+        const custoConjuntoBase = itensDestino.reduce((a, b) => a + ((b.qtd / mdc) * b.valor), 0);
+        const totalPostosBase = itensDestino.reduce((a, b) => a + (b.qtd / mdc), 0);
+        const maxConjuntosPermitidos = (credito > 0 && custoConjuntoBase > 0) ? Math.floor(credito / custoConjuntoBase) : 0;
+        const custoMaxConjuntos = maxConjuntosPermitidos * custoConjuntoBase;
+        const sobraMaxConjuntos = credito - custoMaxConjuntos;
+
+        const itensBaseObj = itensDestino.map(it => ({
+            index: it.index,
+            qtdBase: it.qtd / mdc,
+            nome: it.nome,
+            valor: it.valor
+        }));
+        const itensBaseJSON = JSON.stringify(itensBaseObj).replace(/"/g, '&quot;');
+
+        if (itensDestino.length === 1) {
+            const item = itensDestino[0];
+            const maxQtd = maxConjuntosPermitidos;
+            const margemExtra = maxQtd - item.qtd;
+
+            let htmlCapacidade = `
+                <div>🎯 <strong>Capacidade Máxima Permitida:</strong> Com o crédito liberado de <strong>${formatarMoeda(credito)}/mês</strong>, é possível criar no máximo <strong>${maxQtd} unidade(s)</strong> de <em>"${item.nome}"</em> sem ultrapassar o valor dos extintos (custo unitário de ${formatarMoeda(item.valor)}).</div>
+            `;
+
+            if (margemExtra > 0) {
+                htmlCapacidade += `
+                    <div>✨ Você configurou <strong>${item.qtd} unidade(s)</strong>. Portanto, ainda há margem financeira para criar mais <strong>+${margemExtra} cargo(s)</strong> se desejar (totalizando ${maxQtd} unidades com custo de ${formatarMoeda(maxQtd * item.valor)}/mês e saldo residual de ${formatarMoeda(sobraMaxConjuntos)}/mês).</div>
+                    <div class="conjunto-acoes-wrapper">
+                        <button type="button" class="btn-multiplicar-conjunto destaque" onclick="aplicarQtdSugerida('destino', ${item.index}, ${maxQtd})">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Expandir para ${maxQtd} cargo(s) (Capacidade Máxima)
+                        </button>
+                    </div>
+                `;
+            } else {
+                htmlCapacidade += `
+                    <div>👌 Você utilizou exatamente o limite máximo permitido (${maxQtd} unidades). Qualquer acréscimo causará déficit financeiro.</div>
+                `;
+            }
+            detalheCapacidade.innerHTML = htmlCapacidade;
+
+        } else {
+            // Múltiplos cargos: Análise do Conjunto (Pacote de Estrutura)
+            let chipsHTML = itensBaseObj.map(it => `
+                <span class="conjunto-chip"><strong>${it.qtdBase}x</strong> ${it.nome}</span>
+            `).join('');
+
+            let htmlConjunto = `
+                <div class="conclusao-conjunto-card">
+                    <div class="conclusao-conjunto-topo">
+                        <span class="badge-conjunto-tag">📦 Conjunto de Cargos Criados (${itensDestino.length} tipos • ${totalCargosConfigurados} postos)</span>
+                        <span style="font-size: 12.5px; color: #cbd5e1;">Custo de 1 conjunto base: <strong style="color: #ffffff;">${formatarMoeda(custoConjuntoBase)}</strong>/mês</span>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Composição de 1 conjunto base (${totalPostosBase} postos):</div>
+                        <div class="conjunto-composicao-lista">${chipsHTML}</div>
+                    </div>
+                    <div style="font-size: 13.5px; line-height: 1.5; margin-top: 4px;">
+                        🎯 <strong>Capacidade do Conjunto:</strong> Com o crédito total liberado de <strong>${formatarMoeda(credito)}/mês</strong>, é possível criar 
+                        <strong>até ${maxConjuntosPermitidos} conjunto(s) completo(s)</strong> deste modelo sem ultrapassar o valor dos extintos 
+                        (custo de <strong>${formatarMoeda(custoMaxConjuntos)}/mês</strong>, preservando sobra de <strong>${formatarMoeda(sobraMaxConjuntos)}/mês</strong>).
+                    </div>
+            `;
+
+            if (maxConjuntosPermitidos > mdc) {
+                const extraConjuntos = maxConjuntosPermitidos - mdc;
+                let botoesMultiplicar = '';
+                for (let k = 1; k <= Math.min(5, maxConjuntosPermitidos); k++) {
+                    const ativo = (k === mdc) ? 'style="border-color: #60a5fa; color: #93c5fd;"' : '';
+                    botoesMultiplicar += `<button type="button" class="btn-multiplicar-conjunto" ${ativo} onclick="aplicarMultiplicadorConjunto(${k}, ${itensBaseJSON})">${k}x Conjunto${k > 1 ? 's' : ''}</button>`;
+                }
+
+                htmlConjunto += `
+                    <div style="font-size: 13px; color: #86efac; margin-top: 2px;">
+                        ✨ Você configurou <strong>${mdc} conjunto(s)</strong>. Portanto, ainda é possível implantar mais <strong>+${extraConjuntos} conjunto(s) completo(s)</strong> com o crédito disponível!
+                    </div>
+                    <div class="conjunto-acoes-wrapper">
+                        <span style="font-size: 12px; font-weight: 700; color: #94a3b8; margin-right: 4px;">Multiplicar Conjunto:</span>
+                        ${botoesMultiplicar}
+                        ${maxConjuntosPermitidos > 5 ? `<button type="button" class="btn-multiplicar-conjunto destaque" onclick="aplicarMultiplicadorConjunto(${maxConjuntosPermitidos}, ${itensBaseJSON})">Máximo (${maxConjuntosPermitidos}x)</button>` : ''}
+                    </div>
+                `;
+            } else {
+                htmlConjunto += `
+                    <div style="font-size: 13px; color: #93c5fd; margin-top: 2px;">
+                        👌 Você utilizou exatamente o limite máximo permitido de conjuntos completos (${maxConjuntosPermitidos}x).
+                    </div>
+                `;
+            }
+
+            // Checar se itens avulsos cabem na folga
+            const cabemMais = itensDestino.filter(it => it.valor <= saldo);
+            if (cabemMais.length > 0) {
+                htmlConjunto += `
+                    <div style="font-size: 12.5px; color: #cbd5e1; border-top: 1px dashed rgba(255,255,255,0.12); padding-top: 8px; margin-top: 6px;">
+                        💡 Com a sobra individual de ${formatarMoeda(saldo)}/mês, ainda seria possível adicionar postos avulsos: ${cabemMais.map(it => `<strong>+1 ${it.nome.split(' ')[0]}</strong>`).join(', ')}.
+                    </div>
+                `;
+            }
+
+            htmlConjunto += `</div>`;
+            detalheCapacidade.innerHTML = htmlConjunto;
+        }
+
+    // ==========================================
+    // CENÁRIO B: NÃO É POSSÍVEL (SALDO < 0, ULTRAPASSOU O VALOR)
+    // ==========================================
+    } else {
+        painel.className = "conclusao-container status-inviavel";
+        badge.className = "conclusao-badge badge-inviavel";
+        icone.innerText = "❌";
+        badgeTexto.innerText = "Não será possível criar os cargos (Inviável)";
+        resumoCapacidade.innerText = `Déficit: ${formatarMoeda(absSaldo)}/mês`;
+
+        textoPrincipal.innerHTML = `
+            <strong>NÃO SERÁ POSSÍVEL CRIAR OS CARGOS ESCOLHIDOS.</strong> O custo total dos novos cargos (<strong>${formatarMoeda(custo)}/mês</strong>) 
+            ultrapassa o valor dos cargos extintos (<strong>${formatarMoeda(credito)}/mês</strong>) em <strong>${formatarMoeda(absSaldo)}/mês</strong> 
+            (déficit de <strong>${formatarMoeda(absSaldo * 12)}/ano</strong>).
+        `;
+
+        detalheCapacidade.style.display = "flex";
+
+        // CÁLCULO DE CONJUNTO (PACOTE DE CARGOS)
+        const totalCargosConfigurados = itensDestino.reduce((a, b) => a + b.qtd, 0);
+        const mdc = calcularMDCArray(itensDestino.map(it => it.qtd));
+        const custoConjuntoBase = itensDestino.reduce((a, b) => a + ((b.qtd / mdc) * b.valor), 0);
+        const totalPostosBase = itensDestino.reduce((a, b) => a + (b.qtd / mdc), 0);
+        const maxConjuntosPermitidos = (credito > 0 && custoConjuntoBase > 0) ? Math.floor(credito / custoConjuntoBase) : 0;
+        const custoMaxConjuntos = maxConjuntosPermitidos * custoConjuntoBase;
+        const sobraMaxConjuntos = credito - custoMaxConjuntos;
+
+        const itensBaseObj = itensDestino.map(it => ({
+            index: it.index,
+            qtdBase: it.qtd / mdc,
+            nome: it.nome,
+            valor: it.valor
+        }));
+        const itensBaseJSON = JSON.stringify(itensBaseObj).replace(/"/g, '&quot;');
+
+        if (itensDestino.length === 1) {
+            const item = itensDestino[0];
+            const maxQtd = maxConjuntosPermitidos;
+
+            if (maxQtd > 0) {
+                detalheCapacidade.innerHTML = `
+                    <div>📊 <strong>Quantos seriam possíveis criar sem ultrapassar:</strong> Com o teto disponível de <strong>${formatarMoeda(credito)}</strong>, é possível criar no máximo <strong>${maxQtd} cargo(s)</strong> de <em>"${item.nome}"</em> (unitário: ${formatarMoeda(item.valor)}).</div>
+                    <div style="margin-top: 2px;">👉 <strong>Sugestão da Quantidade Correta:</strong> Reduza de <strong>${item.qtd}</strong> para no máximo <strong>${maxQtd} unidade(s)</strong>.</div>
+                    <div style="font-size: 12.5px; opacity: 0.9;">Com ${maxQtd} unidade(s), a despesa será de <strong>${formatarMoeda(custoMaxConjuntos)}/mês</strong>, garantindo uma economia de <strong>${formatarMoeda(sobraMaxConjuntos)}/mês</strong> em relação aos extintos.</div>
+                    <button type="button" class="btn-ajustar-qtd" onclick="aplicarQtdSugerida('destino', ${item.index}, ${maxQtd})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Aplicar Sugestão: Ajustar para ${maxQtd} cargo(s)
+                    </button>
+                `;
+            } else {
+                detalheCapacidade.innerHTML = `
+                    <div>⚠️ <strong>Crédito Insuficiente:</strong> O valor total liberado pelos extintos (<strong>${formatarMoeda(credito)}</strong>) não é suficiente para criar sequer <strong>1 unidade</strong> deste cargo (unitário: <strong>${formatarMoeda(item.valor)}</strong>).</div>
+                    <div style="margin-top: 2px;">👉 <strong>Sugestão:</strong> Para viabilizar ao menos 1 unidade, é necessário indicar mais cargos a extinguir no painel 1, cobrindo a diferença de <strong>${formatarMoeda(item.valor - credito)}/mês</strong>.</div>
+                `;
+            }
+
+        } else {
+            // Múltiplos cargos: Diagnóstico do Conjunto e Sugestão
+            let chipsHTML = itensBaseObj.map(it => `
+                <span class="conjunto-chip"><strong>${it.qtdBase}x</strong> ${it.nome}</span>
+            `).join('');
+
+            let htmlConjunto = `
+                <div class="conclusao-conjunto-card">
+                    <div class="conclusao-conjunto-topo">
+                        <span class="badge-conjunto-tag" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border-color: rgba(248, 113, 113, 0.4);">
+                            📦 Conjunto de Cargos Excedido (${itensDestino.length} tipos • ${totalCargosConfigurados} postos)
+                        </span>
+                        <span style="font-size: 12.5px; color: #fca5a5;">Custo de 1 conjunto base: <strong style="color: #ffffff;">${formatarMoeda(custoConjuntoBase)}</strong>/mês</span>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Composição de 1 conjunto base (${totalPostosBase} postos):</div>
+                        <div class="conjunto-composicao-lista">${chipsHTML}</div>
+                    </div>
+            `;
+
+            if (maxConjuntosPermitidos > 0) {
+                htmlConjunto += `
+                    <div style="font-size: 13.5px; line-height: 1.5; margin-top: 4px;">
+                        📊 <strong>Capacidade em Conjuntos Completos:</strong> Com o crédito de <strong>${formatarMoeda(credito)}/mês</strong>, é possível criar no máximo 
+                        <strong>${maxConjuntosPermitidos} conjunto(s) completo(s)</strong> deste modelo sem ultrapassar o valor dos extintos 
+                        (custo de <strong>${formatarMoeda(custoMaxConjuntos)}/mês</strong>, garantindo sobra de <strong>${formatarMoeda(sobraMaxConjuntos)}/mês</strong>).
+                    </div>
+                    <div style="margin-top: 4px; font-size: 13px;">
+                        👉 <strong>Sugestão da Quantidade Correta:</strong> Reduza de <strong>${mdc} conjunto(s)</strong> para no máximo <strong>${maxConjuntosPermitidos} conjunto(s) completo(s)</strong>:
+                    </div>
+                    <div class="conjunto-acoes-wrapper">
+                        <button type="button" class="btn-multiplicar-conjunto destaque" onclick="aplicarMultiplicadorConjunto(${maxConjuntosPermitidos}, ${itensBaseJSON})">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Aplicar Sugestão: Ajustar para ${maxConjuntosPermitidos} Conjunto(s) Viável(is)
+                        </button>
+                    </div>
+                `;
+            } else {
+                // Nem 1 conjunto base completo cabe: sugerir conjunto reduzido otimizado
+                const ratio = credito / custo;
+                let ajustes = itensDestino.map(it => ({
+                    index: it.index,
+                    nome: it.nome,
+                    qtdOriginal: it.qtd,
+                    qtdSugerida: Math.max(0, Math.floor(it.qtd * ratio)),
+                    valor: it.valor
+                }));
+
+                let custoAjustado = ajustes.reduce((acc, it) => acc + (it.qtdSugerida * it.valor), 0);
+                for (let it of ajustes) {
+                    if (custoAjustado + it.valor <= credito) {
+                        it.qtdSugerida++;
+                        custoAjustado += it.valor;
+                    }
+                }
+
+                let itensAjusteHTML = ajustes.map(it => `
+                    <li><em>${it.nome}</em>: alterar de <strong>${it.qtdOriginal}</strong> para <strong>${it.qtdSugerida} unidade(s)</strong> (${formatarMoeda(it.qtdSugerida * it.valor)}/mês)</li>
+                `).join('');
+
+                const ajustesJSON = JSON.stringify(ajustes.map(a => ({ index: a.index, qtd: a.qtdSugerida }))).replace(/"/g, '&quot;');
+
+                htmlConjunto += `
+                    <div style="font-size: 13px; color: #fca5a5; margin-top: 4px;">
+                        ⚠️ O crédito disponível (${formatarMoeda(credito)}) não cobre 1 conjunto completo deste modelo (custo: ${formatarMoeda(custoConjuntoBase)}/mês).
+                    </div>
+                    <div style="margin-top: 6px; font-size: 13px;">
+                        👉 <strong>Sugestão de Conjunto Reduzido (melhor combinação que cabe no orçamento):</strong>
+                    </div>
+                    <ul style="margin: 4px 0 6px 16px; padding: 0; font-size: 13px;">${itensAjusteHTML}</ul>
+                    <div style="font-size: 12px; opacity: 0.9;">Novo custo: <strong>${formatarMoeda(custoAjustado)}/mês</strong> (Sobra: <strong>${formatarMoeda(credito - custoAjustado)}/mês</strong>).</div>
+                    <button type="button" class="btn-ajustar-qtd btn-ajustar-qtd-proporcional" onclick="aplicarMultiplosAjustes(${ajustesJSON})">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                        Aplicar Conjunto Reduzido Sugerido
+                    </button>
+                `;
+            }
+
+            htmlConjunto += `</div>`;
+            detalheCapacidade.innerHTML = htmlConjunto;
+        }
+    }
+}
+
+/* ==========================================
+   FUNÇÕES MATEMÁTICAS E AÇÕES DE CONJUNTOS
+   ========================================== */
+function calcularMDC(a, b) {
+    a = Math.abs(a);
+    b = Math.abs(b);
+    while (b) {
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    return a || 1;
+}
+
+function calcularMDCArray(arr) {
+    if (!arr || arr.length === 0) return 1;
+    let r = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+        r = calcularMDC(r, arr[i]);
+    }
+    return r || 1;
+}
+
+function aplicarMultiplicadorConjunto(fator, itensBase) {
+    const container = document.getElementById('container-destino');
+    const boxes = container.querySelectorAll('.linha-cargo-box');
+    itensBase.forEach(item => {
+        if (boxes[item.index]) {
+            const inputQtd = boxes[item.index].querySelector('input[type="number"]');
+            if (inputQtd) {
+                inputQtd.value = Math.max(1, Math.round(item.qtdBase * fator));
+                if (boxes[item.index].querySelector('.valor-manual')) {
+                    atualizarBreakdownManual(inputQtd);
+                } else {
+                    atualizarBreakdownLinha(boxes[item.index]);
+                }
+            }
+        }
+    });
+    calcularSandbox();
+    mostrarToast(`Conjunto configurado para ${fator}x (${fator} conjunto${fator > 1 ? 's' : ''}) com sucesso!`, 'success');
+}
+
+/* ==========================================
+   AÇÕES INTERATIVAS DE SUGESTÃO
+   ========================================== */
+function aplicarQtdSugerida(tipoContainer, indexLinha, novaQtd) {
+    const container = document.getElementById(`container-${tipoContainer}`);
+    const boxes = container.querySelectorAll('.linha-cargo-box');
+    if (boxes[indexLinha]) {
+        const inputQtd = boxes[indexLinha].querySelector('input[type="number"]');
+        if (inputQtd) {
+            inputQtd.value = novaQtd;
+            if (boxes[indexLinha].querySelector('.valor-manual')) {
+                atualizarBreakdownManual(inputQtd);
+            } else {
+                atualizarBreakdownLinha(boxes[indexLinha]);
+            }
+            calcularSandbox();
+            mostrarToast(`Quantidade ajustada para ${novaQtd} com sucesso!`, 'success');
+        }
+    }
+}
+
+function aplicarMultiplosAjustes(ajustes) {
+    const container = document.getElementById('container-destino');
+    const boxes = container.querySelectorAll('.linha-cargo-box');
+    ajustes.forEach(ajuste => {
+        if (boxes[ajuste.index]) {
+            const inputQtd = boxes[ajuste.index].querySelector('input[type="number"]');
+            if (inputQtd) {
+                inputQtd.value = ajuste.qtd;
+                if (boxes[ajuste.index].querySelector('.valor-manual')) {
+                    atualizarBreakdownManual(inputQtd);
+                } else {
+                    atualizarBreakdownLinha(boxes[ajuste.index]);
+                }
+            }
+        }
+    });
+    calcularSandbox();
+    mostrarToast(`Quantidades ajustadas com sucesso para caber no limite!`, 'success');
 }
 
 function gerenciarEmptyState() {
@@ -904,11 +1874,17 @@ function desfazerExclusao(e) {
 function salvarCenario() {
     let creditos = 0; let custos = 0;
     let descOrigem = []; let descDestino = [];
+    let totalQtdCriados = 0;
 
     const processarLinha = (box, arrDesc, isOrigem) => {
         const info = extrairInfoLinha(box);
         if (info.valido) {
-            if (isOrigem) creditos += info.total; else custos += info.total;
+            if (isOrigem) {
+                creditos += info.total;
+            } else {
+                custos += info.total;
+                totalQtdCriados += info.qtd;
+            }
             
             let vText = '';
             if (info.tipo === 'comissionado') {
@@ -921,22 +1897,66 @@ function salvarCenario() {
             let valMes = formatarMoeda(info.total);
             let valAno = formatarMoeda(info.total * 12);
             
-            arrDesc.push(`
-                <li style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color);">
-                    <div style="margin-bottom: 4px;">
-                        <strong>${info.qtd}x</strong> ${info.nome} <span style="opacity:0.6; font-weight:normal; font-size:12px;">${vText}</span>
+            let detalheVerbasHTML = '';
+            if (info.tipo === 'comissionado') {
+                detalheVerbasHTML = `
+                    <div style="margin-top: 8px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; font-size: 12px;">
+                        <!-- Remuneração Base + Representação -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed var(--border-color);">
+                            <span style="color: var(--text-muted); font-weight: 600;">Remuneração (Base + Representação):</span>
+                            <span style="font-weight: 700; color: var(--text-main); font-variant-numeric: tabular-nums;">
+                                ${formatarMoeda(info.base)} + ${formatarMoeda(info.rep)} = <strong>${formatarMoeda(info.remuneracao)}</strong>
+                            </span>
+                        </div>
+
+                        <!-- Título dos Auxílios -->
+                        <div style="font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center;">
+                            <span>Discriminação dos Auxílios (por cargo):</span>
+                            <span style="background: rgba(0,68,136,0.08); padding: 2px 7px; border-radius: 4px; font-size: 11px; color: var(--primary-dark); font-weight: 700;">Subtotal: ${formatarMoeda(info.totalVerbas)}</span>
+                        </div>
+
+                        <!-- Lista de Auxílios Discriminados Um Embaixo do Outro -->
+                        <div style="display: flex; flex-direction: column; gap: 5px; padding-left: 6px; border-left: 2px solid var(--primary-light);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+                                <span>• <strong>Auxílio-Saúde</strong> (10% da Base + Repr.):</span>
+                                <strong style="color: var(--text-main); font-variant-numeric: tabular-nums;">${formatarMoeda(info.auxSaude)}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+                                <span>• <strong>Auxílio-Transporte</strong> (22 dias de transporte):</span>
+                                <strong style="color: var(--text-main); font-variant-numeric: tabular-nums;">${formatarMoeda(info.transporte)}</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; color: var(--text-muted);">
+                                <span>• <strong>Auxílio-Alimentação</strong>:</span>
+                                <strong style="color: var(--text-main); font-variant-numeric: tabular-nums;">${formatarMoeda(info.alimentacao)}</strong>
+                            </div>
+                        </div>
+
+                        ${info.qtd > 1 ? `
+                            <div style="margin-top: 8px; padding-top: 6px; border-top: 1px dashed var(--border-color); display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted);">
+                                <span>Auxílios somados para os ${info.qtd} cargos:</span>
+                                <strong style="color: var(--primary-dark); font-variant-numeric: tabular-nums;">${formatarMoeda(info.totalVerbas * info.qtd)}/mês</strong>
+                            </div>
+                        ` : ''}
                     </div>
-                    <div style="color: var(--text-muted); font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums; font-size: 13px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                        <span style="background: rgba(0,0,0,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.05);">
-                            Unidade: <strong style="color: var(--text-main);">${valUnit}</strong>
-                        </span>
-                        <span>
-                            Total: <strong style="color: var(--text-main);">${valMes}</strong> <span style="opacity:0.7; font-size:11px;">/mês</span>
-                        </span>
-                        <span style="opacity: 0.3;">|</span>
-                        <span>
-                            <strong style="color: var(--text-main);">${valAno}</strong> <span style="opacity:0.7; font-size:11px;">/ano</span>
-                        </span>
+                `;
+            }
+
+            arrDesc.push(`
+                <li style="margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+                    <div style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px;">
+                        <div>
+                            <strong style="font-size: 14px; color: var(--text-main);">${info.qtd}x</strong> 
+                            <span style="font-weight: 700; color: var(--primary-dark); font-size: 13.5px;">${info.nome}</span> 
+                            <span style="opacity:0.65; font-weight:normal; font-size:12px;">${vText}</span>
+                        </div>
+                        <div style="font-size: 13.5px; font-weight: 700; color: var(--primary-dark); font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;">
+                            ${valMes} <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">/mês</span>
+                        </div>
+                    </div>
+                    ${detalheVerbasHTML}
+                    <div style="margin-top: 6px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;">
+                        <span>Custo Unitário Total: <strong style="color: var(--text-main);">${valUnit}</strong></span>
+                        <span>Total Anual: <strong style="color: var(--text-main);">${valAno}</strong></span>
                     </div>
                 </li>
             `);
@@ -959,19 +1979,34 @@ function salvarCenario() {
     let labelImpacto = "IMPACTO NEUTRO";
     let colorClass = "txt-neutro";
     let bgClass = "neutro";
+    let badgeViabilidadeTexto = "⚪ IMPACTO NEUTRO (PARITÁRIO)";
 
     if (saldo > 0) {
-        labelImpacto = "ECONOMIA GERADA";
+        labelImpacto = "ECONOMIA GERADA (VIÁVEL)";
         colorClass = "txt-viavel";
         bgClass = "viavel";
+        badgeViabilidadeTexto = "✔ VIÁVEL: CRIAÇÃO PERMITIDA";
     } else if (saldo < 0) {
-        labelImpacto = "AUMENTO DE CUSTO";
+        labelImpacto = "AUMENTO DE CUSTO (INVIÁVEL)";
         colorClass = "txt-inviavel";
         bgClass = "inviavel";
+        badgeViabilidadeTexto = "✖ INVIÁVEL: ULTRAPASSA VALOR DISPONÍVEL";
     }
 
     let htmlListaOrigem = descOrigem.length > 0 ? `<ul>${descOrigem.join('')}</ul>` : '<span style="color: var(--text-light); margin-left: 16px;">Nenhum item</span>';
     let htmlListaDestino = descDestino.length > 0 ? `<ul>${descDestino.join('')}</ul>` : '<span style="color: var(--text-light); margin-left: 16px;">Nenhum item</span>';
+
+    let badgeConjuntoCard = descDestino.length > 1 ? `<span style="background: rgba(0,68,136,0.1); color: var(--primary); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; margin-left: 8px;">CONJUNTO DE ${descDestino.length} CARGOS</span>` : '';
+
+    // Captura a Análise Completa de Viabilidade da Mesa para o Card
+    const textoConclusaoMesa = document.getElementById('conclusao-texto') ? document.getElementById('conclusao-texto').innerHTML : '';
+    const detalheEl = document.getElementById('conclusao-detalhe-capacidade');
+    let detalheCardHTML = '';
+    if (detalheEl && detalheEl.style.display !== 'none') {
+        const clone = detalheEl.cloneNode(true);
+        clone.querySelectorAll('button').forEach(b => b.remove()); // Remove botões interativos na visualização estática
+        detalheCardHTML = clone.innerHTML;
+    }
 
     const cardHTML = `
         <div class="cenario-dashboard" id="cenario-${id}">
@@ -985,16 +2020,25 @@ function salvarCenario() {
             <!-- Topo do Card -->
             <div class="cd-header">
                 <div class="cd-title-group">
-                    <h3 contenteditable="true" onblur="if(this.innerText.trim()==='') this.innerText='Cenário ${id}'">Cenário ${id} <span style="font-size: 14px; color: var(--text-light);">✎</span></h3>
-                    <p>Total Extinto: ${formatarMoeda(creditos)} &nbsp;|&nbsp; Custo dos Novos: ${formatarMoeda(custos)}</p>
+                    <div style="font-size: 11px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 3px;">TJPE • Simulação de Transformação</div>
+                    <h3 contenteditable="true" onblur="if(this.innerText.trim()==='') this.innerText='Cenário ${id}'">Cenário ${id} ${badgeConjuntoCard} <span style="font-size: 14px; color: var(--text-light);" class="edit-icon">✎</span></h3>
+                    <p>Total Extinto: ${formatarMoeda(creditos)} &nbsp;|&nbsp; Custo dos Novos: ${formatarMoeda(custos)} &nbsp;|&nbsp; <strong>${totalQtdCriados} cargo(s) criados</strong></p>
                 </div>
                 <div class="cd-actions">
-                    <button class="cd-btn" onclick="exportarNativo(${id})" title="Exportar Relatório PDF">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                        Exportar Relatório
+                    <button class="cd-btn cd-btn-print" onclick="salvarPrintCenario(${id})" title="Salvar Print (Imagem PNG) deste Cenário">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                        Salvar Print
                     </button>
-                    <button class="cd-btn btn-del" onclick="apagarCenario(${id})" title="Excluir">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
+                    <button class="cd-btn cd-btn-copy" onclick="copiarPrintCenario(${id})" title="Copiar Print para a Área de Transferência (Ctrl+V)">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        Copiar Imagem
+                    </button>
+                    <button class="cd-btn" onclick="exportarNativo(${id})" title="Salvar / Imprimir em PDF">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"></path><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                        PDF
+                    </button>
+                    <button class="cd-btn btn-del" onclick="apagarCenario(${id})" title="Excluir este Cenário">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path></svg>
                     </button>
                 </div>
             </div>
@@ -1006,9 +2050,23 @@ function salvarCenario() {
                     ${htmlListaOrigem}
                 </div>
                 <div class="cd-col entra">
-                    <h4>Entra (Criados)</h4>
+                    <h4>Entra (Criados - ${totalQtdCriados} postos)</h4>
                     ${htmlListaDestino}
                 </div>
+            </div>
+
+            <!-- BLOCO COMPLETO DE ANÁLISE DE VIABILIDADE E CAPACIDADE NO CARD SALVO -->
+            <div class="cd-analise-box ${bgClass}">
+                <div class="cd-analise-header">
+                    <span class="cd-analise-badge ${colorClass}">${badgeViabilidadeTexto}</span>
+                    <span style="font-size: 13px; font-weight: 700; color: var(--text-main);">
+                        Total de Cargos a Criar: <strong style="color: var(--primary-dark); font-size: 14px;">${totalQtdCriados} cargo(s)</strong>
+                    </span>
+                </div>
+                <div class="cd-analise-texto">
+                    ${textoConclusaoMesa}
+                </div>
+                ${detalheCardHTML ? `<div class="cd-analise-detalhes">${detalheCardHTML}</div>` : ''}
             </div>
 
             <!-- Rodapé / Impacto -->
@@ -1026,12 +2084,294 @@ function salvarCenario() {
     document.getElementById('scenarios-list').insertAdjacentHTML('beforeend', cardHTML);
     gerenciarEmptyState();
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-    mostrarToast(`Cenário ${id} salvo com sucesso!`);
+    mostrarToast(`Cenário ${id} salvo com sucesso no painel!`);
 }
 
 /* ==========================================
-   FUNÇÕES NATIVAS DE IMPRESSÃO (PDF)
+   FUNÇÕES DE CAPTURA DE PRINT / IMAGEM (PNG)
    ========================================== */
+async function capturarElemento(elemento) {
+    if (!elemento) return null;
+    
+    // Esconde botões interativos e ícones durante a captura da imagem
+    const elementsToHide = elemento.querySelectorAll(
+        '.cd-actions, .sandbox-header-actions, .sandbox-bottom-actions, .btn-adicionar, .btn-adicionar-manual, .btn-remover-linha, .edit-icon, .pdf-header-doc, .sugestoes-lista'
+    );
+    const prevDisplays = [];
+    elementsToHide.forEach(el => {
+        prevDisplays.push({ el, display: el.style.display });
+        el.style.display = 'none';
+    });
+
+    elemento.classList.add('is-capturing');
+
+    try {
+        if (typeof html2canvas === 'undefined') {
+            mostrarToast("Carregando ferramenta de captura de imagem...", "info", 1500);
+            await new Promise(r => setTimeout(r, 600));
+            if (typeof html2canvas === 'undefined') {
+                throw new Error("A biblioteca html2canvas não foi localizada.");
+            }
+        }
+
+        const canvas = await html2canvas(elemento, {
+            scale: 2, // 2x alta resolução nítida
+            useCORS: true,
+            allowTaint: false,
+            backgroundColor: '#ffffff',
+            logging: false,
+            onclone: (clonedDoc) => {
+                // Força contraste nítido e desativa animações para evitar cores desbotadas/opacas
+                const styleInject = clonedDoc.createElement('style');
+                styleInject.innerHTML = `
+                    * {
+                        animation: none !important;
+                        transition: none !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    .cenario-dashboard {
+                        animation: none !important;
+                        opacity: 1 !important;
+                        transform: none !important;
+                        box-shadow: none !important;
+                    }
+                    .cd-title-group h3 { color: #002a5c !important; }
+                    .cd-col.sai h4 { color: #dc2626 !important; }
+                    .cd-col.entra h4 { color: #059669 !important; }
+                    .cd-impact-label.txt-viavel { color: #059669 !important; }
+                    .cd-impact-label.txt-inviavel { color: #dc2626 !important; }
+                    .cd-impact-values.txt-viavel strong { color: #059669 !important; }
+                    .cd-impact-values.txt-inviavel strong { color: #dc2626 !important; }
+                `;
+                clonedDoc.head.appendChild(styleInject);
+
+                const clonedCard = clonedDoc.querySelector('.cenario-dashboard');
+                if (clonedCard) {
+                    clonedCard.style.animation = 'none';
+                    clonedCard.style.opacity = '1';
+                    clonedCard.style.transform = 'none';
+                }
+            },
+            ignoreElements: (el) => {
+                if (!el.classList) return false;
+                return el.classList.contains('cd-actions') || 
+                       el.classList.contains('pdf-header-doc') ||
+                       el.classList.contains('sandbox-header-actions') ||
+                       el.classList.contains('sandbox-bottom-actions') ||
+                       el.classList.contains('btn-adicionar') ||
+                       el.classList.contains('btn-adicionar-manual') ||
+                       el.classList.contains('btn-remover-linha') ||
+                       el.classList.contains('sugestoes-lista');
+            }
+        });
+
+        return canvas;
+    } finally {
+        elemento.classList.remove('is-capturing');
+        // Restaura a exibição imediatamente
+        prevDisplays.forEach(item => {
+            item.el.style.display = item.display;
+        });
+    }
+}
+
+function baixarBlobPNG(blob, nomeArquivo) {
+    const finalName = nomeArquivo.endsWith('.png') ? nomeArquivo : nomeArquivo + '.png';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = finalName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function copiarCanvasParaClipboard(canvas, msgSucesso = "Print copiado com sucesso!") {
+    canvas.toBlob(async (blob) => {
+        if (!blob) {
+            mostrarToast("Erro ao processar imagem do print.", "danger");
+            return;
+        }
+
+        if (navigator.clipboard && window.ClipboardItem) {
+            try {
+                await navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]);
+                mostrarToast(`📋 ${msgSucesso} (Pressione Ctrl+V para colar)`, "success", 4000);
+                return;
+            } catch (err) {
+                console.warn("Clipboard restrito, baixando arquivo PNG alternativo:", err);
+            }
+        }
+        baixarBlobPNG(blob, 'Print_Cenario.png');
+        mostrarToast("📸 Print salvo como imagem PNG!", "success", 3500);
+    }, 'image/png');
+}
+
+async function salvarPrintCenario(id) {
+    const card = document.getElementById(`cenario-${id}`);
+    if (!card) return;
+    
+    const tituloEl = card.querySelector('h3').innerText.replace('✎','').trim();
+    const nomeArquivo = 'Print_' + tituloEl.replace(/\s+/g, '_');
+    
+    mostrarToast("📸 Gerando imagem do cenário...", "info", 1500);
+    
+    try {
+        const canvas = await capturarElemento(card);
+        if (!canvas) return;
+
+        canvas.toBlob(async (blob) => {
+            if (!blob) {
+                mostrarToast("Erro ao gerar imagem.", "danger");
+                return;
+            }
+            // 1. Download do arquivo PNG
+            baixarBlobPNG(blob, nomeArquivo);
+
+            // 2. Tenta também copiar para o clipboard
+            if (navigator.clipboard && window.ClipboardItem) {
+                try {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': blob })
+                    ]);
+                    mostrarToast(`📸 Print salvo como "${nomeArquivo}.png" e copiado para a Área de Transferência!`, "success", 4500);
+                    return;
+                } catch (e) {
+                    // Copiar silencioso falhou, download já ocorreu
+                }
+            }
+            mostrarToast(`📸 Print salvo com sucesso: "${nomeArquivo}.png"!`, "success", 3500);
+        }, 'image/png');
+    } catch (err) {
+        console.error("Erro no print do cenário:", err);
+        mostrarToast("Erro ao gerar imagem do cenário.", "danger");
+    }
+}
+
+async function copiarPrintCenario(id) {
+    const card = document.getElementById(`cenario-${id}`);
+    if (!card) return;
+    
+    const tituloEl = card.querySelector('h3').innerText.replace('✎','').trim();
+    mostrarToast("📋 Capturando print do cenário...", "info", 1500);
+    
+    try {
+        const canvas = await capturarElemento(card);
+        if (!canvas) return;
+        copiarCanvasParaClipboard(canvas, `Print do "${tituloEl}" copiado!`);
+    } catch (err) {
+        console.error("Erro ao copiar print:", err);
+        mostrarToast("Erro ao capturar print do cenário.", "danger");
+    }
+}
+
+async function copiarPrintMesa() {
+    const mesa = document.querySelector('.sandbox-container');
+    if (!mesa) return;
+    mostrarToast("📋 Capturando imagem da mesa de trabalho...", "info", 1500);
+    try {
+        const canvas = await capturarElemento(mesa);
+        if (!canvas) return;
+        copiarCanvasParaClipboard(canvas, "Print da mesa copiado!");
+    } catch (err) {
+        console.error("Erro ao copiar print da mesa:", err);
+        mostrarToast("Erro ao capturar print da mesa.", "danger");
+    }
+}
+
+/* ==========================================
+   FUNÇÕES NATIVAS DE SALVAMENTO E EXPORTAÇÃO
+   ========================================== */
+function baixarCenarioHTML(id) {
+    const card = document.getElementById(`cenario-${id}`);
+    if (!card) return;
+    const tituloEl = card.querySelector('h3').innerText.replace('✎','').trim();
+    const nomeArquivo = tituloEl.replace(/\s+/g, '_') + '.html';
+    
+    // Clona o card e monta um relatório autônomo
+    const cardClone = card.cloneNode(true);
+    const actions = cardClone.querySelector('.cd-actions');
+    if (actions) actions.remove();
+    const pdfHeader = cardClone.querySelector('.pdf-header-doc');
+    if (pdfHeader) pdfHeader.style.display = 'flex';
+
+    const htmlCompleto = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${tituloEl} - TJPE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #004488; --primary-dark: #002a5c; --primary-light: #e6f0fa;
+            --success: #059669; --danger: #dc2626; --warning: #f59e0b; --neutral: #64748b;
+            --bg-body: #f1f5f9; --card-bg: #ffffff; --panel-bg: #f8fafc;
+            --border-color: #cbd5e1; --text-main: #0f172a; --text-muted: #475569; --text-light: #94a3b8;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-body); padding: 40px 20px; display: flex; flex-direction: column; align-items: center; color: var(--text-main); margin: 0; }
+        .cenario-dashboard { max-width: 1100px; width: 100%; background: #ffffff; border-radius: 16px; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.08); overflow: hidden; }
+        .pdf-header-doc { display: flex !important; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--primary); padding: 20px 30px; }
+        .pdf-header-doc img { height: 35px; }
+        .pdf-header-doc p { font-size: 15px; font-weight: 800; color: var(--primary); text-transform: uppercase; margin: 0; }
+        .cd-header { padding: 20px 30px; background: var(--panel-bg); border-bottom: 1px solid var(--border-color); }
+        .cd-title-group h3 { margin: 0; font-size: 22px; font-weight: 800; color: var(--primary-dark); }
+        .cd-title-group p { margin: 6px 0 0; font-size: 13px; color: var(--text-muted); font-weight: 600; }
+        .cd-body { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; padding: 30px; }
+        .cd-col h4 { margin: 0 0 16px; font-size: 13px; font-weight: 800; text-transform: uppercase; border-bottom: 2px solid var(--border-color); padding-bottom: 8px; }
+        .cd-col.sai h4 { color: var(--danger); border-color: #fca5a5; }
+        .cd-col.entra h4 { color: var(--success); border-color: #86efac; }
+        .cd-col ul { list-style: none; padding: 0; margin: 0; }
+        .cd-analise-box { margin: 0 30px 25px 30px; padding: 18px 24px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .cd-analise-box.viavel { background: rgba(5,150,105,0.06); border-color: rgba(5,150,105,0.3); }
+        .cd-analise-box.inviavel { background: rgba(220,38,38,0.06); border-color: rgba(220,38,38,0.3); }
+        .cd-analise-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px dashed var(--border-color); padding-bottom: 8px; margin-bottom: 10px; }
+        .cd-analise-badge { font-size: 11px; font-weight: 800; text-transform: uppercase; padding: 4px 10px; border-radius: 99px; }
+        .cd-analise-badge.txt-viavel { background: rgba(5,150,105,0.15); color: var(--success); }
+        .cd-analise-badge.txt-inviavel { background: rgba(220,38,38,0.15); color: var(--danger); }
+        .cd-analise-texto { font-size: 14px; line-height: 1.55; }
+        .cd-analise-detalhes { font-size: 13px; line-height: 1.5; color: var(--text-muted); background: #ffffff; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 10px; }
+        .conclusao-conjunto-card { background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-top: 8px; color: var(--text-main); }
+        .badge-conjunto-tag { background: #e0f2fe; color: #0369a1; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+        .conjunto-chip { background: #ffffff; border: 1px solid var(--border-color); padding: 3px 8px; border-radius: 6px; font-size: 12px; display: inline-flex; margin: 3px; }
+        .cd-footer { padding: 24px 30px; display: flex; justify-content: space-between; align-items: center; border-top: 2px dashed var(--border-color); }
+        .cd-footer.viavel { background: rgba(5, 150, 105, 0.05); }
+        .cd-footer.inviavel { background: rgba(220, 38, 38, 0.05); }
+        .cd-footer.neutro { background: rgba(100, 116, 139, 0.05); }
+        .cd-impact-label { font-size: 15px; font-weight: 800; text-transform: uppercase; }
+        .txt-viavel { color: var(--success); }
+        .txt-inviavel { color: var(--danger); }
+        .txt-neutro { color: var(--neutral); }
+    </style>
+</head>
+<body>
+    <div style="width: 100%; max-width: 1100px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <button onclick="window.print()" style="background: var(--primary); color: white; border: none; padding: 10px 22px; border-radius: 8px; font-weight: 700; cursor: pointer;">Imprimir / Salvar PDF</button>
+            <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">TJPE • DGF • NUGOV</span>
+        </div>
+        ${cardClone.outerHTML}
+    </div>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlCompleto], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nomeArquivo;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    mostrarToast(`Cenário baixado como arquivo: "${nomeArquivo}"`, 'success');
+}
 function exportarNativo(id) {
     const box = document.getElementById(`cenario-${id}`);
     const tituloEl = box.querySelector('h3').innerText.replace('✎','').trim();
